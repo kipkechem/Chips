@@ -1,98 +1,139 @@
 # Lockstep: game design
 
-A 2D, turn-based puzzle game in the spirit of *Chip's Challenge*: colored keys,
-colored doors, things to collect, things that kill you. The twist that makes it
-about **memory** and **critical thinking** rather than reflexes:
+A 2D, turn-based, pixel-art puzzle game in the spirit of *Chip's Challenge*: colored
+keys, colored doors, chips to collect and a flag to reach. The difficulty comes from
+**spiders**:
 
-> You study each level in full light. When you start moving, the lights go out
-> and you can only see the tiles right next to you.
+> Spiders sleep behind the things you need. Once one sees you, it chases you
+> until a wall or a gate stops it. Take the chip, then run for the gate.
 
-Everything else in the design serves that one idea.
+Nothing moves unless you do, so every chase can be planned in advance.
 
 ## The three skills it trains
 
 | Skill | Where it comes from |
 |---|---|
-| **Memory** | The study phase. You must hold the map in your head: where the lava is, which door is which color, where the cores are. |
-| **Problem solving** | Keys are single-use and crates can be wasted, so the order you do things in matters. Some levels have a tempting wrong order that leaves you stuck. |
-| **Critical thinking** | Enemies are deterministic and move only when you move. Nothing is random, and nothing needs fast fingers, so every death can be reasoned about and avoided. |
+| **Problem solving** | Keys are single-use and crates can be wasted, so the order matters. Get the key for your escape gate *before* you wake the spider. |
+| **Critical thinking** | Spiders, drones and mimics follow fixed, visible rules. Every death can be reasoned about: which way will the spider step, and where will it jam? |
+| **Memory** | Lights Out mode: study the level in full light, then play it seeing only the tiles next to you. |
 
 ## Core loop
 
-1. **Study.** The whole map is lit. Untimed on Easy and Normal, 10 seconds on Hard.
-2. **Lights out.** You see a small radius around yourself. Each move, wait, or
-   bump into a wall costs one turn of battery. Bumping costs a turn on purpose,
-   so you cannot feel your way around for free.
-3. **Peek** (limited). Relights the whole map for 1.6 seconds. Flares on the map
-   give you more.
-4. **Escape.** Collect every core, then reach the exit. On death or victory the
-   map lights up so you can compare it with what you remembered.
+1. **Read the level.** Find the chips, the keys, the doors, and where each spider can see.
+2. **Plan the escape.** Pick the gate you will run to and make sure you hold its key.
+3. **Wake and run.** Take the chip. The spider gets one turn to wake up, then follows you.
+   Break its line through a gate or around a corner it can't follow.
+4. **Reach the flag** once every chip is collected.
 
 ## Pieces
 
 | Tile | Rule | What it tests |
 |---|---|---|
-| Keys and doors (red, green, blue, yellow) | A key opens one door of its color and is used up. Each color also has a shape (circle, diamond, square, triangle) for color-blind players. | Planning order; remembering which door is where. |
-| Core | Collect all to open the exit. | Route planning. |
-| Lava | Instant death. | Pure memory: it is invisible until you are next to it. |
+| Keys and doors | A key opens one door of its color and is used up. Doors carry a symbol (red ▲, blue ◆, yellow ●, green ■) for color-blind players. | Planning order. |
+| Gate | An opened door. You can pass; enemies can't cross it or see through it. | Choosing your escape. |
+| Chip | Collect all to unlock the flag. Spiders often sleep behind one. | Route planning; when to wake a spider. |
+| Flag | The exit. | – |
+| Lava | Instant death. | Routing; memory in Lights Out. |
 | Crate | Pushable. Pushed into lava, it sinks and leaves floor. | Sokoban-style thinking; you can waste a crate. |
-| Flare | +1 peek. | Risk/reward detours. |
 
 ## Enemies
 
 All enemies move once after each of your turns, in a fixed order, by fixed rules.
-They can only walk on bare floor, so walls, doors, items, crates, lava and the exit
-all block them. A key lying on the floor is also a wall to an enemy until you pick it up.
+They only walk on bare floor, so walls, doors, **gates**, items, crates, lava and the
+exit all block them. A chip or key lying on the floor is a wall to an enemy until you
+pick it up.
+
+### Spiders (the main source of difficulty)
+
+Spiders work like the ghosts in Pac-Man, with one twist: they don't hunt you until they see you.
+
+1. **Asleep.** A spider sees along its row and column. Its view is blocked by anything
+   that isn't bare floor, including the chip or key it sleeps behind.
+2. **Alert.** When it sees you, it shows a **!** and spends that turn waking up. That one turn is your head start.
+3. **Chasing.** Every turn it steps toward you, along the longer axis first. It keeps
+   following even when it can no longer see you.
+4. **Stuck.** When a wall, gate or item blocks both of its possible steps, it gives up and falls
+   asleep where it stands. If it sees you again, it wakes again.
+
+**Gates are the escape.** A door you have opened stays in the level as a gate. You can
+walk through it, but no enemy can cross it or see past it. So the typical spider
+puzzle goes: work out your escape route, get the key for that gate *first*, then
+take the chip and run.
+
+Two ways to hide a spider, both in the levels:
+
+- **Behind a collectible** (The Nest, Spider Run): the chip or key is the wall. Picking it up opens the spider's line of sight.
+- **In a hidden room** (Hidden Room): the spider sleeps behind a locked door, and opening the door lets it out.
+
+Spiders are also beatable by thinking, not just running: since they only step toward
+you, you can lead one around a pillar until it jams against a wall.
+
+### Supporting enemies
 
 | Enemy | Rule | Puzzle it creates |
 |---|---|---|
-| **Patroller** | Walks straight; reverses when blocked. | Timing. Count its cycle while you study, then slip past using alcoves. |
-| **Hunter** | Steps toward you, trying the longer axis first. Gets stuck behind walls. | Luring. Park it behind a wall, then walk around it. |
+| **Patrol drone** | Flies straight; reverses when blocked. | Timing. Count its cycle and slip past using alcoves. |
 | **Mimic** | Copies your move each turn (if it can). | Spatial reasoning. Use walls to change your relative position. |
 
-## Difficulty
+## Modes
 
-Difficulty never changes the level layout. It changes how hard the memory test is:
+The level layouts never change. The mode decides how much help you get:
 
-| Lever | Easy | Normal | Hard |
+| | Explorer | Classic | Lights Out |
 |---|---|---|---|
-| Light radius | 2 | 1 | 1 |
-| Seen tiles stay visible (dimmed) | yes | no | no |
-| Study time | untimed | untimed | 10 s |
-| Peeks | 3 | 2 | 1 |
-| Enemies visible in the dark | yes | yes | no |
-| Undo | yes | no | no |
-| Battery | 2 × par | 1.5 × par | 1.25 × par |
+| Map | fully lit | fully lit | study it, then you see 1 tile around you |
+| Move limit | none | 1.5 × par | 1.5 × par |
+| Undo | yes | yes (costs the clean-run star) | no |
+| Peeks at the full map | – | – | 2 |
 
-**Par** is the true minimum number of turns, computed by `tools/solve.js`, which
-does a breadth-first search over every reachable game state. That makes the
-battery limit fair: every level is proven solvable within it.
+**Par** is the true minimum number of moves, computed by `tools/solve.js`, which
+does a breadth-first search over every reachable game state (spider sleep and wake
+states included). Every level is proven solvable within its limit.
 
 ## Scoring
 
-Three stars per level, each for a different skill:
+Three stars per level:
 
 - ★ Escaped.
 - ★ Within 120% of par (efficient planning).
-- ★ No peeks used (memory).
+- ★ Clean run: no undo and no peeks.
+
+## Art direction
+
+Pixel art at 16 × 16 per tile, scaled up without smoothing. The player is a small robot.
+Each key color has its own door symbol: red triangle, blue diamond, yellow circle, green square.
+The HUD sits on the right, as in the mockups. Five worlds, each with its own tiles and
+spider color:
+
+| World | Look |
+|---|---|
+| Pixel Arcade | Bright blue blocks, circuit-trace floors |
+| Lost Circuits | Mossy sandstone ruins |
+| Ice Station | Frosted blocks with icicles, purple spiders |
+| Neon Mixtape | Magenta blocks with a glossy stripe |
+| Solar Disco | Orange checker blocks, teal spiders |
+
+You can also choose one art style for every level.
 
 ## Levels in the prototype
 
-| # | Name | Teaches |
-|---|---|---|
-| 1 | First Light | Darkness, keys and doors. |
-| 2 | Spend Wisely | Single-use keys. Opening the nearest door first leaves you stuck. |
-| 3 | Heat | Lava and crates. |
-| 4 | Clockwork | Patroller timing. |
-| 5 | Hunter | Luring the hunter. |
-| 6 | Echo | The mimic. |
-| 7 | Vault | Everything together. |
+| # | World | Name | Teaches |
+|---|---|---|---|
+| 1 | Pixel Arcade | Boot Up | Keys, doors, chips, the flag. |
+| 2 | Pixel Arcade | Spend Wisely | Single-use keys. Opening the nearest door first leaves you stuck. |
+| 3 | Lost Circuits | The Nest | A spider behind a chip. Grab it and outrun the spider around a corner. |
+| 4 | Lost Circuits | Heat | Lava and crates. |
+| 5 | Ice Station | Hidden Room | A spider behind a door. Lure it round a pillar, grab the chip and key, escape through a gate. |
+| 6 | Ice Station | Clockwork | Patrol drone timing. |
+| 7 | Neon Mixtape | Echo | The mimic. |
+| 8 | Neon Mixtape | Vault | Crates, lava, a patrol and two locked doors. |
+| 9 | Solar Disco | Spider Run | Two nests, three gates, and the order you visit them in. |
 
 ## Ideas for later
 
-- **More enemies:** a *Watcher* that only moves while you are in its line of sight;
-  a *Thief* that steals a key if it touches you instead of killing you; a *Swapper*
-  that changes door colors every N turns (a pure working-memory test).
+- **Spider variants:** a spider that sees diagonally; a fast spider that takes two
+  steps for every one of yours; a mother spider that wakes the whole nest.
+- **One-way gates** that let enemies through in one direction only.
 - **Memory-specific tiles:** switches that toggle walls you can no longer see;
   "false floor" that looks like floor in the study phase but is lava.
 - **Sound as information:** each enemy type makes a different footstep, louder

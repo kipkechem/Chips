@@ -1,8 +1,9 @@
 # Lockstep
 
-A turn-based puzzle game inspired by *Chip's Challenge*. Study the level in full
-light, then the lights go out and you play from memory. Colored keys open colored
-doors, lava hides in the dark, and every enemy moves only when you do.
+A turn-based, pixel-art puzzle game inspired by *Chip's Challenge*. Collect the chips,
+use colored keys on colored doors, and reach the flag. Spiders sleep behind the
+things you need. Once one sees you, it chases you until a wall or a gate stops it.
+Nothing moves unless you do.
 
 See [GAME_DESIGN.md](GAME_DESIGN.md) for the full concept.
 
@@ -15,8 +16,8 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-Controls: arrow keys or WASD to move, Space to wait a turn, F to peek, R to
-restart, Z to undo (Easy only), Esc for the level list. On a phone, swipe the
+Controls: arrow keys or WASD to move, Space to wait a turn, Z to undo, R to
+restart, P or Esc to pause, F to peek (Lights Out mode). On a phone, swipe the
 board or use the on-screen pad.
 
 ## Files
@@ -25,7 +26,8 @@ board or use the on-screen pad.
 |---|---|
 | `core.js` | Game rules as pure functions (no DOM). Shared by the game and the solver. |
 | `levels.js` | Level maps, hints and par values. The map legend is in `core.js`. |
-| `index.html` | The game: rendering, input, menus, sound. |
+| `art.js` | Pixel-art themes, sprites and the board renderer. |
+| `index.html` | The game page: HUD, menus, input, sound. |
 | `tools/solve.js` | Breadth-first solver. Proves each level is beatable and checks its par. |
 
 ## Adding a level

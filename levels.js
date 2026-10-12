@@ -1,11 +1,12 @@
-// Lockstep levels. `par` is the fewest possible turns (checked by tools/solve.js);
-// The battery (turn limit) is derived from par by difficulty. See core.js for the map legend.
+// Lockstep levels. `par` is the fewest possible moves (checked by tools/solve.js).
+// `world` picks the art theme. See core.js for the map legend.
 (function (root) {
   'use strict';
   const LEVELS = [
     {
-      name: 'First Light',
-      hint: 'Study the map. Once the lights go out, you only see what is next to you.',
+      name: 'Boot Up',
+      world: 'arcade',
+      hint: 'Collect every chip, then reach the flag. Each key opens one door of its color.',
       par: 28,
       map: [
         '###########',
@@ -19,7 +20,8 @@
     },
     {
       name: 'Spend Wisely',
-      hint: 'A key opens one door, then it is gone. Which door first?',
+      world: 'arcade',
+      hint: 'A key is used up when it opens a door. Which yellow door should you open first?',
       par: 57,
       map: [
         '#############',
@@ -34,8 +36,25 @@
       ],
     },
     {
+      name: 'The Nest',
+      world: 'circuits',
+      hint: 'A spider sleeps behind that chip. It wakes when it sees you. Know your way to the gate before you grab it.',
+      par: 41,
+      map: [
+        '###############',
+        '#S..*.........#',
+        '#.#####.#####.#',
+        '#.#...#.#...#.#',
+        '#...#...#r#...#',
+        '#####.#####.###',
+        '#@..........R.E',
+        '###############',
+      ],
+    },
+    {
       name: 'Heat',
-      hint: 'Lava kills. Crates sink into it and leave solid ground.',
+      world: 'circuits',
+      hint: 'Lava kills. Push a crate into it to make solid ground.',
       par: 29,
       map: [
         '###########',
@@ -49,7 +68,25 @@
       ],
     },
     {
+      name: 'Hidden Room',
+      world: 'ice',
+      hint: 'Something is waiting behind the blue door. Spiders can never cross a gate, even an open one.',
+      par: 48,
+      map: [
+        '###############',
+        '#@....#.......#',
+        '#.###.#.#######',
+        '#.#.....#....*#',
+        '#.#.###.B..#.S#',
+        '#.#...#.#....y#',
+        '#.###.#.#Y#####',
+        '#b..#...#....E#',
+        '###############',
+      ],
+    },
+    {
       name: 'Clockwork',
+      world: 'ice',
       hint: 'Patrollers walk straight and turn back when blocked. They move only when you do.',
       par: 26,
       map: [
@@ -65,23 +102,8 @@
       ],
     },
     {
-      name: 'Hunter',
-      hint: 'The hunter always steps toward you. Walls confuse it.',
-      par: 35,
-      map: [
-        '###########',
-        '#@....#..*#',
-        '#.###.#.#.#',
-        '#.#C..#.#.#',
-        '#.#####.#.#',
-        '#.......#.#',
-        '#####.###.#',
-        '#*........E',
-        '###########',
-      ],
-    },
-    {
       name: 'Echo',
+      world: 'neon',
       hint: 'The mimic copies every move you make. Use the walls to shake it off.',
       par: 19,
       map: [
@@ -96,18 +118,34 @@
     },
     {
       name: 'Vault',
-      hint: 'Everything you have learned, in the dark.',
+      world: 'neon',
+      hint: 'Crates, lava, a patrol and two locked doors. Plan the whole route first.',
       par: 81,
       map: [
         '###############',
         '#@..#....>....#',
         '#.O.#.#####.#.#',
-        '#...x.#+..#.#*#',
+        '#...x.#...#.#*#',
         '###.###.#.##..#',
         '#*..G...#...#B#',
         '#.#####.#.#^#.#',
         '#..g....#.b.#.#',
         '#######.#####E#',
+        '###############',
+      ],
+    },
+    {
+      name: 'Spider Run',
+      world: 'solar',
+      hint: 'Two nests, three gates. Taking anything a spider sleeps behind wakes it. Know which gate you are running to.',
+      par: 44,
+      map: [
+        '###############',
+        '#S.*..#####y.S#',
+        '#.###.##r##.#.#',
+        '#.#...R.@.G...#',
+        '#.#.####Y##.#.#',
+        '#..g####E##..*#',
         '###############',
       ],
     },
