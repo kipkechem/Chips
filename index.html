@@ -8,9 +8,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jersey+10&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
 <style>
-/* Layout: arcade cabinet. Game = "NN / WORLD" label, then the framed board with the
-   HUD column on its right (stacked under it on phones), a message line, and a touch pad.
-   Each world re-tints the page through these tokens; every world is a dark look by design. */
+/* Layout: the menu is a scrolling page. The game is a full-screen landscape console:
+   status bar on top; joystick on the left, a 15 x 9 tile camera window in the middle,
+   the power-up rack on the right. Each world re-tints the page through these tokens;
+   every world is a dark look by design. */
 :root {
   --bg: #070b16;
   --panel: #0a1430;
@@ -32,10 +33,13 @@ body {
   color: var(--ink);
   font: 16px/1.5 var(--font-body);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s;
 }
 [hidden] { display: none !important; }
 canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- Menu ---------- */
 .app {
   max-width: 1120px;
   margin: 0 auto;
@@ -43,17 +47,14 @@ canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
   padding-block: 16px 40px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 26px;
 }
-button { font: inherit; color: inherit; cursor: pointer; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brand {
   margin: 0;
-  font: 400 39px/1 var(--font-pixel);
+  font: 400 40px/1 var(--font-pixel);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink);
   text-shadow: 3px 3px 0 var(--frame);
 }
 .brand span { color: var(--accent); }
@@ -67,54 +68,53 @@ button { font: inherit; color: inherit; cursor: pointer; }
   text-transform: uppercase;
 }
 .chipbtn:hover { border-color: var(--frame-hi); }
-
-/* ---------- Menu ---------- */
-.menu { display: flex; flex-direction: column; gap: 28px; }
 .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: center; }
-.hero h2 { margin: 0 0 8px; font: 400 clamp(34px, 6.5vw, 50px)/1 var(--font-pixel); text-wrap: balance; }
+.hero h2 { margin: 0 0 8px; font: 400 clamp(34px, 6vw, 50px)/1 var(--font-pixel); text-wrap: balance; }
 .hero h2 em { font-style: normal; color: var(--accent); }
 .hero p { margin: 0; color: var(--muted); max-width: 62ch; }
 #hero-art { width: 192px; height: 128px; border: 3px solid var(--frame); border-radius: 4px; }
-@media (max-width: 620px) { .hero { grid-template-columns: 1fr; } #hero-art { width: 100%; height: auto; aspect-ratio: 3 / 2; max-width: 100%; } }
+@media (max-width: 620px) { .hero { grid-template-columns: 1fr; } #hero-art { width: 100%; height: auto; max-width: 100%; aspect-ratio: 3 / 2; } }
 .label {
   margin: 0 0 10px;
-  font: 400 18px/1 var(--font-pixel);
+  font: 400 19px/1 var(--font-pixel);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--frame-hi);
 }
-.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.options { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-start; }
+.modes { display: flex; flex-wrap: wrap; gap: 10px; }
 .modes input { position: absolute; opacity: 0; pointer-events: none; }
 .modes label {
-  display: flex; flex-direction: column; gap: 4px; height: 100%; box-sizing: border-box;
-  padding: 12px 14px; background: var(--panel); border: 2px solid var(--frame); border-radius: 4px; cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px; width: 240px; max-width: 100%; box-sizing: border-box;
+  padding: 10px 14px; background: var(--panel); border: 2px solid var(--frame); border-radius: 4px; cursor: pointer;
 }
-.modes label strong { font: 400 23px/1.2 var(--font-pixel); letter-spacing: 0.04em; }
-.modes label span { color: var(--muted); font-size: 14px; line-height: 1.45; }
+.modes label strong { font: 400 23px/1.1 var(--font-pixel); letter-spacing: 0.04em; }
+.modes label span { color: var(--muted); font-size: 14px; line-height: 1.4; }
 .modes input:checked + label { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
 .modes input:checked + label strong { color: var(--accent); }
 .modes input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
-.skin { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .skin select {
   font: 400 20px var(--font-pixel); color: var(--ink); background: var(--panel);
   border: 2px solid var(--frame); border-radius: 4px; padding: 6px 10px;
 }
 .worlds { display: flex; flex-direction: column; gap: 22px; }
-.world h3 { margin: 0 0 10px; font: 400 23px/1 var(--font-pixel); letter-spacing: 0.06em; display: flex; gap: 10px; align-items: center; }
-.world h3 small { color: var(--muted); font-weight: 400; font-size: 14px; }
+.world h3 { margin: 0 0 4px; font: 400 25px/1 var(--font-pixel); letter-spacing: 0.06em; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.world h3 small { color: var(--muted); font-size: 18px; }
+.world .mod { margin: 0 0 10px; color: var(--muted); font-size: 14px; }
 .swatch { width: 14px; height: 14px; border: 2px solid #0a0d14; flex: none; }
 .levels { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
 .level {
-  display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 8px;
+  display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 8px;
   background: var(--panel); border: 2px solid var(--frame); border-radius: 4px;
 }
 .level:hover { border-color: var(--frame-hi); }
 .level canvas { width: 100%; height: auto; display: block; border-radius: 2px; background: #000; }
 .level .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding-inline: 4px; }
-.level .name { font: 400 22px/1.2 var(--font-pixel); }
-.level .name b { color: var(--accent); font-weight: 700; margin-right: 6px; }
+.level .name { font: 400 22px/1.15 var(--font-pixel); }
+.level .name b { color: var(--accent); font-weight: 400; margin-right: 6px; }
 .level .meta { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
-.stars { letter-spacing: 0.08em; color: #3a4258; font-size: 14px; }
+.level .tag { color: var(--accent); }
+.stars { letter-spacing: 0.08em; color: #3a4258; font-size: 14px; white-space: nowrap; }
 .stars b { color: var(--accent); font-weight: 400; }
 .legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px 20px; }
 .legend li { display: flex; gap: 10px; align-items: flex-start; min-width: 0; font-size: 14px; color: var(--muted); }
@@ -123,18 +123,75 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .help { margin: 0; color: var(--muted); font-size: 14px; }
 kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid var(--frame); border-radius: 3px; color: var(--ink); }
 
-/* ---------- Game ---------- */
-.game { display: flex; flex-direction: column; gap: 10px; }
-.crumb { margin: 0; font: 400 20px/1 var(--font-pixel); letter-spacing: 0.14em; text-transform: uppercase; color: var(--frame-hi); }
-.play { display: grid; grid-template-columns: auto 210px; justify-content: center; gap: 14px; align-items: start; }
+/* ---------- Game console ---------- */
+.game {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-sizing: border-box;
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 8px)
+    calc(env(safe-area-inset-right, 0px) + 12px)
+    calc(env(safe-area-inset-bottom, 0px) + 8px)
+    calc(env(safe-area-inset-left, 0px) + 12px);
+  background: var(--bg);
+  --side: clamp(118px, 19vw, 210px);
+  user-select: none;
+  -webkit-user-select: none;
+}
+.bar { display: flex; align-items: center; gap: 6px 16px; flex-wrap: wrap; font: 400 20px/1 var(--font-pixel); letter-spacing: 0.04em; }
+.bar .crumb { color: var(--frame-hi); letter-spacing: 0.12em; text-transform: uppercase; margin-right: auto; }
+.bar .stat { display: flex; gap: 6px; align-items: baseline; color: var(--muted); }
+.bar .stat b { color: var(--accent); font-weight: 400; font-variant-numeric: tabular-nums; }
+.bar .stat b small { color: var(--muted); font-size: 15px; }
+.keys { display: flex; gap: 8px; }
+.keychip { display: flex; align-items: center; gap: 2px; color: var(--muted); }
+.keychip.has { color: var(--accent); }
+.keychip canvas { width: 24px; height: 24px; }
+.beat { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+.beat i { width: 9px; height: 9px; border: 2px solid currentColor; box-sizing: border-box; }
+.beat i.on { background: currentColor; }
+.iconbtn {
+  display: grid; place-items: center; width: 38px; height: 34px; padding: 0;
+  background: var(--panel); border: 2px solid var(--frame); border-radius: 6px;
+}
+.iconbtn svg { width: 18px; height: 18px; }
+.arena {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: var(--side) minmax(0, 1fr) var(--side);
+  align-items: center;
+  gap: 12px;
+}
+.left, .right { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 0; height: 100%; }
+.stick {
+  position: relative;
+  width: 100%;
+  max-width: 200px;
+  aspect-ratio: 1;
+  max-height: 100%;
+  touch-action: none;
+  cursor: pointer;
+}
+.stick svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.stick .q { fill: var(--panel); stroke: var(--frame); stroke-width: 3; transition: fill 0.06s; }
+.stick .q.on { fill: var(--frame); }
+.stick .arrow { fill: var(--frame-hi); pointer-events: none; }
+.stick .q.on + .arrow { fill: var(--ink); }
+.stick .hub { fill: var(--bg); stroke: var(--frame); stroke-width: 3; }
+.stick .hub.on { fill: var(--frame); }
+.stick text { font: 400 15px var(--font-pixel); fill: var(--muted); letter-spacing: 0.05em; pointer-events: none; }
 .board-wrap {
   position: relative;
   justify-self: center;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
-  padding: 6px;
+  padding: 5px;
   background: var(--panel);
   border: 3px solid var(--frame);
   border-radius: 6px;
@@ -143,111 +200,110 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 #board { display: block; touch-action: none; }
 #board.shake { animation: shake 0.18s steps(2); }
 @keyframes shake { 33% { transform: translateX(-4px); } 66% { transform: translateX(4px); } }
-.hud { display: flex; flex-direction: column; gap: 10px; }
-.box {
-  display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  padding: 8px 12px; background: var(--panel); border: 3px solid var(--frame); border-radius: 6px;
-  font: 400 26px/1 var(--font-pixel); letter-spacing: 0.04em;
+.rack { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.power {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+  padding: 6px 4px 4px; background: var(--panel); border: 3px solid var(--frame); border-radius: 8px;
+  font: 400 16px/1.05 var(--font-pixel); letter-spacing: 0.03em;
 }
-.box b { color: var(--accent); font-variant-numeric: tabular-nums; }
-.box b small { font-size: 13px; color: var(--muted); }
-.keys { padding: 8px 10px; background: var(--panel); border: 3px solid var(--frame); border-radius: 6px; display: flex; flex-direction: column; gap: 6px; }
-.keys p { margin: 0 0 2px; font: 400 21px/1 var(--font-pixel); letter-spacing: 0.08em; color: var(--frame-hi); }
-.keyrow { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 8px; padding: 3px 6px; border: 2px solid var(--frame); border-radius: 4px; }
-.keyrow canvas { width: 28px; height: 28px; }
-.keyrow b { justify-self: end; font: 400 26px/1 var(--font-pixel); color: var(--muted); min-width: 1.4em; text-align: right; }
-.keyrow b.has { color: var(--accent); }
-.btns { display: grid; gap: 8px; }
+.power canvas { width: 40px; height: 40px; }
+.power .n { position: absolute; top: 2px; right: 6px; color: var(--accent); font-size: 20px; }
+.power:disabled { opacity: 0.35; cursor: default; }
+.power.armed { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent); }
+.sys { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sys .btn { min-width: 0; }
+@media (max-width: 1000px) { .sys .t { display: none; } .sys .btn svg { width: 22px; height: 22px; } }
 .btn {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 10px 12px; background: var(--panel); border: 3px solid var(--frame); border-radius: 6px;
-  font: 400 23px/1 var(--font-pixel); letter-spacing: 0.06em; text-transform: uppercase;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 8px 10px; background: var(--panel); border: 3px solid var(--frame); border-radius: 6px;
+  font: 400 21px/1 var(--font-pixel); letter-spacing: 0.05em; text-transform: uppercase;
 }
 .btn:hover:not(:disabled) { border-color: var(--frame-hi); }
 .btn:disabled { opacity: 0.4; cursor: default; }
-.btn svg { width: 20px; height: 20px; flex: none; }
+.btn svg { width: 18px; height: 18px; flex: none; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: #1a1302; }
-.msg { margin: 0; min-height: 1.5em; text-align: center; font: 400 21px/1.4 var(--font-pixel); color: var(--muted); }
+.msg { margin: 0; min-height: 1.3em; text-align: center; font: 400 20px/1.3 var(--font-pixel); color: var(--muted); }
 .msg.warn { color: var(--danger); }
 .msg.alarm { color: var(--accent); }
-.dpad { display: none; grid-template-columns: repeat(3, 60px); grid-template-rows: repeat(3, 60px); gap: 6px; justify-content: center; }
-.dpad button { background: var(--panel); border: 3px solid var(--frame); border-radius: 8px; font-size: 20px; user-select: none; -webkit-user-select: none; touch-action: manipulation; }
-.dpad button:active { background: var(--frame); }
-.dpad .up { grid-area: 1 / 2; } .dpad .left { grid-area: 2 / 1; } .dpad .right { grid-area: 2 / 3; } .dpad .down { grid-area: 3 / 2; }
-.dpad .wait { grid-area: 2 / 2; font: 400 16px var(--font-pixel); letter-spacing: 0.06em; color: var(--muted); }
-@media (pointer: coarse), (max-width: 820px) { .dpad { display: grid; } }
-@media (max-width: 820px) {
-  .play { grid-template-columns: 1fr; }
-  .hud { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .box { padding: 6px 8px; font-size: 20px; flex-direction: column; align-items: flex-start; gap: 4px; }
-  .keys { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; align-items: center; }
-  .keys p { width: 100%; }
-  .keyrow { flex: 1 1 60px; grid-template-columns: auto 1fr; }
-  .keyrow canvas.shape { display: none; }
-  .btns { grid-column: 1 / -1; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); }
-  .btn { font-size: 19px; padding: 8px; }
-}
 .overlay {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  padding: 16px; background: rgba(2, 3, 8, 0.62); border-radius: 3px;
+  padding: 10px; background: rgba(2, 3, 8, 0.66); border-radius: 3px; z-index: 2;
 }
 .card {
-  width: min(420px, 100%); box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;
-  padding: 18px; background: var(--panel); border: 3px solid var(--frame); border-radius: 6px;
+  width: min(420px, 100%); max-height: 100%; overflow: auto; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 16px; background: var(--panel); border: 3px solid var(--frame); border-radius: 6px;
   box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--frame-hi);
 }
 .card .eyebrow { margin: 0; font: 400 18px/1 var(--font-pixel); letter-spacing: 0.14em; text-transform: uppercase; color: var(--frame-hi); }
 .card.won .eyebrow { color: var(--good); }
 .card.dead .eyebrow { color: var(--danger); }
-.card h2 { margin: 0; font: 400 34px/1.15 var(--font-pixel); text-wrap: balance; }
-.card p { margin: 0; color: var(--muted); }
-.card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.card h2 { margin: 0; font: 400 32px/1.1 var(--font-pixel); text-wrap: balance; }
+.card p { margin: 0; color: var(--muted); font-size: 15px; }
+.card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; font-size: 15px; }
 .card li { display: flex; gap: 8px; }
 .card li .s { color: #3a4258; }
 .card li.got .s { color: var(--accent); }
 .card .row { display: flex; flex-wrap: wrap; gap: 8px; }
-.card .row .btn { flex: 1 1 110px; font-size: 21px; }
-.study-card { align-self: flex-end; }
-.count { font: 400 34px var(--font-pixel); color: var(--accent); }
-@media (prefers-reduced-motion: reduce) { #board.shake { animation: none; } body { transition: none; } }
+.card .row .btn { flex: 1 1 100px; }
+.rotate {
+  display: none;
+  position: absolute; inset: 0; z-index: 5;
+  flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+  padding: 24px; text-align: center; background: var(--bg);
+  font: 400 30px/1.15 var(--font-pixel);
+}
+.rotate svg { width: 96px; height: 96px; color: var(--frame-hi); animation: tilt 1.8s ease-in-out infinite; }
+.rotate p { margin: 0; max-width: 18ch; }
+@keyframes tilt { 0%, 30% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
+@media (orientation: portrait) and (pointer: coarse) { .rotate { display: flex; } }
+@media (max-height: 460px) {
+  .bar { font-size: 17px; }
+  .keychip canvas { width: 20px; height: 20px; }
+  .power { font-size: 14px; padding: 4px 2px 2px; }
+  .power canvas { width: 30px; height: 30px; }
+  .btn { font-size: 17px; padding: 6px 8px; }
+  .msg { font-size: 17px; }
+  .iconbtn { height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #board.shake { animation: none; }
+  .rotate svg { animation: none; }
+}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" id="menu">
   <header class="top">
     <h1 class="brand">Lock<span>step</span></h1>
     <button id="btn-sound" class="chipbtn" type="button" aria-pressed="false">Sound off</button>
   </header>
 
-  <main id="menu" class="menu">
-    <section class="hero">
-      <div>
-        <h2>Grab the chips. <em>Wake the spiders.</em> Reach the gate.</h2>
-        <p>Every key opens one door of its color. Spiders sleep until they see you in a straight line, then chase you until something blocks them. They can never cross a gate, so plan your escape before you pick anything up. Nothing moves unless you do.</p>
-      </div>
-      <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
-    </section>
+  <section class="hero">
+    <div>
+      <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
+      <p>Every key opens one door of its color. Spiders never stop coming for you, so anything in their way keeps them boxed in, until you pick it up. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen. Nothing moves unless you do.</p>
+    </div>
+    <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
+  </section>
 
-    <section aria-labelledby="mode-label">
+  <section class="options">
+    <div>
       <p id="mode-label" class="label">Mode</p>
       <div class="modes" role="radiogroup" aria-labelledby="mode-label">
         <div>
           <input type="radio" name="mode" id="mode-explorer" value="explorer">
-          <label for="mode-explorer"><strong>Explorer</strong><span>Unlimited moves and undo. Learn how every piece behaves.</span></label>
+          <label for="mode-explorer"><strong>Explorer</strong><span>Unlimited moves and undo.</span></label>
         </div>
         <div>
           <input type="radio" name="mode" id="mode-classic" value="classic">
-          <label for="mode-classic"><strong>Classic</strong><span>Moves capped at 1.5 × par. Undo works, but costs you the clean-run star.</span></label>
-        </div>
-        <div>
-          <input type="radio" name="mode" id="mode-dark" value="dark">
-          <label for="mode-dark"><strong>Lights Out</strong><span>Study the level, then play it from memory. You see one tile around you and get 2 peeks. No undo.</span></label>
+          <label for="mode-classic"><strong>Classic</strong><span>Moves capped at 1.5 × par. Undo costs the clean-run star.</span></label>
         </div>
       </div>
-    </section>
-
-    <section class="skin">
-      <label class="label" for="skin" style="margin:0">Art style</label>
+    </div>
+    <div class="skin">
+      <label class="label" for="skin">Art style</label>
       <select id="skin">
         <option value="auto">Each world's own</option>
         <option value="arcade">Pixel Arcade</option>
@@ -256,103 +312,126 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <option value="neon">Neon Mixtape</option>
         <option value="solar">Solar Disco</option>
       </select>
-    </section>
+    </div>
+  </section>
 
-    <section aria-labelledby="levels-label">
-      <p id="levels-label" class="label">Levels</p>
-      <div id="worlds" class="worlds"></div>
-    </section>
+  <section aria-labelledby="levels-label">
+    <p id="levels-label" class="label">Levels</p>
+    <div id="worlds" class="worlds"></div>
+  </section>
 
-    <section aria-labelledby="legend-label">
-      <p id="legend-label" class="label">Field guide</p>
-      <ul id="legend" class="legend"></ul>
-    </section>
+  <section aria-labelledby="legend-label">
+    <p id="legend-label" class="label">Field guide</p>
+    <ul id="legend" class="legend"></ul>
+  </section>
 
-    <p class="help">
-      <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> or <kbd>WASD</kbd> move ·
-      <kbd>Space</kbd> wait a turn · <kbd>Z</kbd> undo · <kbd>R</kbd> restart ·
-      <kbd>F</kbd> peek (Lights Out) · <kbd>P</kbd> pause. On a phone, swipe the board or use the pad.
-    </p>
-  </main>
+  <p class="help">
+    Play in landscape. Slide your thumb around the circle to move; tap its center to wait a turn.
+    On a keyboard: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> or <kbd>WASD</kbd> move,
+    <kbd>Space</kbd> wait, <kbd>1</kbd>–<kbd>4</kbd> ready a power-up then pick a direction,
+    <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
+  </p>
+</div>
 
-  <main id="game" class="game" hidden>
-    <p id="crumb" class="crumb">01 / Pixel Arcade</p>
-    <div class="play">
-      <div class="board-wrap" id="stage">
-        <canvas id="board" aria-label="Game board"></canvas>
+<main id="game" class="game" hidden>
+  <header class="bar">
+    <span id="crumb" class="crumb">01 / Pixel Arcade</span>
+    <span class="stat">MOVES <b id="hud-moves">0</b></span>
+    <span class="stat">CHIPS <b id="hud-chips">0/0</b></span>
+    <span class="keys" aria-label="Keys">
+      <span class="keychip" id="kc-r"><canvas data-key="r" width="16" height="16"></canvas><span>0</span></span>
+      <span class="keychip" id="kc-b"><canvas data-key="b" width="16" height="16"></canvas><span>0</span></span>
+      <span class="keychip" id="kc-y"><canvas data-key="y" width="16" height="16"></canvas><span>0</span></span>
+      <span class="keychip" id="kc-g"><canvas data-key="g" width="16" height="16"></canvas><span>0</span></span>
+    </span>
+    <span id="hud-beat" class="beat" hidden title="Beat blocks swap when the four pips fill">BEAT <i></i><i></i><i></i><i></i></span>
+    <button id="btn-pause" class="iconbtn" type="button" aria-label="Pause">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="4" height="14" fill="currentColor"/><rect x="12" y="3" width="4" height="14" fill="currentColor"/></svg>
+    </button>
+  </header>
 
-        <div id="study" class="overlay" hidden style="background:transparent;align-items:flex-end">
-          <div class="card study-card">
-            <p class="eyebrow">Lights Out</p>
-            <h2>Study the map.</h2>
-            <p id="study-hint"></p>
-            <div class="row"><button id="btn-lights" class="btn primary" type="button">Lights out</button></div>
-          </div>
-        </div>
+  <div class="arena">
+    <div class="left">
+      <div id="stick" class="stick" role="group" aria-label="Direction pad">
+        <svg viewBox="-102 -102 204 204" aria-hidden="true">
+          <path class="q" data-dir="up" d="M0 0 L-70.7 -70.7 A100 100 0 0 1 70.7 -70.7 Z"/>
+          <polygon class="arrow" points="0,-82 -14,-62 14,-62"/>
+          <path class="q" data-dir="right" d="M0 0 L70.7 -70.7 A100 100 0 0 1 70.7 70.7 Z"/>
+          <polygon class="arrow" points="82,0 62,-14 62,14"/>
+          <path class="q" data-dir="down" d="M0 0 L70.7 70.7 A100 100 0 0 1 -70.7 70.7 Z"/>
+          <polygon class="arrow" points="0,82 -14,62 14,62"/>
+          <path class="q" data-dir="left" d="M0 0 L-70.7 70.7 A100 100 0 0 1 -70.7 -70.7 Z"/>
+          <polygon class="arrow" points="-82,0 -62,-14 -62,14"/>
+          <circle class="hub" cx="0" cy="0" r="27"/>
+          <text x="0" y="5" text-anchor="middle">WAIT</text>
+        </svg>
+      </div>
+    </div>
 
-        <div id="pause" class="overlay" hidden>
-          <div class="card">
-            <p class="eyebrow">Paused</p>
-            <h2 id="pause-title">Level</h2>
-            <p id="pause-hint"></p>
-            <div class="row">
-              <button id="pause-resume" class="btn primary" type="button">Resume</button>
-              <button id="pause-restart" class="btn" type="button">Restart</button>
-              <button id="pause-menu" class="btn" type="button">Levels</button>
-            </div>
-          </div>
-        </div>
+    <div class="board-wrap" id="stage">
+      <canvas id="board" aria-label="Game board"></canvas>
 
-        <div id="result" class="overlay" hidden>
-          <div class="card" id="res-card">
-            <p class="eyebrow" id="res-eyebrow"></p>
-            <h2 id="res-title"></h2>
-            <p id="res-text"></p>
-            <ul id="res-stars"></ul>
-            <div class="row">
-              <button id="res-next" class="btn primary" type="button">Next</button>
-              <button id="res-retry" class="btn" type="button">Retry</button>
-              <button id="res-menu" class="btn" type="button">Levels</button>
-            </div>
+      <div id="pause" class="overlay" hidden>
+        <div class="card">
+          <p class="eyebrow">Paused</p>
+          <h2 id="pause-title">Level</h2>
+          <p id="pause-hint"></p>
+          <div class="row">
+            <button id="pause-resume" class="btn primary" type="button">Resume</button>
+            <button id="pause-restart" class="btn" type="button">Restart</button>
+            <button id="pause-menu" class="btn" type="button">Levels</button>
           </div>
         </div>
       </div>
 
-      <aside class="hud" aria-label="Status">
-        <div class="box"><span>LEVEL</span><b id="hud-level">01</b></div>
-        <div class="box"><span>MOVES</span><b id="hud-moves">0</b></div>
-        <div class="box"><span>CHIPS</span><b id="hud-chips">0/0</b></div>
-        <div class="keys">
-          <p>KEYS</p>
-          <div class="keyrow"><canvas class="shape" data-shape="r" width="16" height="16"></canvas><canvas data-key="r" width="16" height="16"></canvas><b id="hud-key-r">0</b></div>
-          <div class="keyrow"><canvas class="shape" data-shape="b" width="16" height="16"></canvas><canvas data-key="b" width="16" height="16"></canvas><b id="hud-key-b">0</b></div>
-          <div class="keyrow"><canvas class="shape" data-shape="y" width="16" height="16"></canvas><canvas data-key="y" width="16" height="16"></canvas><b id="hud-key-y">0</b></div>
-          <div class="keyrow"><canvas class="shape" data-shape="g" width="16" height="16"></canvas><canvas data-key="g" width="16" height="16"></canvas><b id="hud-key-g">0</b></div>
+      <div id="intro" class="overlay" hidden>
+        <div class="card">
+          <p class="eyebrow" id="intro-eyebrow">Level</p>
+          <h2 id="intro-title"></h2>
+          <p id="intro-hint"></p>
+          <div class="row"><button id="intro-go" class="btn primary" type="button">Play</button></div>
         </div>
-        <div class="btns">
-          <button id="btn-pause" class="btn" type="button" aria-label="Pause">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="4" height="14" fill="currentColor"/><rect x="12" y="3" width="4" height="14" fill="currentColor"/></svg>
-          </button>
-          <button id="btn-peek" class="btn" type="button" hidden>Peek</button>
-          <button id="btn-undo" class="btn" type="button">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3 2 8l5 5V9.5h5a3.5 3.5 0 0 1 0 7H8V19h4a6 6 0 0 0 0-12H7z" fill="currentColor"/></svg>Undo
-          </button>
-          <button id="btn-restart" class="btn" type="button">
-            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5A5.5 5.5 0 1 0 15.5 10H18a8 8 0 1 1-8-8V0l4 3.25L10 6.5z" fill="currentColor"/></svg>Restart
-          </button>
+      </div>
+
+      <div id="result" class="overlay" hidden>
+        <div class="card" id="res-card">
+          <p class="eyebrow" id="res-eyebrow"></p>
+          <h2 id="res-title"></h2>
+          <p id="res-text"></p>
+          <ul id="res-stars"></ul>
+          <div class="row">
+            <button id="res-next" class="btn primary" type="button">Next</button>
+            <button id="res-retry" class="btn" type="button">Retry</button>
+            <button id="res-menu" class="btn" type="button">Levels</button>
+          </div>
         </div>
-      </aside>
+      </div>
     </div>
-    <p id="msg" class="msg" aria-live="polite"></p>
-    <div class="dpad">
-      <button class="up" data-dir="up" type="button" aria-label="Move up">▲</button>
-      <button class="left" data-dir="left" type="button" aria-label="Move left">◀</button>
-      <button class="wait" data-dir="wait" type="button" aria-label="Wait one turn">WAIT</button>
-      <button class="right" data-dir="right" type="button" aria-label="Move right">▶</button>
-      <button class="down" data-dir="down" type="button" aria-label="Move down">▼</button>
+
+    <div class="right">
+      <div class="rack" id="rack">
+        <button class="power" type="button" data-power="j"><span class="n"></span><canvas width="16" height="16"></canvas>Jetpack</button>
+        <button class="power" type="button" data-power="f"><span class="n"></span><canvas width="16" height="16"></canvas>Flamer</button>
+        <button class="power" type="button" data-power="m"><span class="n"></span><canvas width="16" height="16"></canvas>Blaster</button>
+        <button class="power" type="button" data-power="z"><span class="n"></span><canvas width="16" height="16"></canvas>Freeze</button>
+      </div>
+      <div class="sys">
+        <button id="btn-undo" class="btn" type="button" aria-label="Undo">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3 2 8l5 5V9.5h5a3.5 3.5 0 0 1 0 7H8V19h4a6 6 0 0 0 0-12H7z" fill="currentColor"/></svg><span class="t">Undo</span>
+        </button>
+        <button id="btn-restart" class="btn" type="button" aria-label="Restart">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4.5A5.5 5.5 0 1 0 15.5 10H18a8 8 0 1 1-8-8V0l4 3.25L10 6.5z" fill="currentColor"/></svg><span class="t">Retry</span>
+        </button>
+      </div>
     </div>
-  </main>
-</div>
+  </div>
+  <p id="msg" class="msg" aria-live="polite"></p>
+
+  <div class="rotate" aria-live="polite">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="14" y="4" width="20" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="4"/><rect x="21" y="37" width="6" height="3" fill="currentColor"/></svg>
+    <p>Turn your phone sideways to play</p>
+  </div>
+</main>
 
 <script src="core.js"></script>
 <script src="levels.js"></script>
@@ -360,18 +439,34 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 <script>
 (() => {
   'use strict';
-  const { parseLevel, step, enemyAt, DIRS } = window.Lockstep;
+  const Core = window.Lockstep;
+  const { parseLevel, act, enemyAt, DIRS } = Core;
   const Art = window.LockstepArt;
   const { TILE, THEMES } = Art;
   const LEVELS = window.LOCKSTEP_LEVELS;
   const $ = (sel) => document.querySelector(sel);
 
+  const VIEW_W = 15; // tiles visible across
+  const VIEW_H = 9; // tiles visible down
   const MODES = {
-    explorer: { undo: true, limit: 0, dark: false },
-    classic: { undo: true, limit: 1.5, dark: false },
-    dark: { undo: false, limit: 1.5, dark: true, radius: 1, peeks: 2 },
+    explorer: { limit: 0 },
+    classic: { limit: 1.5 },
   };
   const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar'];
+  const WORLD_RULE = {
+    arcade: 'The basics: keys, doors, chips and spiders.',
+    circuits: 'Modifier: crumbling floor gives way once you step off it.',
+    ice: 'Modifier: ice. You slide until something stops you.',
+    neon: 'Modifier: beat blocks. Pink and cyan blocks swap every 4 moves.',
+    solar: 'Modifier: lava. Everything comes together.',
+  };
+  const POWER_NAME = { j: 'jetpack', f: 'flamethrower', m: 'mega blaster', z: 'freeze bomb' };
+  const POWER_HELP = {
+    j: 'It smashes through one wall, then it is gone.',
+    f: `${Core.POWER_CHARGES.f} bursts. Each burns every enemy up to ${Core.FLAME_RANGE} tiles away.`,
+    m: `${Core.POWER_CHARGES.m} shots. Each breaks a cracked wall or hits the first enemy in line.`,
+    z: `Freezes every enemy for ${Core.FREEZE_TURNS} moves.`,
+  };
   const KEY_NAME = { r: 'red', g: 'green', b: 'blue', y: 'yellow' };
   const ENEMY_NAME = { patrol: 'a patrol drone', spider: 'a spider', mimic: 'the mimic' };
 
@@ -383,9 +478,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   let skin = store.get('lockstep:skin') || 'auto';
   if (skin !== 'auto' && !THEMES[skin]) skin = 'auto';
 
-  const G = { idx: 0, state: null, history: [], phase: 'menu', peeks: 0, peeksUsed: 0, undos: 0 };
-  const cfg = () => MODES[mode];
+  const G = {
+    idx: 0, state: null, history: [], phase: 'menu', undos: 0,
+    armed: null, busy: false, effects: [], cam: null, lastFrame: 0,
+  };
   const themeFor = (i) => (skin === 'auto' ? LEVELS[i].world : skin);
+  const pad2 = (n) => String(n).padStart(2, '0');
 
   function applyTheme(key) {
     const th = THEMES[key];
@@ -398,44 +496,66 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     r.setProperty('--muted', th.muted);
   }
 
-  // ---------- Board drawing ----------
+  // ---------- Board, camera and drawing ----------
   const canvas = $('#board');
   const ctx = canvas.getContext('2d');
   const buf = document.createElement('canvas');
   const bctx = buf.getContext('2d');
+  let scale = 3;
+
+  const viewSize = (s) => ({ w: Math.min(VIEW_W, s.w), h: Math.min(VIEW_H, s.h) });
+
+  function camTarget(s) {
+    const v = viewSize(s);
+    const clamp = (val, max) => Math.max(0, Math.min(max, val));
+    return {
+      x: clamp((s.player.x + 0.5 - v.w / 2) * TILE, (s.w - v.w) * TILE),
+      y: clamp((s.player.y + 0.5 - v.h / 2) * TILE, (s.h - v.h) * TILE),
+    };
+  }
 
   function resize() {
     if (!G.state) return;
     const s = G.state;
     buf.width = s.w * TILE;
     buf.height = s.h * TILE;
-    const narrow = window.innerWidth <= 820;
-    const availW = $('.play').clientWidth - (narrow ? 0 : 224) - 24;
-    const availH = Math.max(200, window.innerHeight - (narrow ? 360 : 150));
-    let scale = Math.min(availW / buf.width, availH / buf.height);
+    const v = viewSize(s);
+    const arena = $('.arena');
+    const side = $('.left').getBoundingClientRect().width;
+    const availW = arena.clientWidth - 2 * side - 2 * 12 - 22;
+    const availH = arena.clientHeight - 22;
+    scale = Math.min(availW / (v.w * TILE), availH / (v.h * TILE));
     if (scale >= 2) scale = Math.floor(scale);
+    scale = Math.max(1, scale);
     const dpr = window.devicePixelRatio || 1;
-    canvas.style.width = Math.floor(buf.width * scale) + 'px';
-    canvas.style.height = Math.floor(buf.height * scale) + 'px';
-    canvas.width = Math.floor(buf.width * scale * dpr);
-    canvas.height = Math.floor(buf.height * scale * dpr);
+    canvas.style.width = Math.floor(v.w * TILE * scale) + 'px';
+    canvas.style.height = Math.floor(v.h * TILE * scale) + 'px';
+    canvas.width = Math.floor(v.w * TILE * scale * dpr);
+    canvas.height = Math.floor(v.h * TILE * scale * dpr);
   }
 
-  function render(t) {
+  function render(now) {
     const s = G.state;
-    const c = cfg();
-    Art.drawBoard(bctx, s, {
-      theme: themeFor(G.idx),
-      reveal: !c.dark || G.phase !== 'play',
-      radius: c.radius,
-      t,
-    });
+    const t = now / 1000;
+    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s) });
+    G.effects = G.effects.filter((fx) => t - fx.t0 < (fx.dur || 0.45));
+    Art.drawEffects(bctx, G.effects, t);
+    const target = camTarget(s);
+    if (!G.cam) G.cam = { ...target };
+    const dt = Math.min(0.1, (now - (G.lastFrame || now)) / 1000);
+    G.lastFrame = now;
+    const k = Math.min(1, dt * 10);
+    G.cam.x += (target.x - G.cam.x) * k;
+    G.cam.y += (target.y - G.cam.y) * k;
+    if (Math.abs(target.x - G.cam.x) < 0.3) G.cam.x = target.x;
+    if (Math.abs(target.y - G.cam.y) < 0.3) G.cam.y = target.y;
+    const v = viewSize(s);
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(buf, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(buf, Math.round(G.cam.x), Math.round(G.cam.y), v.w * TILE, v.h * TILE, 0, 0, canvas.width, canvas.height);
   }
 
-  function frame(ms) {
-    if (G.phase !== 'menu' && G.state) render(ms / 1000);
+  function frame(now) {
+    if (G.phase !== 'menu' && G.state) render(now);
     requestAnimationFrame(frame);
   }
 
@@ -462,20 +582,14 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     }
     e.currentTarget.textContent = soundOn ? 'Sound on' : 'Sound off';
     e.currentTarget.setAttribute('aria-pressed', String(soundOn));
-    tone(660, 0.08, 'square');
+    tone(660, 0.08);
   });
 
   // ---------- Flow ----------
-  const bestKey = (i) => `lockstep:v2:${mode}:${i}`;
-  const pad2 = (n) => String(n).padStart(2, '0');
-
-  function show(screen) {
-    $('#menu').hidden = screen !== 'menu';
-    $('#game').hidden = screen !== 'game';
-  }
+  const bestKey = (i) => `lockstep:v3:${mode}:${i}`;
 
   function overlay(name) {
-    for (const id of ['study', 'pause', 'result']) $('#' + id).hidden = id !== name;
+    for (const id of ['pause', 'result', 'intro']) $('#' + id).hidden = id !== name;
   }
 
   function say(text, tone) {
@@ -484,37 +598,47 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     m.className = 'msg' + (tone ? ' ' + tone : '');
   }
 
-  function startLevel(i) {
-    const def = LEVELS[i];
-    const c = cfg();
-    const s = parseLevel({ ...def, battery: c.limit ? Math.ceil(def.par * c.limit) : 0 });
-    Object.assign(G, { idx: i, state: s, history: [], phase: c.dark ? 'study' : 'play', peeks: c.peeks || 0, peeksUsed: 0, undos: 0 });
-    applyTheme(themeFor(i));
-    show('game');
-    $('#crumb').textContent = `${pad2(i + 1)} / ${THEMES[def.world].name}`;
-    $('#btn-peek').hidden = !c.dark;
-    $('#btn-undo').hidden = !c.undo;
-    paintHudIcons();
-    if (c.dark) {
-      overlay('study');
-      $('#study-hint').textContent = def.hint;
-      say('');
-    } else {
-      overlay(null);
-      say(def.hint);
-    }
-    resize();
-    hud();
-    if (c.dark) $('#btn-lights').focus({ preventScroll: true });
-    else if (document.activeElement) document.activeElement.blur();
+  function goLandscape() {
+    if (!matchMedia('(pointer: coarse)').matches) return;
+    const el = document.documentElement;
+    try {
+      const p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : null;
+      if (p && p.then) {
+        p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape'))
+          .catch(() => {});
+      }
+    } catch (e) { /* fullscreen not allowed here; the rotate prompt covers it */ }
   }
 
-  function lightsOut() {
-    if (G.phase !== 'study') return;
+  function startLevel(i, fromMenu) {
+    const def = LEVELS[i];
+    const limit = MODES[mode].limit;
+    const s = parseLevel({ ...def, battery: limit ? Math.ceil(def.par * limit) : 0 });
+    Object.assign(G, { idx: i, state: s, history: [], phase: 'intro', undos: 0, armed: null, busy: false, effects: [], cam: null });
+    applyTheme(themeFor(i));
+    if (fromMenu) goLandscape();
+    $('#menu').hidden = true;
+    $('#game').hidden = false;
+    $('#crumb').textContent = `${pad2(i + 1)} / ${THEMES[def.world].name}`;
+    $('#hud-beat').hidden = !s.beat;
+    paintIcons();
+    setArmed(null);
+    $('#intro-eyebrow').textContent = `Level ${pad2(i + 1)} · ${THEMES[def.world].name}`;
+    $('#intro-title').textContent = def.name;
+    $('#intro-hint').textContent = def.hint;
+    overlay('intro');
+    say('');
+    resize();
+    hud();
+    requestAnimationFrame(() => { resize(); hud(); });
+    $('#intro-go').focus({ preventScroll: true });
+  }
+
+  function begin() {
+    if (G.phase !== 'intro') return;
     G.phase = 'play';
     overlay(null);
-    say('Lights out. Collect every chip, then find the flag.');
-    tone(180, 0.25, 'sine', 0.05);
+    say(LEVELS[G.idx].hint);
     hud();
   }
 
@@ -524,14 +648,50 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     canvas.classList.add('shake');
   }
 
-  function describe(before, dir, events) {
+  const xy = (str) => str.split(',').map(Number);
+
+  function spawnEffects(events, t) {
+    for (const ev of events) {
+      const kind = ev.split(':')[0];
+      const arg = ev.slice(ev.indexOf(':') + 1);
+      if (ev.startsWith('fx:flame:')) {
+        const at = ev.slice(9).split(';').filter(Boolean).map(xy);
+        if (at.length) G.effects.push({ kind: 'flame', at, t0: t, dur: 0.45 });
+      } else if (ev.startsWith('fx:shot:')) {
+        const [a, b] = ev.slice(8).split(';').map(xy);
+        G.effects.push({ kind: 'shot', at: [a], to: b, t0: t, dur: 0.25 });
+      } else if (ev.startsWith('fx:jet:')) {
+        G.effects.push({ kind: 'boom', at: [xy(ev.slice(7))], t0: t, dur: 0.4 });
+      } else if (ev === 'fx:freeze') {
+        G.effects.push({ kind: 'freeze', at: [], t0: t, dur: 0.5 });
+      } else if (kind === 'kill' || kind === 'crush-enemy') {
+        G.effects.push({ kind: 'splat', at: [xy(arg)], t0: t + 0.05, dur: 0.4 });
+      } else if (kind === 'break') {
+        G.effects.push({ kind: 'boom', at: [xy(arg)], t0: t + 0.1, dur: 0.4 });
+      } else if (kind === 'crumble') {
+        G.effects.push({ kind: 'dust', at: [xy(arg)], t0: t, dur: 0.35 });
+      }
+    }
+  }
+
+  function describe(before, action, events) {
     const s = G.state;
+    const has = (p) => events.find((e) => e === p || e.startsWith(p + ':'));
+    const dir = typeof action === 'string' ? action : null;
     const ti = dir ? (before.player.y + DIRS[dir].dy) * before.w + before.player.x + DIRS[dir].dx : -1;
-    if (events.includes('spider-wake')) {
-      say('A spider saw you. Run for a gate!', 'alarm');
-      [880, 660, 880].forEach((f, k) => tone(f, 0.06, 'square', 0.04, k * 0.07));
+    if (has('fizzle')) {
+      say(action.use === 'j' ? 'The jetpack needs a wall right next to you in that direction.' : 'Nothing to freeze.', 'warn');
+      tone(90, 0.1);
+      bump();
       return;
     }
+    const kills = events.filter((e) => e.startsWith('kill:')).length;
+    const crushed = events.filter((e) => e.startsWith('crush-enemy')).length;
+    if (crushed) { say(crushed > 1 ? `The beat crushed ${crushed} enemies!` : 'The beat crushed it!', 'alarm'); tone(120, 0.2, 'sawtooth', 0.04); return; }
+    if (has('fx:jet')) { say('Smashed through! The jetpack is spent.'); tone(110, 0.25, 'sawtooth', 0.05); return; }
+    if (has('fx:freeze')) { say(`Everything is frozen for ${Core.FREEZE_TURNS} moves. Frozen enemies are solid.`); tone(1200, 0.3, 'sine', 0.04); return; }
+    if (has('fx:flame')) { say(kills ? `Burned ${kills} ${kills === 1 ? 'enemy' : 'enemies'}.` : 'The flames hit nothing.'); tone(160, 0.25, 'sawtooth', 0.04); return; }
+    if (has('fx:shot')) { say(kills ? 'Direct hit.' : has('break') ? 'The wall shatters.' : 'The shot hit solid wall.'); tone(900, 0.06); tone(200, 0.2, 'sawtooth', 0.04, 0.05); return; }
     for (const ev of events) {
       if (ev === 'bump') { say('Blocked.'); tone(90, 0.1); bump(); return; }
       if (ev === 'locked') { say(`Locked. You need a ${KEY_NAME[before.grid[ti].toLowerCase()]} key.`, 'warn'); tone(90, 0.1); bump(); return; }
@@ -541,61 +701,96 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       }
       if (ev === 'unlock') { say(`The ${KEY_NAME[before.grid[ti].toLowerCase()]} door is now a gate. Nothing can follow you through.`); tone(520, 0.12, 'triangle'); return; }
       if (ev === 'sink') { say('The crate sinks. The lava cools to stone.'); tone(140, 0.2, 'sawtooth', 0.03); return; }
-      if (ev === 'spider-stuck' && before.enemies.some((e) => e.type === 'spider' && e.mode === 'chase')) {
-        say('The spider hit a wall and lost you.'); tone(240, 0.1, 'triangle'); return;
-      }
       if (ev.startsWith('pickup:')) {
         const it = ev.slice(7);
         if (it === '*') say(`Chip ${s.chips} of ${s.chipsTotal}.${s.chips === s.chipsTotal ? ' The flag is open!' : ''}`);
+        else if (POWER_NAME[it]) say(`Picked up the ${POWER_NAME[it]}. ${POWER_HELP[it]}`, 'alarm');
         else say(`Got the ${KEY_NAME[it]} key.`);
-        tone(880, 0.06, 'square', 0.03); tone(1320, 0.08, 'square', 0.03, 0.06);
+        tone(880, 0.06); tone(1320, 0.08, 'square', 0.035, 0.06);
         return;
       }
+      if (ev.startsWith('crumble')) { say('The floor crumbles away behind you.'); tone(100, 0.12, 'triangle', 0.03); return; }
       if (ev === 'wait') { say('You wait. Everything else moves.'); tone(300, 0.04, 'sine', 0.02); return; }
     }
+    // A spider whose way just opened up.
+    const freed = s.enemies.some((e) => e.type === 'spider' && !e.stuck && !e.frozen &&
+      before.enemies.some((b) => b.x === e.x && b.y === e.y && b.stuck));
+    if (freed) { say('A spider is free. Run for a gate!', 'alarm'); [880, 660, 880].forEach((f, k) => tone(f, 0.06, 'square', 0.04, k * 0.07)); return; }
     say('');
     tone(200, 0.03, 'triangle', 0.02);
   }
 
-  function act(dir) {
-    if (G.phase === 'study') { lightsOut(); return; }
-    if (G.phase !== 'play') return;
-    const before = G.state;
-    const r = step(before, dir);
-    if (cfg().undo) G.history.push(before);
-    G.state = r.state;
-    describe(before, dir, r.events);
-    hud();
-    if (G.state.status !== 'play') finish();
+  // Every input lands here: a direction, null (wait), or a power-up fired in a direction.
+  function input(dir) {
+    if (G.phase === 'intro') { begin(); return; }
+    if (G.phase !== 'play' || G.busy) return;
+    let action = dir;
+    if (G.armed && dir) {
+      action = { use: G.armed, dir };
+      setArmed(null);
+    }
+    run(action);
   }
 
-  function peek() {
-    if (G.phase !== 'play' || !cfg().dark || G.peeks <= 0) return;
-    G.peeks--;
-    G.peeksUsed++;
-    G.phase = 'peek';
-    say('Peeking…');
-    tone(700, 0.3, 'sine', 0.03);
-    hud();
-    setTimeout(() => {
-      if (G.phase !== 'peek') return;
-      G.phase = 'play';
-      say('Dark again.');
+  function run(action) {
+    const before = G.state;
+    const r = act(before, action);
+    if (r.state === before) {
+      describe(before, action, r.events);
+      return;
+    }
+    G.history.push(before);
+    spawnEffects(r.events, performance.now() / 1000);
+    const done = () => {
+      G.state = r.state;
+      G.busy = false;
+      describe(before, action, r.events);
       hud();
-    }, 1600);
+      if (G.state.status !== 'play') setTimeout(finish, 350);
+    };
+    if (r.frames.length > 1) {
+      // Ice slide: show every tile of it.
+      G.busy = true;
+      let k = 0;
+      const tick = () => {
+        G.state = r.frames[k++];
+        hud();
+        if (k < r.frames.length) setTimeout(tick, 70);
+        else done();
+      };
+      tick();
+    } else done();
+  }
+
+  function setArmed(k) {
+    G.armed = k;
+    document.querySelectorAll('.power').forEach((b) => b.classList.toggle('armed', b.dataset.power === k));
+    if (k) say(`${POWER_NAME[k][0].toUpperCase() + POWER_NAME[k].slice(1)} ready. Pick a direction.`, 'alarm');
+  }
+
+  function usePowerButton(k) {
+    if (G.phase === 'intro') begin();
+    if (G.phase !== 'play' || G.busy || !G.state.powers[k]) return;
+    if (!Core.AIMED[k]) {
+      setArmed(null);
+      run({ use: k });
+      return;
+    }
+    if (G.armed === k) { setArmed(null); say('Cancelled.'); return; }
+    setArmed(k);
   }
 
   function undo() {
-    if (!cfg().undo || G.phase !== 'play' || !G.history.length) return;
+    if (G.phase !== 'play' || G.busy || !G.history.length) return;
     G.state = G.history.pop();
     G.undos++;
+    setArmed(null);
     say('Undone.');
     hud();
   }
 
   function pause() {
-    if (G.phase !== 'play' && G.phase !== 'study') return;
-    G.resumeTo = G.phase;
+    if (G.phase !== 'play') return;
     G.phase = 'paused';
     const def = LEVELS[G.idx];
     $('#pause-title').textContent = `${pad2(G.idx + 1)} ${def.name}`;
@@ -606,14 +801,15 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function resume() {
     if (G.phase !== 'paused') return;
-    G.phase = G.resumeTo;
-    overlay(G.phase === 'study' ? 'study' : null);
+    G.phase = 'play';
+    overlay(null);
   }
 
   function finish() {
     const s = G.state;
     const def = LEVELS[G.idx];
     G.phase = 'over';
+    setArmed(null);
     overlay('result');
     const card = $('#res-card');
     card.classList.toggle('won', s.status === 'won');
@@ -623,11 +819,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const next = $('#res-next');
     if (s.status === 'won') {
       const target = Math.ceil(def.par * 1.2);
-      const clean = G.undos === 0 && G.peeksUsed === 0;
       const rows = [
         [true, 'Escaped'],
-        [s.steps <= target, `${s.steps} moves (par ${def.par}, star at ${target} or fewer)`],
-        [clean, clean ? 'Clean run: no undo, no peeks' : `Used ${[G.undos && `${G.undos} undo`, G.peeksUsed && `${G.peeksUsed} peek`].filter(Boolean).join(' and ')}`],
+        [s.steps <= target, `${s.steps} moves (par ${def.par}${def.route ? ', best known' : ''}; star at ${target} or fewer)`],
+        [G.undos === 0, G.undos ? `Used undo ${G.undos} ${G.undos === 1 ? 'time' : 'times'}` : 'Clean run: no undo'],
       ];
       const stars = rows.filter((r) => r[0]).length;
       for (const [got, text] of rows) {
@@ -641,24 +836,23 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       store.set(bestKey(G.idx), { stars: Math.max(prev.stars, stars), steps: prev.steps == null ? s.steps : Math.min(prev.steps, s.steps) });
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} cleared · ${stars}/3 stars`;
       $('#res-title').textContent = stars === 3 ? 'Perfect escape.' : 'You made it out.';
-      $('#res-text').textContent = G.idx < LEVELS.length - 1 ? `Next: ${LEVELS[G.idx + 1].name}.` : 'That was the last level. Try it again in Lights Out.';
+      $('#res-text').textContent = G.idx < LEVELS.length - 1 ? `Next: ${LEVELS[G.idx + 1].name}.` : 'That was the final level.';
       next.hidden = G.idx >= LEVELS.length - 1;
-      say('');
       [523, 659, 784, 1046].forEach((f, k) => tone(f, 0.12, 'square', 0.035, k * 0.09));
     } else {
       const caught = enemyAt(s, s.player.x, s.player.y);
       const why = {
         lava: ['You stepped into lava.', 'Push a crate into it first, or find another way around.'],
         caught: [`Caught by ${ENEMY_NAME[caught ? caught.type : 'spider']}.`, caught && caught.type === 'spider'
-          ? 'Spiders follow you until a wall or gate blocks them. Turn corners they cannot follow, or get through a gate.'
+          ? 'Spiders always step toward you. Turn corners they cannot follow, or get through a gate.'
           : 'Enemies only move when you do. Count their steps against yours.'],
+        crushed: ['Crushed by a beat block.', 'Pink and cyan blocks swap every 4 moves. Watch the BEAT pips.'],
         battery: ['Out of moves.', `You had ${s.battery}. Par is ${def.par}. Plan the route before you walk it.`],
       }[s.cause];
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} failed`;
       $('#res-title').textContent = why[0];
       $('#res-text').textContent = why[1];
       next.hidden = true;
-      say('');
       tone(196, 0.18, 'sawtooth', 0.04); tone(130, 0.35, 'sawtooth', 0.04, 0.15);
     }
     (next.hidden ? $('#res-retry') : next).focus({ preventScroll: true });
@@ -666,42 +860,56 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function hud() {
     const s = G.state;
-    $('#hud-level').textContent = pad2(G.idx + 1);
     $('#hud-moves').innerHTML = s.battery ? `${s.steps}<small> / ${s.battery}</small>` : String(s.steps);
     $('#hud-chips').textContent = `${s.chips}/${s.chipsTotal}`;
     for (const k of ['r', 'b', 'y', 'g']) {
-      const el = $('#hud-key-' + k);
-      el.textContent = s.keys[k];
+      const el = $('#kc-' + k);
+      el.lastChild.textContent = s.keys[k];
       el.classList.toggle('has', s.keys[k] > 0);
     }
+    document.querySelectorAll('.power').forEach((b) => {
+      const n = s.powers[b.dataset.power];
+      b.querySelector('.n').textContent = n ? n : '';
+      b.disabled = !n;
+    });
     $('#btn-undo').disabled = !G.history.length || G.phase !== 'play';
-    const peekBtn = $('#btn-peek');
-    peekBtn.textContent = `Peek (${G.peeks})`;
-    peekBtn.disabled = G.phase !== 'play' || G.peeks <= 0;
+    if (s.beat) {
+      const into = s.steps % Core.BEAT;
+      const beatEl = $('#hud-beat');
+      beatEl.style.color = Core.phase(s) === 0 ? '#ff4fd8' : '#36dcff';
+      beatEl.querySelectorAll('i').forEach((pip, k) => pip.classList.toggle('on', k <= into));
+    }
   }
 
-  function paintHudIcons() {
+  function paintIcons() {
     const sp = Art.sprites(themeFor(G.idx));
     document.querySelectorAll('canvas[data-key]').forEach((c) => {
       const x = c.getContext('2d');
       x.clearRect(0, 0, 16, 16);
       x.drawImage(sp.keys[c.dataset.key], 0, 0);
     });
-    document.querySelectorAll('canvas[data-shape]').forEach((c) => {
+    document.querySelectorAll('.power canvas').forEach((c) => {
       const x = c.getContext('2d');
       x.clearRect(0, 0, 16, 16);
-      Art.drawShape(x, c.dataset.shape, 4, 4, Art.KEY_COLORS[c.dataset.shape].c);
+      x.drawImage(sp.powers[c.parentElement.dataset.power], 0, 0);
     });
   }
 
   // ---------- Menu ----------
+  // A level card shows only the opening view, so the rest stays something to discover.
   function thumbnail(def, themeKey) {
     const s = parseLevel(def);
+    const full = document.createElement('canvas');
+    full.width = s.w * TILE;
+    full.height = s.h * TILE;
+    Art.drawBoard(full.getContext('2d'), s, { theme: themeKey, t: 0, phase: 0 });
+    const v = viewSize(s);
+    const cam = camTarget(s);
     const c = document.createElement('canvas');
-    c.width = s.w * TILE;
-    c.height = s.h * TILE;
-    Art.drawBoard(c.getContext('2d'), s, { theme: themeKey, reveal: true, t: 0 });
-    return c;
+    c.width = v.w * TILE;
+    c.height = v.h * TILE;
+    c.getContext('2d').drawImage(full, cam.x, cam.y, c.width, c.height, 0, 0, c.width, c.height);
+    return { canvas: c, bigger: s.w > VIEW_W || s.h > VIEW_H };
   }
 
   function renderLevels() {
@@ -713,9 +921,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       const sec = document.createElement('section');
       sec.className = 'world';
       const th = THEMES[w];
-      sec.innerHTML = `<h3><span class="swatch" style="background:${th.wall}"></span><span></span><small></small></h3><div class="levels"></div>`;
+      sec.innerHTML = `<h3><span class="swatch" style="background:${th.wall}"></span><span></span><small></small></h3><p class="mod"></p><div class="levels"></div>`;
       sec.querySelector('h3 span:nth-child(2)').textContent = th.name;
       sec.querySelector('h3 small').textContent = `World ${WORLD_ORDER.indexOf(w) + 1}`;
+      sec.querySelector('.mod').textContent = WORLD_RULE[w];
       const grid = sec.querySelector('.levels');
       for (const i of idxs) {
         const def = LEVELS[i];
@@ -724,20 +933,31 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'level';
-        b.append(thumbnail(def, skin === 'auto' ? def.world : skin));
+        const thumb = thumbnail(def, skin === 'auto' ? def.world : skin);
+        b.append(thumb.canvas);
         const row = document.createElement('div');
         row.className = 'row';
         row.innerHTML = `<span class="name"><b>${pad2(i + 1)}</b><span></span></span><span class="stars" aria-label="${stars} of 3 stars"><b>${'★'.repeat(stars)}</b>${'★'.repeat(3 - stars)}</span>`;
         row.querySelector('.name span').textContent = def.name;
         const meta = document.createElement('div');
         meta.className = 'row meta';
-        meta.textContent = `Par ${def.par}${best && best.steps != null ? ` · best ${best.steps}` : ''}`;
+        meta.innerHTML = '<span></span><span class="tag"></span>';
+        meta.firstChild.textContent = `Par ${def.par}${best && best.steps != null ? ` · best ${best.steps}` : ''}`;
+        meta.lastChild.textContent = thumb.bigger ? 'Bigger than the screen' : '';
         b.append(row, meta);
-        b.addEventListener('click', () => startLevel(i));
+        b.addEventListener('click', () => startLevel(i, true));
         grid.append(b);
       }
       wrap.append(sec);
     }
+  }
+
+  function tileIcon(draw) {
+    const cv = document.createElement('canvas');
+    cv.width = 16;
+    cv.height = 16;
+    draw(cv.getContext('2d'));
+    return cv;
   }
 
   function renderLegend() {
@@ -746,34 +966,28 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const themeKey = skin === 'auto' ? 'arcade' : skin;
     const th = THEMES[themeKey];
     const sp = Art.sprites(themeKey);
+    const floor = (c) => Art.drawFloor(c, 0, 0, th, 5);
     const items = [
-      ['spider', 'Spider', 'Sleeps until it sees you along a straight row or column. Then it chases, until a wall or gate stops it and it dozes off again.'],
-      ['door', 'Keys and doors', 'A key opens one door of its color and is used up. Each color has its own symbol.'],
-      ['gate', 'Gate', 'An opened door. You walk through; no enemy can cross it or see past it.'],
-      ['chip', 'Chip', 'Collect every chip to unlock the flag. Spiders often sleep behind them.'],
-      ['exit', 'Flag', 'The way out. It turns bright once every chip is yours.'],
-      ['ufo', 'Patrol drone', 'Flies straight and turns back when blocked. The yellow dot shows its heading.'],
-      ['mimic', 'Mimic', 'Copies every move you make.'],
-      ['lava', 'Lava', 'Deadly. Push a crate in to fill it.'],
-      ['crate', 'Crate', 'Push it. In lava it sinks and leaves stone.'],
+      [(c) => { floor(c); c.drawImage(sp.spider, 0, 0); }, 'Spider', 'Always steps toward you. Walls, chips, keys, power-ups and gates block it. Once its way opens, it takes one turn to get going.'],
+      [(c) => Art.drawDoor(c, 0, 0, 'b'), 'Keys and doors', 'A key opens one door of its color and is used up. Each color has its own symbol.'],
+      [(c) => { floor(c); Art.drawGate(c, 0, 0, 'y'); }, 'Gate', 'An opened door. You walk through; no enemy can cross it.'],
+      [(c) => { floor(c); Art.drawFence(c, 0, 0); }, 'Fence', 'You can pass, enemies cannot. Flames and shots go straight through.'],
+      [(c) => { floor(c); Art.drawChip(c, 0, 0, 0); }, 'Chip', 'Collect every chip to unlock the flag.'],
+      [(c) => { floor(c); Art.drawExit(c, 0, 0, true, 0); }, 'Flag', 'The way out.'],
+      [(c) => { floor(c); c.drawImage(sp.powers.j, 0, 0); }, 'Jetpack', POWER_HELP.j],
+      [(c) => { floor(c); c.drawImage(sp.powers.f, 0, 0); }, 'Flamethrower', POWER_HELP.f],
+      [(c) => { floor(c); c.drawImage(sp.powers.m, 0, 0); }, 'Mega blaster', POWER_HELP.m],
+      [(c) => { floor(c); c.drawImage(sp.powers.z, 0, 0); }, 'Freeze bomb', POWER_HELP.z],
+      [(c) => { Art.drawWall(c, 0, 0, th, 3); Art.drawCracks(c, 0, 0, th.wallEdge); }, 'Cracked wall', 'The blaster or the jetpack can break it.'],
+      [(c) => Art.drawSteel(c, 0, 0), 'Steel', 'Nothing breaks it.'],
+      [(c) => Art.drawIce(c, 0, 0, 2), 'Ice', 'You slide until something stops you. Spiders grip it fine.'],
+      [(c) => { floor(c); Art.drawCracks(c, 0, 0, th.detail); }, 'Crumbling floor', 'Turns into a hole once you step off it.'],
+      [(c) => { floor(c); Art.drawBeat(c, 0, 0, '1', true, th); }, 'Beat blocks', 'Pink and cyan swap every 4 moves. Anything inside one when it closes is crushed.'],
+      [(c) => Art.drawLava(c, 0, 0, 0, 3), 'Lava', 'Deadly. Push a crate in to fill it.'],
     ];
-    for (const [kind, name, text] of items) {
+    for (const [draw, name, text] of items) {
       const li = document.createElement('li');
-      const cv = document.createElement('canvas');
-      cv.width = 16;
-      cv.height = 16;
-      const c = cv.getContext('2d');
-      Art.drawFloor(c, 0, 0, th, 5);
-      if (kind === 'spider') c.drawImage(sp.spider, 0, 0);
-      else if (kind === 'door') Art.drawDoor(c, 0, 0, 'b');
-      else if (kind === 'gate') Art.drawGate(c, 0, 0, 'y');
-      else if (kind === 'chip') Art.drawChip(c, 0, 0, 0);
-      else if (kind === 'exit') Art.drawExit(c, 0, 0, true, 0);
-      else if (kind === 'ufo') c.drawImage(sp.ufo, 0, 0);
-      else if (kind === 'mimic') c.drawImage(sp.mimic, 0, 0);
-      else if (kind === 'lava') Art.drawLava(c, 0, 0, 0, 3);
-      else if (kind === 'crate') Art.drawCrate(c, 0, 0);
-      li.append(cv);
+      li.append(tileIcon(draw));
       const span = document.createElement('span');
       span.innerHTML = '<strong></strong> ';
       span.firstChild.textContent = name + '.';
@@ -785,53 +999,108 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function renderHero() {
     const c = $('#hero-art');
-    const s = parseLevel({
-      name: 'hero',
-      map: ['######', '#@.*S#', '#.##.#', '#B..y#'],
-    });
-    s.enemies[0].mode = 'alert';
+    const s = parseLevel({ name: 'hero', map: ['######', '#@.*S#', '#.##.#', '#B.jy#'] });
+    s.enemies[0].stuck = true;
     c.width = 6 * TILE;
     c.height = 4 * TILE;
-    Art.drawBoard(c.getContext('2d'), s, { theme: skin === 'auto' ? 'arcade' : skin, reveal: true, t: 0 });
+    Art.drawBoard(c.getContext('2d'), s, { theme: skin === 'auto' ? 'arcade' : skin, t: 0, phase: 0 });
   }
 
   function toMenu() {
     G.phase = 'menu';
+    setArmed(null);
     applyTheme(skin === 'auto' ? 'arcade' : skin);
     renderLevels();
-    show('menu');
+    $('#game').hidden = true;
+    $('#menu').hidden = false;
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   }
 
-  // ---------- Input ----------
+  // ---------- Input: joystick ----------
+  const stick = $('#stick');
+  let held = null;
+  let repeat = null;
+  function stickDir(e) {
+    const r = stick.getBoundingClientRect();
+    const dx = e.clientX - (r.left + r.width / 2);
+    const dy = e.clientY - (r.top + r.height / 2);
+    if (Math.hypot(dx, dy) < r.width * 0.15) return 'wait';
+    return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+  }
+  function light(d) {
+    stick.querySelectorAll('.q').forEach((q) => q.classList.toggle('on', q.dataset.dir === d));
+    stick.querySelector('.hub').classList.toggle('on', d === 'wait');
+  }
+  function press(d) {
+    held = d;
+    light(d);
+    clearTimeout(repeat);
+    input(d === 'wait' ? null : d);
+    if (d === 'wait') return;
+    const again = () => {
+      if (held !== d) return;
+      input(d);
+      repeat = setTimeout(again, 180);
+    };
+    repeat = setTimeout(again, 340);
+  }
+  function release() {
+    held = null;
+    clearTimeout(repeat);
+    light(null);
+  }
+  stick.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    stick.setPointerCapture(e.pointerId);
+    press(stickDir(e));
+  });
+  stick.addEventListener('pointermove', (e) => {
+    if (!held) return;
+    const d = stickDir(e);
+    if (d === held) return;
+    if (d === 'wait') {
+      // Sliding back through the center never counts as a wait.
+      held = 'center';
+      clearTimeout(repeat);
+      light(null);
+      return;
+    }
+    press(d);
+  });
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) stick.addEventListener(ev, release);
+
+  // ---------- Input: keyboard and swipes ----------
   const KEYMAP = {
     ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down',
     ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
   };
+  const POWER_KEYS = { Digit1: 'j', Digit2: 'f', Digit3: 'm', Digit4: 'z' };
   document.addEventListener('keydown', (e) => {
     if (G.phase === 'menu' || e.metaKey || e.ctrlKey || e.altKey) return;
-    const onButton = document.activeElement && document.activeElement.tagName === 'BUTTON';
-    const dir = KEYMAP[e.code];
     if (G.phase === 'paused') {
       if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); resume(); }
       return;
     }
+    const onButton = document.activeElement && document.activeElement.tagName === 'BUTTON';
+    const dir = KEYMAP[e.code];
     if (dir) {
       e.preventDefault();
-      if (!e.repeat) act(dir);
+      if (!e.repeat) input(dir);
     } else if (e.code === 'Space') {
       if (onButton && G.phase !== 'play') return;
       e.preventDefault();
-      if (!e.repeat) G.phase === 'study' ? lightsOut() : act(null);
-    } else if (e.code === 'KeyF') peek();
+      if (!e.repeat) input(null);
+    } else if (e.code === 'Enter' && G.phase === 'intro') {
+      e.preventDefault();
+      begin();
+    } else if (POWER_KEYS[e.code]) usePowerButton(POWER_KEYS[e.code]);
     else if (e.code === 'KeyR') startLevel(G.idx);
     else if (e.code === 'KeyZ' || e.code === 'KeyU') undo();
-    else if (e.code === 'KeyP' || e.code === 'Escape') {
-      if (G.phase === 'over') toMenu();
+    else if (e.code === 'Escape') {
+      if (G.armed) { setArmed(null); say('Cancelled.'); }
+      else if (G.phase === 'over') toMenu();
       else pause();
-    }
-  });
-  document.querySelectorAll('.dpad button').forEach((b) => {
-    b.addEventListener('click', () => act(b.dataset.dir === 'wait' ? null : b.dataset.dir));
+    } else if (e.code === 'KeyP') pause();
   });
   let touch = null;
   canvas.addEventListener('touchstart', (e) => {
@@ -846,11 +1115,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     touch = null;
     if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
     e.preventDefault();
-    act(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+    input(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
   });
 
-  $('#btn-lights').addEventListener('click', lightsOut);
-  $('#btn-peek').addEventListener('click', peek);
+  document.querySelectorAll('.power').forEach((b) => b.addEventListener('click', () => usePowerButton(b.dataset.power)));
+  $('#intro-go').addEventListener('click', begin);
   $('#btn-undo').addEventListener('click', undo);
   $('#btn-restart').addEventListener('click', () => startLevel(G.idx));
   $('#btn-pause').addEventListener('click', pause);
@@ -876,6 +1145,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     renderLevels();
   });
   window.addEventListener('resize', resize);
+  if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', () => setTimeout(resize, 50));
 
   // ---------- Boot ----------
   function boot(data) {

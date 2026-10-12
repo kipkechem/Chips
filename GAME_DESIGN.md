@@ -1,143 +1,109 @@
 # Lockstep: game design
 
-A 2D, turn-based, pixel-art puzzle game in the spirit of *Chip's Challenge*: colored
-keys, colored doors, chips to collect and a flag to reach. The difficulty comes from
-**spiders**:
+A 2D, turn-based, pixel-art puzzle game in the spirit of *Chip's Challenge*. You play a
+small robot: collect the chips, use colored keys on colored doors, and reach the flag.
+The difficulty comes from **spiders** and from **memory**:
 
-> Spiders sleep behind the things you need. Once one sees you, it chases you
-> until a wall or a gate stops it. Take the chip, then run for the gate.
+> Spiders never stop coming for you. Anything in their way keeps them boxed in, until
+> you pick it up. Then you run for a gate.
+>
+> Later levels are bigger than the screen. You only ever see a 15 × 9 tile window, so
+> you have to remember where the keys, doors and nests are.
 
-Nothing moves unless you do, so every chase can be planned in advance.
+Nothing moves unless you do, so every chase can be planned.
 
 ## The three skills it trains
 
 | Skill | Where it comes from |
 |---|---|
-| **Problem solving** | Keys are single-use and crates can be wasted, so the order matters. Get the key for your escape gate *before* you wake the spider. |
-| **Critical thinking** | Spiders, drones and mimics follow fixed, visible rules. Every death can be reasoned about: which way will the spider step, and where will it jam? |
-| **Memory** | Lights Out mode: study the level in full light, then play it seeing only the tiles next to you. |
+| **Memory** | From level 3 on, the level is larger than the camera window. You plan routes through rooms you saw a minute ago. |
+| **Problem solving** | Keys and power-up charges are limited, and crumbling floor is one-way. Order matters: get the key for your escape gate *before* you release the spiders. |
+| **Critical thinking** | Every enemy follows fixed, visible rules. Every death can be reasoned about: which way will the spider step, and where will it jam? |
 
-## Core loop
+## Controls (landscape)
 
-1. **Read the level.** Find the chips, the keys, the doors, and where each spider can see.
-2. **Plan the escape.** Pick the gate you will run to and make sure you hold its key.
-3. **Wake and run.** Take the chip. The spider gets one turn to wake up, then follows you.
-   Break its line through a gate or around a corner it can't follow.
-4. **Reach the flag** once every chip is collected.
+- **Left: the direction circle.** A circle split diagonally into up, down, left and
+  right. Press and slide your thumb between quadrants; holding repeats the move.
+  Tapping the center waits a turn. Sliding through the center never waits by accident.
+- **Center: the board.** Swipes on the board also move you.
+- **Right: the power-up rack.** Tap a power-up to ready it (it glows), then pick a
+  direction on the circle to fire it. Tap again to cancel. The freeze bomb fires at once.
+- On a phone held upright, the game asks you to turn it sideways. It also requests full screen
+  and a landscape lock, where the browser allows that.
+- Keyboard: arrows or WASD, Space to wait, 1–4 to ready a power-up, Z undo, R restart, P pause.
 
-## Pieces
+## Spiders
 
-| Tile | Rule | What it tests |
+1. **Always hunting.** Every turn a spider steps toward you, along the longer axis first.
+2. **Blocked by anything.** Spiders only walk on bare floor. Walls, doors, gates, fences,
+   crates, lava, chips, keys and power-ups all stop them, so a spider is easy to box in.
+3. **One turn to get going.** When a spider's way opens up (you took the chip it was
+   pressed against), it spends one turn getting moving. That one turn is your head
+   start. Without it, a spider right behind a chip would catch you the instant you took it.
+4. **Gates are safety.** A door you open becomes a gate. You walk through it; no enemy ever does.
+
+On screen, a blocked spider strains toward you, so you can always see it trying to reach you.
+
+## Power-ups
+
+Introduced one per level, then combined.
+
+| Power-up | Charges | Effect |
 |---|---|---|
-| Keys and doors | A key opens one door of its color and is used up. Doors carry a symbol (red ▲, blue ◆, yellow ●, green ■) for color-blind players. | Planning order. |
-| Gate | An opened door. You can pass; enemies can't cross it or see through it. | Choosing your escape. |
-| Chip | Collect all to unlock the flag. Spiders often sleep behind one. | Route planning; when to wake a spider. |
-| Flag | The exit. | – |
-| Lava | Instant death. | Routing; memory in Lights Out. |
-| Crate | Pushable. Pushed into lava, it sinks and leaves floor. | Sokoban-style thinking; you can waste a crate. |
+| Jetpack | 1 | Smash through one wall next to you and move into the gap. |
+| Flamethrower | 3 | Burn every enemy in a line up to 3 tiles. Fire passes over items, gates and fences. |
+| Mega blaster | 3 | A shot travels in a straight line: it breaks the first cracked wall or crate, or kills the first enemy it hits. |
+| Freeze bomb | 1 | Every enemy freezes for 6 moves. Frozen enemies are solid blocks: they can't hurt you, but you can't pass them either. |
 
-## Enemies
+Supporting tiles: **cracked walls** (blaster or jetpack), **steel** (nothing breaks it),
+and **fences** (you pass, enemies don't, fire and shots go through).
 
-All enemies move once after each of your turns, in a fixed order, by fixed rules.
-They only walk on bare floor, so walls, doors, **gates**, items, crates, lava and the
-exit all block them. A chip or key lying on the floor is a wall to an enemy until you
-pick it up.
+## Worlds and their modifiers
 
-### Spiders (the main source of difficulty)
+Each art direction from the mockups is also a rule change.
 
-Spiders work like the ghosts in Pac-Man, with one twist: they don't hunt you until they see you.
-
-1. **Asleep.** A spider sees along its row and column. Its view is blocked by anything
-   that isn't bare floor, including the chip or key it sleeps behind.
-2. **Alert.** When it sees you, it shows a **!** and spends that turn waking up. That one turn is your head start.
-3. **Chasing.** Every turn it steps toward you, along the longer axis first. It keeps
-   following even when it can no longer see you.
-4. **Stuck.** When a wall, gate or item blocks both of its possible steps, it gives up and falls
-   asleep where it stands. If it sees you again, it wakes again.
-
-**Gates are the escape.** A door you have opened stays in the level as a gate. You can
-walk through it, but no enemy can cross it or see past it. So the typical spider
-puzzle goes: work out your escape route, get the key for that gate *first*, then
-take the chip and run.
-
-Two ways to hide a spider, both in the levels:
-
-- **Behind a collectible** (The Nest, Spider Run): the chip or key is the wall. Picking it up opens the spider's line of sight.
-- **In a hidden room** (Hidden Room): the spider sleeps behind a locked door, and opening the door lets it out.
-
-Spiders are also beatable by thinking, not just running: since they only step toward
-you, you can lead one around a pillar until it jams against a wall.
-
-### Supporting enemies
-
-| Enemy | Rule | Puzzle it creates |
-|---|---|---|
-| **Patrol drone** | Flies straight; reverses when blocked. | Timing. Count its cycle and slip past using alcoves. |
-| **Mimic** | Copies your move each turn (if it can). | Spatial reasoning. Use walls to change your relative position. |
-
-## Modes
-
-The level layouts never change. The mode decides how much help you get:
-
-| | Explorer | Classic | Lights Out |
-|---|---|---|---|
-| Map | fully lit | fully lit | study it, then you see 1 tile around you |
-| Move limit | none | 1.5 × par | 1.5 × par |
-| Undo | yes | yes (costs the clean-run star) | no |
-| Peeks at the full map | – | – | 2 |
-
-**Par** is the true minimum number of moves, computed by `tools/solve.js`, which
-does a breadth-first search over every reachable game state (spider sleep and wake
-states included). Every level is proven solvable within its limit.
-
-## Scoring
-
-Three stars per level:
-
-- ★ Escaped.
-- ★ Within 120% of par (efficient planning).
-- ★ Clean run: no undo and no peeks.
-
-## Art direction
-
-Pixel art at 16 × 16 per tile, scaled up without smoothing. The player is a small robot.
-Each key color has its own door symbol: red triangle, blue diamond, yellow circle, green square.
-The HUD sits on the right, as in the mockups. Five worlds, each with its own tiles and
-spider color:
-
-| World | Look |
+| World | Modifier |
 |---|---|
-| Pixel Arcade | Bright blue blocks, circuit-trace floors |
-| Lost Circuits | Mossy sandstone ruins |
-| Ice Station | Frosted blocks with icicles, purple spiders |
-| Neon Mixtape | Magenta blocks with a glossy stripe |
-| Solar Disco | Orange checker blocks, teal spiders |
+| Pixel Arcade | None: the basics. |
+| Lost Circuits | **Crumbling floor.** It turns into a hole the moment you step off it. One-way bridges, and spiders can't follow you over the gap. |
+| Ice Station | **Ice.** You slide until something stops you: a wall, a rock, a chip or a key. Spiders grip ice fine. |
+| Neon Mixtape | **Beat blocks.** Pink and cyan blocks swap every 4 moves (the HUD shows the beat). Anything inside one when it closes is crushed, spiders included. |
+| Solar Disco | **Lava** and crates, plus everything else. |
 
-You can also choose one art style for every level.
+## Levels
 
-## Levels in the prototype
+| # | World | Name | Introduces | Size |
+|---|---|---|---|---|
+| 1 | Pixel Arcade | Boot Up | Keys, doors, chips, the flag | fits the screen |
+| 2 | Pixel Arcade | Spend Wisely | Single-use keys; opening the nearest door first leaves you stuck | fits the screen |
+| 3 | Pixel Arcade | Spider Nest | Spiders boxed in behind a chip; the gate escape | bigger than the screen |
+| 4 | Lost Circuits | Jetpack | Jetpack; a crumbling bridge you can only cross once | bigger |
+| 5 | Lost Circuits | Crumbling Ruins | Escaping spiders over a collapsing bridge | bigger |
+| 6 | Ice Station | Thin Ice | Sliding | bigger |
+| 7 | Ice Station | Flamethrower | Spiders fenced around the key: burn them | bigger |
+| 8 | Neon Mixtape | Mega Blaster | Three shots, three cracked walls, beat-block timing | bigger |
+| 9 | Neon Mixtape | Beat Drop | Leading a spider into a closing beat block | bigger |
+| 10 | Solar Disco | Freeze Frame | Freeze bomb; lava and a crate | bigger |
+| 11 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
 
-| # | World | Name | Teaches |
-|---|---|---|---|
-| 1 | Pixel Arcade | Boot Up | Keys, doors, chips, the flag. |
-| 2 | Pixel Arcade | Spend Wisely | Single-use keys. Opening the nearest door first leaves you stuck. |
-| 3 | Lost Circuits | The Nest | A spider behind a chip. Grab it and outrun the spider around a corner. |
-| 4 | Lost Circuits | Heat | Lava and crates. |
-| 5 | Ice Station | Hidden Room | A spider behind a door. Lure it round a pillar, grab the chip and key, escape through a gate. |
-| 6 | Ice Station | Clockwork | Patrol drone timing. |
-| 7 | Neon Mixtape | Echo | The mimic. |
-| 8 | Neon Mixtape | Vault | Crates, lava, a patrol and two locked doors. |
-| 9 | Solar Disco | Spider Run | Two nests, three gates, and the order you visit them in. |
+## Modes and scoring
+
+- **Explorer**: no move limit.
+- **Classic**: moves capped at 1.5 × par.
+
+Undo is always available, but it costs the clean-run star. Stars: ★ escaped,
+★ within 120% of par, ★ no undo.
+
+**Par** is the true minimum number of moves, found by `tools/solve.js` with a
+cheapest-first search over every reachable state (an ice slide costs one move per
+tile). Disco Inferno is too large to search exhaustively, so its par is the best
+known route: the shortest path through its items in a fixed order. It is labeled
+"best known" in the game.
 
 ## Ideas for later
 
-- **Spider variants:** a spider that sees diagonally; a fast spider that takes two
-  steps for every one of yours; a mother spider that wakes the whole nest.
-- **One-way gates** that let enemies through in one direction only.
-- **Memory-specific tiles:** switches that toggle walls you can no longer see;
-  "false floor" that looks like floor in the study phase but is lava.
-- **Sound as information:** each enemy type makes a different footstep, louder
-  when closer, so you can track them in the dark.
-- **Level editor** with the solver built in, so every shared level is guaranteed
-  beatable and gets a par automatically.
-- **Daily puzzle** with a shared seed and a par leaderboard.
+- **Spider variants:** a fast spider that takes two steps per turn; a spider that sees
+  diagonally; a mother spider whose death frees the whole nest.
+- **Solar Disco's own modifier:** disco arrows (conveyor tiles that push you).
+- **More power-ups:** a decoy that spiders chase instead of you; a teleporter pair.
+- **Level editor** with the solver built in, so shared levels are guaranteed winnable.

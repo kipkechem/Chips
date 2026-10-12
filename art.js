@@ -177,6 +177,82 @@
     '................',
   ];
 
+  const JETPACK = [
+    '................',
+    '................',
+    '................',
+    '....kkk..kkk....',
+    '...kgggkkgggk...',
+    '...kghgkkghgk...',
+    '...kgggkkgggk...',
+    '...kgggkkgggk...',
+    '...kgggkkgggk...',
+    '...kkkkkkkkkk...',
+    '....kok..kok....',
+    '....kyk..kyk....',
+    '.....o....o.....',
+    '................',
+    '................',
+    '................',
+  ];
+
+  const FLAMER = [
+    '................',
+    '................',
+    '................',
+    '................',
+    '..kkkk..........',
+    '.krrrrk.........',
+    '.krhrrkkkkkkk...',
+    '.krrrrkgggggkoo.',
+    '.krrrrkkkkkkkyo.',
+    '.krrrrk..kk.....',
+    '..kkkk...kk.....',
+    '.........kk.....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ];
+
+  const BLASTER = [
+    '................',
+    '................',
+    '................',
+    '................',
+    '...kkkkkkkkkkk..',
+    '..kbbbbbbbbbbbk.',
+    '..kbhhhhhhbbbbkk',
+    '..kbbbbbbbbbbbk.',
+    '..kkkkbbkkkkkk..',
+    '.....kbbk.......',
+    '.....kbbk.......',
+    '.....kkkk.......',
+    '................',
+    '................',
+    '................',
+    '................',
+  ];
+
+  const FREEZER = [
+    '................',
+    '...........y....',
+    '..........k.....',
+    '.....kkkkk......',
+    '....kcccccck....',
+    '...kcchccccck...',
+    '...kchhcwccck...',
+    '...kcccwwwcck...',
+    '...kccccwccck...',
+    '...kcccccccck...',
+    '....kcccccck....',
+    '.....kkkkkk.....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ];
+
   function makeCanvas(w, h) {
     if (typeof OffscreenCanvas !== 'undefined' && typeof document === 'undefined') return new OffscreenCanvas(w, h);
     const c = document.createElement('canvas');
@@ -213,6 +289,12 @@
       spiderSleep: sprite(SPIDER, { ...spiderPal, w: th.enemyDark }),
       ufo: sprite(UFO, { k: OUTLINE, c: '#46d4ff', h: '#e6fbff', g: '#b9c1cf', l: '#ffd23f', d: '#6b7385' }),
       mimic: sprite(MIMIC, { k: OUTLINE, m: '#b98cff', w: '#ffffff' }),
+      powers: {
+        j: sprite(JETPACK, { k: OUTLINE, g: '#9aa3b5', h: '#e6ebf5', o: '#ff8a1f', y: '#ffd23f' }),
+        f: sprite(FLAMER, { k: OUTLINE, r: '#e8392f', h: '#ff9a8a', g: '#9aa3b5', o: '#ff8a1f', y: '#ffd23f' }),
+        m: sprite(BLASTER, { k: OUTLINE, b: '#4c8dff', h: '#cfe3ff' }),
+        z: sprite(FREEZER, { k: OUTLINE, c: '#5ab8ff', h: '#d9f1ff', w: '#ffffff', y: '#ffd23f' }),
+      },
       keys: {},
     };
     for (const k of Object.keys(KEY_COLORS)) set.keys[k] = sprite(KEY, { k: OUTLINE, ...KEY_COLORS[k] });
@@ -379,23 +461,131 @@
     for (const [a, b] of [[3, 3], [12, 3], [3, 12], [12, 12]]) px(ctx, x0 + a, y0 + b, 1, 1, '#4a2c12');
   }
 
-  function drawZ(ctx, x, y, color) {
-    px(ctx, x, y, 4, 1, color);
-    px(ctx, x + 2, y + 1, 1, 1, color);
-    px(ctx, x + 1, y + 2, 1, 1, color);
-    px(ctx, x, y + 3, 4, 1, color);
+
+
+  function drawSteel(ctx, x0, y0) {
+    px(ctx, x0, y0, 16, 16, '#22262f');
+    px(ctx, x0, y0, 15, 15, '#6b7385');
+    px(ctx, x0, y0, 15, 2, '#a7afc0');
+    px(ctx, x0, y0, 1, 15, '#a7afc0');
+    px(ctx, x0, y0 + 12, 15, 3, '#454b5a');
+    px(ctx, x0 + 14, y0, 1, 15, '#454b5a');
+    for (const [a, b] of [[3, 4], [11, 4], [3, 10], [11, 10]]) {
+      px(ctx, x0 + a, y0 + b, 2, 2, '#2f3440');
+      px(ctx, x0 + a, y0 + b, 1, 1, '#c9ced8');
+    }
   }
 
-  // Draw the whole board into ctx (sized w*16 x h*16).
-  // view: { theme, reveal (bool), radius, t (seconds) }
+  function drawCracks(ctx, x0, y0, color) {
+    const pts = [[7, 1], [7, 2], [6, 3], [6, 4], [7, 5], [8, 6], [8, 7], [7, 8], [6, 9], [6, 10], [7, 11], [9, 4], [10, 3], [4, 8], [3, 9], [9, 9], [10, 10]];
+    for (const [a, b] of pts) px(ctx, x0 + a, y0 + b, 1, 1, color);
+  }
+
+  function drawIce(ctx, x0, y0, hv) {
+    px(ctx, x0, y0, 16, 16, '#8fcdf0');
+    px(ctx, x0, y0, 16, 1, '#b9e4fb');
+    px(ctx, x0, y0, 1, 16, '#b9e4fb');
+    const o = hv % 5;
+    for (let k = 0; k < 4; k++) px(ctx, x0 + 3 + o + k, y0 + 10 - k, 1, 1, '#e8f8ff');
+    for (let k = 0; k < 3; k++) px(ctx, x0 + 8 + k, y0 + 13 - k, 1, 1, '#e8f8ff');
+    px(ctx, x0 + 12, y0 + 3 + (hv % 3), 1, 1, '#ffffff');
+  }
+
+  function drawHole(ctx, x0, y0, th) {
+    px(ctx, x0, y0, 16, 16, '#030407');
+    px(ctx, x0, y0, 16, 2, th.floorGrid);
+    px(ctx, x0 + 1, y0 + 2, 14, 2, '#0b0d14');
+  }
+
+  function drawBeat(ctx, x0, y0, which, solid, th) {
+    const col = which === '1' ? { c: '#ff4fd8', h: '#ffa8ee', d: '#a01d88' } : { c: '#36dcff', h: '#b4f2ff', d: '#137a9a' };
+    if (solid) {
+      px(ctx, x0, y0, 16, 16, OUTLINE);
+      px(ctx, x0 + 1, y0 + 1, 14, 14, col.c);
+      px(ctx, x0 + 1, y0 + 1, 14, 2, col.h);
+      px(ctx, x0 + 1, y0 + 12, 14, 3, col.d);
+      px(ctx, x0 + 6, y0 + 6, 4, 4, col.h);
+    } else {
+      for (let i = 1; i < 15; i += 2) {
+        px(ctx, x0 + i, y0 + 1, 1, 1, col.d);
+        px(ctx, x0 + i, y0 + 14, 1, 1, col.d);
+        px(ctx, x0 + 1, y0 + i, 1, 1, col.d);
+        px(ctx, x0 + 14, y0 + i, 1, 1, col.d);
+      }
+      px(ctx, x0 + 7, y0 + 7, 2, 2, col.d);
+    }
+  }
+
+  function drawFence(ctx, x0, y0) {
+    px(ctx, x0, y0 + 2, 16, 2, '#c9ced8');
+    px(ctx, x0, y0 + 12, 16, 2, '#c9ced8');
+    for (let i = 1; i < 16; i += 4) {
+      px(ctx, x0 + i, y0 + 1, 2, 14, '#e6ebf5');
+      px(ctx, x0 + i + 1, y0 + 1, 1, 14, '#8a91a3');
+    }
+  }
+
+  function drawFrozen(ctx, x0, y0, turns) {
+    ctx.globalAlpha = 0.55;
+    px(ctx, x0 + 1, y0 + 1, 14, 14, '#a8dcff');
+    ctx.globalAlpha = 1;
+    px(ctx, x0 + 1, y0 + 1, 14, 1, '#ffffff');
+    px(ctx, x0 + 1, y0 + 1, 1, 14, '#ffffff');
+    px(ctx, x0 + 14, y0 + 1, 1, 14, '#5ab8ff');
+    px(ctx, x0 + 1, y0 + 14, 14, 1, '#5ab8ff');
+    for (let k = 0; k < turns; k++) px(ctx, x0 + 3 + k * 2, y0 + 12, 1, 1, '#ffffff');
+  }
+
+  // Transient effects layered over the board. fx: { kind, at: [[x,y],...], to: [x,y], t0 }
+  function drawEffects(ctx, list, now) {
+    for (const fx of list) {
+      const age = now - fx.t0;
+      if (fx.kind === 'flame') {
+        for (const [x, y] of fx.at) {
+          const f = Math.floor(age * 20 + x + y) % 3;
+          const x0 = x * TILE;
+          const y0 = y * TILE;
+          px(ctx, x0 + 1, y0 + 4, 14, 9, '#ff6a1a');
+          px(ctx, x0 + 3 + f, y0 + 2, 10 - f, 9, '#ffb02a');
+          px(ctx, x0 + 5, y0 + 5 + f, 6, 5, '#fff2a8');
+        }
+      } else if (fx.kind === 'shot') {
+        const [ax, ay] = fx.at[0];
+        const [bx, by] = fx.to;
+        const steps = Math.max(Math.abs(bx - ax), Math.abs(by - ay)) || 1;
+        const reach = Math.min(1, age / 0.12);
+        for (let k = 0; k <= steps * reach; k++) {
+          const x = ax + Math.sign(bx - ax) * k;
+          const y = ay + Math.sign(by - ay) * k;
+          px(ctx, x * TILE + 6, y * TILE + 6, 4, 4, '#bff6ff');
+          px(ctx, x * TILE + 7, y * TILE + 7, 2, 2, '#ffffff');
+        }
+      } else if (fx.kind === 'boom' || fx.kind === 'splat' || fx.kind === 'dust') {
+        const [x, y] = fx.at[0];
+        const r = Math.min(7, 2 + age * 30);
+        const color = fx.kind === 'boom' ? ['#fff2a8', '#ff8a1f'] : fx.kind === 'splat' ? ['#ffffff', '#7a1fe0'] : ['#c9b48a', '#6b5a3a'];
+        const cx = x * TILE + 8;
+        const cy = y * TILE + 8;
+        for (let k = 0; k < 8; k++) {
+          const a = (k / 8) * Math.PI * 2;
+          px(ctx, Math.round(cx + Math.cos(a) * r) - 1, Math.round(cy + Math.sin(a) * r) - 1, 3, 3, color[k % 2]);
+        }
+        px(ctx, cx - 2, cy - 2, 4, 4, color[0]);
+      } else if (fx.kind === 'freeze') {
+        ctx.globalAlpha = Math.max(0, 0.5 - age);
+        px(ctx, 0, 0, ctx.canvas.width, ctx.canvas.height, '#bfe6ff');
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  // Draw the whole level into ctx (sized w*16 x h*16).
+  // view: { theme, t (seconds), phase (beat phase 0|1) }
   function drawBoard(ctx, s, view) {
     const th = THEMES[view.theme];
     const sp = sprites(view.theme);
     const t = view.t || 0;
-    const reveal = view.reveal !== false;
-    const radius = view.radius || 1;
-    const dist = (x, y) => Math.max(Math.abs(x - s.player.x), Math.abs(y - s.player.y));
-    const lit = (x, y) => reveal || dist(x, y) <= radius;
+    const phase = view.phase || 0;
     const exitOpen = s.chips >= s.chipsTotal;
 
     px(ctx, 0, 0, s.w * TILE, s.h * TILE, '#000000');
@@ -410,64 +600,64 @@
           drawWall(ctx, x0, y0, th, hv);
           continue;
         }
-        drawFloor(ctx, x0, y0, th, hv);
-        if (g === 'x') drawLava(ctx, x0, y0, t, hv);
+        if (g === 'W') {
+          drawWall(ctx, x0, y0, th, hv);
+          drawCracks(ctx, x0, y0, th.wallEdge);
+          continue;
+        }
+        if (g === '%') {
+          drawSteel(ctx, x0, y0);
+          continue;
+        }
+        if (g === 'H') {
+          drawHole(ctx, x0, y0, th);
+          continue;
+        }
+        if (g === '~') drawIce(ctx, x0, y0, hv);
+        else drawFloor(ctx, x0, y0, th, hv);
+        if (g === ':') drawCracks(ctx, x0, y0, th.detail);
+        else if (g === 'x') drawLava(ctx, x0, y0, t, hv);
+        else if (g === '1' || g === '2') drawBeat(ctx, x0, y0, g, (g === '1') === (phase === 0), th);
+        else if (g === '=') drawFence(ctx, x0, y0);
         else if ('RGBY'.includes(g)) drawDoor(ctx, x0, y0, g.toLowerCase());
         else if ('rgby'.includes(g)) drawGate(ctx, x0, y0, g);
         else if (g === 'E') drawExit(ctx, x0, y0, exitOpen, t);
         if (s.crates.includes(i)) drawCrate(ctx, x0, y0);
         const it = s.items[i];
         if (it === '*') drawChip(ctx, x0, y0, t);
-        else if (it) ctx.drawImage(sp.keys[it], x0, y0);
-      }
-    }
-
-    if (!reveal) {
-      for (let y = 0; y < s.h; y++) {
-        for (let x = 0; x < s.w; x++) {
-          const d = dist(x, y);
-          if (d > radius) px(ctx, x * TILE, y * TILE, TILE, TILE, '#020308');
-          else if (d > 0) {
-            ctx.globalAlpha = 0.3 * d;
-            px(ctx, x * TILE, y * TILE, TILE, TILE, '#020308');
-            ctx.globalAlpha = 1;
-          }
-        }
+        else if (sp.powers[it]) {
+          const bob = Math.floor(t * 3) % 2;
+          ctx.drawImage(sp.powers[it], x0, y0 - bob);
+        } else if (it) ctx.drawImage(sp.keys[it], x0, y0);
       }
     }
 
     const frame = Math.floor(t * 6) % 2;
     for (const e of s.enemies) {
-      const x0 = e.x * TILE;
-      const y0 = e.y * TILE;
-      if (!lit(e.x, e.y) && view.hideEnemiesInDark) continue;
-      ctx.globalAlpha = lit(e.x, e.y) ? 1 : 0.75;
+      let x0 = e.x * TILE;
+      let y0 = e.y * TILE;
       if (e.type === 'spider') {
-        if (e.mode === 'sleep') {
-          ctx.drawImage(sp.spiderSleep, x0, y0);
-          drawZ(ctx, x0 + 11, y0 - (Math.floor(t * 1.5) % 2), '#ffffff');
-        } else if (e.mode === 'alert') {
-          ctx.drawImage(sp.spider, x0, y0);
-          px(ctx, x0 + 7, y0 - 3, 2, 4, '#ffd23f');
-          px(ctx, x0 + 7, y0 + 2, 2, 1, '#ffd23f');
-        } else {
+        if (e.frozen) ctx.drawImage(sp.spider, x0, y0);
+        else if (e.stuck) {
+          // Straining against whatever blocks it, leaning toward you.
+          if (frame) {
+            x0 += Math.sign(s.player.x - e.x);
+            y0 += Math.sign(s.player.y - e.y);
+          }
           ctx.drawImage(frame ? sp.spiderB : sp.spider, x0, y0);
-        }
+        } else ctx.drawImage(frame ? sp.spiderB : sp.spider, x0, y0);
       } else if (e.type === 'patrol') {
-        ctx.drawImage(sp.ufo, x0, y0 + (frame ? 1 : 0));
-        const ax = x0 + 7 + e.dx * 6;
-        const ay = y0 + 7 + e.dy * 6;
-        px(ctx, ax, ay, 2, 2, '#ffd23f');
+        ctx.drawImage(sp.ufo, x0, y0 + (frame && !e.frozen ? 1 : 0));
+        px(ctx, x0 + 7 + e.dx * 6, y0 + 7 + e.dy * 6, 2, 2, '#ffd23f');
       } else {
         ctx.drawImage(sp.mimic, x0, y0);
       }
-      ctx.globalAlpha = 1;
+      if (e.frozen) drawFrozen(ctx, e.x * TILE, e.y * TILE, e.frozen);
     }
 
     const p = s.player;
-    const dead = s.status === 'dead' && s.cause !== 'battery';
     ctx.drawImage(sp.robot, p.x * TILE, p.y * TILE);
-    if (dead) {
+    if (s.status === 'dead' && s.cause !== 'battery') {
       for (let k = 2; k < 14; k++) {
         px(ctx, p.x * TILE + k, p.y * TILE + k, 2, 1, '#ff3b30');
         px(ctx, p.x * TILE + 15 - k, p.y * TILE + k, 2, 1, '#ff3b30');
@@ -475,7 +665,11 @@
     }
   }
 
-  const api = { TILE, THEMES, KEY_COLORS, SHAPES, sprites, drawBoard, drawDoor, drawGate, drawShape, drawChip, drawExit, drawLava, drawCrate, drawFloor, drawWall, makeCanvas, SPRITE_ROWS: { ROBOT, SPIDER, SPIDER_B, UFO, MIMIC, KEY } };
+  const api = {
+    TILE, THEMES, KEY_COLORS, SHAPES, sprites, drawBoard, drawEffects, drawDoor, drawGate, drawShape, drawChip, drawExit,
+    drawLava, drawCrate, drawFloor, drawWall, drawSteel, drawCracks, drawIce, drawHole, drawBeat, drawFence, drawFrozen, makeCanvas,
+    SPRITE_ROWS: { ROBOT, SPIDER, SPIDER_B, UFO, MIMIC, KEY, JETPACK, FLAMER, BLASTER, FREEZER },
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.LockstepArt = api;
 })(this);
