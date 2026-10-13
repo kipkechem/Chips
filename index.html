@@ -1147,6 +1147,18 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   window.addEventListener('resize', resize);
   if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', () => setTimeout(resize, 50));
 
+  // Android app (Capacitor): the back button cancels, pauses, returns to the levels, then exits.
+  const cap = window.Capacitor;
+  const CapApp = cap && ((cap.Plugins && cap.Plugins.App) || (cap.registerPlugin && cap.registerPlugin('App')));
+  if (cap && cap.isNativePlatform && cap.isNativePlatform() && CapApp) {
+    CapApp.addListener('backButton', () => {
+      if (G.armed) { setArmed(null); say('Cancelled.'); }
+      else if (G.phase === 'play') pause();
+      else if (G.phase === 'menu') CapApp.exitApp();
+      else toMenu();
+    });
+  }
+
   // ---------- Boot ----------
   function boot(data) {
     if (data && MODES[data.mode]) mode = data.mode;

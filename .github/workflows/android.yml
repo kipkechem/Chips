@@ -1,0 +1,83 @@
+# Builds the Android app (APK) and publishes it as a GitHub Release, so it can be
+# downloaded and installed straight from a phone: github.com/kipkechem/Chips/releases/latest
+name: Android app
+
+on:
+  push:
+    branches: [main, 'claude/**']
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Check every level is winnable at its par
+        run: node tools/solve.js
+
+      - name: Install Capacitor
+        run: npm ci --no-audit --no-fund
+
+      - name: Bundle the game for the app
+        run: node tools/build-web.js
+
+      - name: Create the Android project
+        run: npx cap add android
+
+      - name: Lock to landscape and hide the status bar
+        run: |
+          sed -i 's/<activity/<activity android:screenOrientation="sensorLandscape"/' android/app/src/main/AndroidManifest.xml
+          sed -i 's#</style>#    <item name="android:windowFullscreen">true</item>\n    </style>#' android/app/src/main/res/values/styles.xml
+          grep -n 'screenOrientation' android/app/src/main/AndroidManifest.xml
+          grep -n 'windowFullscreen' android/app/src/main/res/values/styles.xml
+
+      - name: App icon
+        continue-on-error: true
+        run: npx --yes @capacitor/assets@3.0.5 generate --android --iconBackgroundColor '#0a1430' --splashBackgroundColor '#070b16'
+
+      - name: Sync the game into the Android project
+        run: npx cap sync android
+
+      - name: Build the APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Name the APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk "Lockstep-${{ github.run_number }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Lockstep-apk
+          path: Lockstep-*.apk
+
+      - name: Publish as a release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-build-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Lockstep for Android (build ${{ github.run_number }})
+          make_latest: true
+          files: Lockstep-${{ github.run_number }}.apk
+          body: |
+            Open this page on your Android phone and tap **Lockstep-${{ github.run_number }}.apk** to download it.
+            When Android asks, allow your browser to install unknown apps, then tap Install.
+
+            Built from `${{ github.ref_name }}` at ${{ github.sha }}.

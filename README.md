@@ -22,6 +22,29 @@ left, and tap power-ups on the right (then pick a direction to fire). Keyboard:
 arrows or WASD to move, Space to wait, 1–4 to ready a power-up, Z undo, R restart,
 P pause.
 
+## Play on Android
+
+Every push builds the Android app and publishes it as a release:
+
+1. On your phone, open **https://github.com/kipkechem/Chips/releases/latest**.
+2. Tap the `Lockstep-<number>.apk` file to download it.
+3. Open the download. If Android asks, allow your browser to install unknown apps, then tap **Install**.
+
+The app runs offline, opens in landscape and full screen, and the back button pauses
+the game. To update, install a newer build over the old one; your stars are kept.
+
+The build lives in `.github/workflows/android.yml`. It wraps the same web files with
+[Capacitor](https://capacitorjs.com). To build locally you need Node 20, Java 17 and
+the Android SDK:
+
+```sh
+npm install
+node tools/build-web.js        # copies the game into www/ and bundles the fonts
+npx cap add android
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
 ## Files
 
 | File | What it is |
@@ -31,6 +54,8 @@ P pause.
 | `art.js` | Pixel-art themes, sprites and the board renderer. |
 | `index.html` | The game page: HUD, menus, input, sound. |
 | `tools/solve.js` | Solver. Proves each level is winnable and checks its par. |
+| `tools/build-web.js` | Packs the game into `www/` for the Android app, with fonts bundled for offline play. |
+| `assets/` | App icon sources. |
 
 ## Adding a level
 
