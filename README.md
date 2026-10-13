@@ -52,7 +52,7 @@ cd android && ./gradlew assembleDebug
 | `core.js` | Game rules as pure functions (no DOM). Shared by the game and the solver. |
 | `levels.js` | Level maps, hints and par values. The map legend is in `core.js`. |
 | `art.js` | Pixel-art themes, sprites and the board renderer. |
-| `index.html` | The game page: HUD, menus, input, sound. |
+| `index.html` | The game page: HUD (chip counter, keys, moves), menus, input, sound. |
 | `tools/solve.js` | Solver. Proves each level is winnable and checks its par. |
 | `tools/build-web.js` | Packs the game into `www/` for the Android app, with fonts bundled for offline play. |
 | `assets/` | App icon sources. |

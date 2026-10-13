@@ -168,6 +168,20 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   gap: 12px;
 }
 .left, .right { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 0; height: 100%; }
+.chipbox {
+  width: 100%; max-width: 200px; box-sizing: border-box;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 5px 8px 6px; background: var(--panel); border: 3px solid var(--frame); border-radius: 8px;
+}
+.chipbox .label { font: 400 17px/1 var(--font-pixel); letter-spacing: 0.1em; color: var(--frame-hi); }
+.chipbox .pips { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; }
+.chipbox .pips canvas { width: 36px; height: 36px; opacity: 0.28; filter: grayscale(1); transition: opacity 0.2s, filter 0.2s; }
+.chipbox .pips canvas.got { opacity: 1; filter: none; }
+.chipbox b { font: 400 26px/1 var(--font-pixel); color: var(--accent); font-weight: 400; font-variant-numeric: tabular-nums; }
+.chipbox.done { border-color: var(--good); }
+.chipbox.done .label { color: var(--good); }
+.chipbox.pulse { animation: chip-pulse 0.4s; }
+@keyframes chip-pulse { 40% { transform: scale(1.12); border-color: var(--accent); } }
 .stick {
   position: relative;
   width: 100%;
@@ -266,6 +280,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 @keyframes tilt { 0%, 30% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
 @media (orientation: portrait) and (pointer: coarse) { .rotate { display: flex; } }
 @media (max-height: 460px) {
+  .chipbox .label { font-size: 15px; }
+  .chipbox .pips canvas { width: 30px; height: 30px; }
+  .chipbox b { font-size: 22px; }
+  .left { gap: 6px; }
   .overlay { padding: 6px; }
   .card { padding: 8px 14px; gap: 4px; }
   .card ul { gap: 0; line-height: 1.35; }
@@ -283,6 +301,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 }
 @media (prefers-reduced-motion: reduce) {
   #board.shake { animation: none; }
+  .chipbox.pulse { animation: none; }
   .score span.got { animation: none; }
   .rotate svg { animation: none; }
 }
@@ -352,7 +371,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   <header class="bar">
     <span id="crumb" class="crumb">01 / Pixel Arcade</span>
     <span class="stat">MOVES <b id="hud-moves">0</b></span>
-    <span class="stat">CHIPS <b id="hud-chips">0/0</b></span>
     <span class="keys" aria-label="Keys">
       <span class="keychip" id="kc-r"><canvas data-key="r" width="16" height="16"></canvas><span>0</span></span>
       <span class="keychip" id="kc-b"><canvas data-key="b" width="16" height="16"></canvas><span>0</span></span>
@@ -367,6 +385,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   <div class="arena">
     <div class="left">
+      <div id="chipbox" class="chipbox" role="status" aria-label="Chips collected">
+        <span class="label" id="chip-label">CHIPS</span>
+        <div class="pips" id="chip-pips"></div>
+        <b id="chip-count">0/0</b>
+      </div>
       <div id="stick" class="stick" role="group" aria-label="Direction pad">
         <svg viewBox="-102 -102 204 204" aria-hidden="true">
           <path class="q" data-dir="up" d="M0 0 L-70.7 -70.7 A100 100 0 0 1 70.7 -70.7 Z"/>
@@ -884,7 +907,19 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function hud() {
     const s = G.state;
     $('#hud-moves').innerHTML = s.battery ? `${s.steps}<small> / ${s.battery}</small>` : String(s.steps);
-    $('#hud-chips').textContent = `${s.chips}/${s.chipsTotal}`;
+    const box = $('#chipbox');
+    const done = s.chips >= s.chipsTotal;
+    $('#chip-count').textContent = `${s.chips}/${s.chipsTotal}`;
+    $('#chip-label').textContent = done ? 'FLAG OPEN' : 'CHIPS';
+    box.setAttribute('aria-label', done ? 'All chips collected. The flag is open.' : `${s.chips} of ${s.chipsTotal} chips collected`);
+    box.classList.toggle('done', done);
+    $('#chip-pips').querySelectorAll('canvas').forEach((c, k) => c.classList.toggle('got', k < s.chips));
+    if (G.shownChips !== undefined && s.chips > G.shownChips) {
+      box.classList.remove('pulse');
+      void box.offsetWidth;
+      box.classList.add('pulse');
+    }
+    G.shownChips = s.chips;
     for (const k of ['r', 'b', 'y', 'g']) {
       const el = $('#kc-' + k);
       el.lastChild.textContent = s.keys[k];
@@ -916,6 +951,17 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       x.clearRect(0, 0, 16, 16);
       x.drawImage(sp.powers[c.parentElement.dataset.power], 0, 0);
     });
+    // One chip icon per chip in the level; each lights up when collected.
+    const pips = $('#chip-pips');
+    pips.innerHTML = '';
+    for (let k = 0; k < G.state.chipsTotal; k++) {
+      const c = document.createElement('canvas');
+      c.width = 16;
+      c.height = 16;
+      Art.drawChip(c.getContext('2d'), 0, 0, 0.4);
+      pips.append(c);
+    }
+    G.shownChips = undefined;
   }
 
   // ---------- Menu ----------
