@@ -74,7 +74,7 @@ Each art direction from the mockups is also a rule change.
 
 | # | World | Name | Introduces | Size |
 |---|---|---|---|---|
-| 1 | Pixel Arcade | Boot Up | Keys, doors, chips, the flag | fits the screen |
+| 1 | Pixel Arcade | Boot Up | Keys and doors: each chip is locked in its own closet | fits the screen |
 | 2 | Pixel Arcade | Spend Wisely | Single-use keys; opening the nearest door first leaves you stuck | fits the screen |
 | 3 | Pixel Arcade | Spider Nest | Spiders boxed in behind a chip; the gate escape | bigger than the screen |
 | 4 | Lost Circuits | Jetpack | Jetpack; a crumbling bridge you can only cross once | bigger |
