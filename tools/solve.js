@@ -37,7 +37,7 @@ function solve(def, limit = 3000000) {
         const r = L.act(s, a);
         if (r.state === s || r.state.status === 'dead') continue;
         // A flame or shot that hits nothing is just a worse way to wait; skip it.
-        if (a && a.use && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => e.startsWith('kill') || e.startsWith('break'))) continue;
+        if (a && a.use && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => e.startsWith('kill') || e.startsWith('break') || e.startsWith('crack'))) continue;
         const c = r.state.steps;
         const key = L.stateKey(r.state) + (r.state.status === 'won' ? ';won' : '');
         const old = best.get(key);
@@ -113,7 +113,7 @@ function guided(def, { weight = 3, limit = 4000000 } = {}) {
     for (const a of actions(s)) {
       const r = L.act(s, a);
       if (r.state === s || r.state.status === 'dead') continue;
-      if (a && a.use && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => e.startsWith('kill') || e.startsWith('break'))) continue;
+      if (a && a.use && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => e.startsWith('kill') || e.startsWith('break') || e.startsWith('crack'))) continue;
       const c = r.state.steps;
       const key = L.stateKey(r.state) + (r.state.status === 'won' ? ';won' : '');
       const old = best.get(key);
@@ -153,7 +153,7 @@ function waypoints(def, route, limit = 1500000, finish = true) {
         for (const a of actions(t)) {
           const r = L.act(t, a);
           if (r.state === t || r.state.status === 'dead') continue;
-          if (a && a.use && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => e.startsWith('kill') || e.startsWith('break'))) continue;
+          if (a && a.use && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => e.startsWith('kill') || e.startsWith('break') || e.startsWith('crack'))) continue;
           const c = r.state.steps;
           const key = L.stateKey(r.state) + (r.state.status === 'won' ? ';won' : '');
           const old = best.get(key);

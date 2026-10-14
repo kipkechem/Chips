@@ -214,6 +214,17 @@ test('a chip socket opens only once you have every chip', () => {
   const { s } = play(lvl(['#######', '#*@$.E#', '#######']), ['left', 'right', 'right', 'right', 'right']);
   assert.strictEqual(s.status, 'won');
 });
+test('a plain wall takes two blaster shots; steel and the outer edge take none', () => {
+  const s0 = lvl(['#######', '#@m.#.#', '#######']);
+  let { s } = play(s0, ['right', { use: 'm' }]); // facing right, at the wall
+  assert.strictEqual(s.grid[1 * 7 + 4], 'W', 'the first shot cracks it');
+  ({ s } = play(s, [{ use: 'm' }]));
+  assert.strictEqual(s.grid[1 * 7 + 4], '.', 'the second breaks it');
+  const steel = play(lvl(['######', '#@m%.#', '######']), ['right', { use: 'm' }]).s;
+  assert.strictEqual(steel.grid[1 * 6 + 3], '%');
+  const edge = play(lvl(['#####', '#@m.#', '#####']), ['right', 'right', { use: 'm' }]).s;
+  assert.strictEqual(edge.grid[1 * 5 + 4], '#', 'the edge of the level never breaks');
+});
 test('a monster that walks onto a bomb is destroyed with it', () => {
   const s0 = lvl(['########', '#@...KD#', '########'], { facing: { '6,1': 'left' } });
   const { s, events } = play(s0, ['wait', 'wait', 'wait']);

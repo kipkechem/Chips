@@ -1198,7 +1198,9 @@
         const y0 = y * TILE;
         const hv = hash(x, y);
         if (g === '#') {
-          drawWall(ctx, x0, y0, th, hv);
+          // The outer edge never breaks, so it is drawn as steel.
+          if (x === 0 || y === 0 || x === s.w - 1 || y === s.h - 1) drawSteel(ctx, x0, y0);
+          else drawWall(ctx, x0, y0, th, hv);
           continue;
         }
         if (g === 'W') {

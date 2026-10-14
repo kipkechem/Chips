@@ -70,7 +70,9 @@
   //              !  pop-up wall: floor that rises into a wall once you step off it
   //              +  random force floor: pushes up, right, down, left in turn (one shared
   //                 counter, clockwise, like the Lynx original)    $  chip socket
-  //   Walls      #  wall    %  steel    W  cracked (blaster/jetpack)    H  hole
+  //   Walls      #  wall (the jetpack smashes it; the blaster cracks it, then breaks it)
+  //              %  steel (nothing breaks it; nor does anything break the map's outer edge)
+  //              W  cracked wall (one blaster shot or the jetpack)    H  hole
   //              I  hidden wall (looks like floor)   N  fake wall (gives way when you touch it)
   //              &  invisible wall (looks like floor, and stays that way)
   //              L  toggle wall, closed    l  toggle wall, open    C  clone machine
@@ -658,6 +660,12 @@
         if (s.crates.includes(i)) {
           s.crates.splice(s.crates.indexOf(i), 1);
           events.push(`break:${x},${y}`);
+          break;
+        }
+        if (g === '#' && !isEdge(s, x, y)) {
+          // A plain wall takes two shots: the first cracks it.
+          s.grid[i] = 'W';
+          events.push(`crack:${x},${y}`);
           break;
         }
         if (blocksFire(g, i)) break;

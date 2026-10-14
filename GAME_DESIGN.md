@@ -72,8 +72,20 @@ Introduced one per level, then combined.
 | Mega blaster | 3 | A shot travels in a straight line: it breaks the first cracked wall or crate, or kills the first enemy it hits. |
 | Freeze bomb | 1 | Every enemy freezes for 3 seconds. Frozen enemies are solid blocks: they can't hurt you, but you can't pass them either. |
 
-Supporting tiles: **cracked walls** (blaster or jetpack), **steel** (nothing breaks it),
-and **fences** (you pass, enemies don't, fire and shots go through).
+Walls come in three strengths:
+
+| Wall | Blaster | Jetpack |
+|---|---|---|
+| Cracked | 1 shot | Breaks it |
+| Plain | 2 shots: the first cracks it | Breaks it |
+| Steel | Never | Never |
+
+The outer edge of every level counts as steel (and is drawn as steel), so a level only has a
+way out where it is designed to, like the cracked corner in Hall of Glass. Steel also guards
+the walls a shortcut would spoil. With one jetpack charge and three shots, the choice of which
+wall to spend them on is the puzzle; the solver counts every possible shortcut in the par.
+
+**Fences** let you pass but not enemies; fire and shots go through.
 
 ## Worlds and their modifiers
 

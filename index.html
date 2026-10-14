@@ -818,6 +818,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         G.effects.push({ kind: 'freeze', at: [], t0: t, dur: 0.5 });
       } else if (kind === 'kill' || kind === 'crush-enemy') {
         G.effects.push({ kind: 'splat', at: [xy(arg)], t0: t + 0.05, dur: 0.4 });
+      } else if (kind === 'crack') {
+        G.effects.push({ kind: 'dust', at: [xy(arg)], t0: t + 0.1, dur: 0.35 });
       } else if (kind === 'break') {
         G.effects.push({ kind: 'boom', at: [xy(arg)], t0: t + 0.1, dur: 0.4 });
       } else if (kind === 'crumble' || kind === 'reveal' || kind === 'fakewall') {
@@ -856,7 +858,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     if (has('fx:jet')) { say('Smashed through! The jetpack is spent.'); tone(110, 0.25, 'sawtooth', 0.05); return; }
     if (has('fx:freeze')) { say(`Everything is frozen for ${secs(Core.FREEZE_TURNS)}. Frozen enemies are solid.`); tone(1200, 0.3, 'sine', 0.04); return; }
     if (has('fx:flame')) { say(kills ? `Burned ${kills} ${kills === 1 ? 'enemy' : 'enemies'}.` : 'The flames hit nothing.'); tone(160, 0.25, 'sawtooth', 0.04); return; }
-    if (has('fx:shot')) { say(kills ? 'Direct hit.' : has('break') ? 'The wall shatters.' : 'The shot hit solid wall.'); tone(900, 0.06); tone(200, 0.2, 'sawtooth', 0.04, 0.05); return; }
+    if (has('fx:shot')) { say(kills ? 'Direct hit.' : has('break') ? 'The wall shatters.' : has('crack') ? 'The wall cracked. One more shot breaks it.' : 'The shot hit something it cannot break.'); tone(900, 0.06); tone(200, 0.2, 'sawtooth', 0.04, 0.05); return; }
     const def = LEVELS[G.idx];
     const hintEv = has('hint');
     if (hintEv) {
@@ -1220,8 +1222,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => { floor(c); c.drawImage(sp.powers.f, 0, 0); }, 'Flamethrower', POWER_HELP.f],
       [(c) => { floor(c); c.drawImage(sp.powers.m, 0, 0); }, 'Mega blaster', POWER_HELP.m],
       [(c) => { floor(c); c.drawImage(sp.powers.z, 0, 0); }, 'Freeze bomb', POWER_HELP.z],
-      [(c) => { Art.drawWall(c, 0, 0, th, 3); Art.drawCracks(c, 0, 0, th.wallEdge); }, 'Cracked wall', 'The blaster or the jetpack can break it.'],
-      [(c) => Art.drawSteel(c, 0, 0), 'Steel', 'Nothing breaks it.'],
+      [(c) => Art.drawWall(c, 0, 0, th, 3), 'Wall', 'The jetpack smashes it. The blaster takes two shots: the first cracks it.'],
+      [(c) => { Art.drawWall(c, 0, 0, th, 3); Art.drawCracks(c, 0, 0, th.wallEdge); }, 'Cracked wall', 'One blaster shot or the jetpack breaks it.'],
+      [(c) => Art.drawSteel(c, 0, 0), 'Steel', 'Nothing breaks it, and nothing breaks the edge of a level.'],
       [(c) => Art.drawIce(c, 0, 0, 2), 'Ice', 'You slide until something stops you. Spiders grip it fine.'],
       [(c) => { floor(c); Art.drawCracks(c, 0, 0, th.detail); }, 'Crumbling floor', 'Turns into a hole once you step off it.'],
       [(c) => { floor(c); Art.drawBeat(c, 0, 0, '1', true, th); }, 'Beat blocks', `Pink and cyan swap every ${secs(Core.BEAT)}. Anything inside one when it closes is crushed.`],
