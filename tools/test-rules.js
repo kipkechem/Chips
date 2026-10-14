@@ -149,6 +149,17 @@ test('a walker goes straight until it is blocked, then turns', () => {
   const t = play(s, ['wait', 'wait']).s.enemies[0];
   assert.ok(t.x !== 5 || t.y !== 1, 'blocked, it picks a new way');
 });
+test('power-ups fire the way you face; bump a wall to turn', () => {
+  const s0 = lvl(['######', '#@m..#', '#....#', '#W...#', '######']);
+  let { s } = play(s0, ['right', 'left', 'down']); // pick up the blaster, end up facing down
+  assert.strictEqual(s.facing, 'down');
+  ({ s } = play(s, [{ use: 'm' }]));
+  assert.strictEqual(s.grid[3 * 6 + 1], '.', 'the cracked wall below is gone');
+  const bumped = play(lvl(['######', '#@j..#', '######', '#....#', '######']), ['right', 'down']).s;
+  assert.strictEqual(at(bumped), '2,1');
+  assert.strictEqual(bumped.facing, 'down', 'bumping a wall faces it');
+  assert.strictEqual(at(play(bumped, [{ use: 'j' }]).s), '2,2', 'the jetpack smashes the wall you face');
+});
 test('a monster that walks onto a bomb is destroyed with it', () => {
   const s0 = lvl(['########', '#@...KD#', '########'], { facing: { '6,1': 'left' } });
   const { s, events } = play(s0, ['wait', 'wait', 'wait']);

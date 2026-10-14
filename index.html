@@ -227,7 +227,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .power canvas { width: 40px; height: 40px; }
 .power .n { position: absolute; top: 2px; right: 6px; color: var(--accent); font-size: 20px; }
 .power:disabled { opacity: 0.35; cursor: default; }
-.power.armed { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent); }
 .sys { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .sys .btn { min-width: 0; }
 @media (max-width: 1000px) { .sys .t { display: none; } .sys .btn svg { width: 22px; height: 22px; } }
@@ -369,7 +368,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   <p class="help">
     Play in landscape. Press a direction on the circle to step; hold to run; slide your thumb to turn.
     On a keyboard: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> or <kbd>WASD</kbd> move (hold to run),
-    <kbd>1</kbd>–<kbd>4</kbd> ready a power-up then pick a direction,
+    <kbd>1</kbd>–<kbd>4</kbd> fire a power-up the way you face,
     <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
   </p>
 </div>
@@ -526,9 +525,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   };
   const POWER_NAME = { j: 'jetpack', f: 'flamethrower', m: 'mega blaster', z: 'freeze bomb' };
   const POWER_HELP = {
-    j: 'It smashes through one wall, then it is gone.',
-    f: `${Core.POWER_CHARGES.f} bursts. Each burns every enemy up to ${Core.FLAME_RANGE} tiles away.`,
-    m: `${Core.POWER_CHARGES.m} shots. Each breaks a cracked wall or hits the first enemy in line.`,
+    j: 'Tap it to smash through the wall in front of you. Walk into a wall to face it.',
+    f: `${Core.POWER_CHARGES.f} bursts, fired the way you face. Each burns every enemy up to ${Core.FLAME_RANGE} tiles away.`,
+    m: `${Core.POWER_CHARGES.m} shots, fired the way you face. Each breaks a cracked wall or hits the first enemy in line.`,
     z: `Freezes every enemy for ${Core.FREEZE_TURNS / Core.TURNS_PER_SECOND} seconds.`,
   };
   const KEY_NAME = { r: 'red', g: 'green', b: 'blue', y: 'yellow' };
@@ -547,7 +546,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   const G = {
     idx: 0, state: null, prev: null, history: [], phase: 'menu', undos: 0,
-    armed: null, effects: [], lastTick: 0, held: null, queue: null,
+    effects: [], lastTick: 0, held: null, queue: null,
   };
   // The world turns every Core.TURN_MS. A fresh press acts at once, but never sooner than
   // MIN_GAP after the previous turn, so tapping can't outrun the clock by much.
@@ -704,7 +703,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const def = LEVELS[i];
     const limit = MODES[mode].limit;
     const s = parseLevel({ ...def, battery: limit ? Math.ceil(def.par * limit) : 0 });
-    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', undos: 0, armed: null, effects: [], lastTick: 0, queue: null });
+    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', undos: 0, effects: [], lastTick: 0, queue: null });
     applyTheme(themeFor(i));
     if (fromMenu) goLandscape();
     $('#menu').hidden = true;
@@ -712,7 +711,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     $('#crumb').textContent = `${pad2(i + 1)} / ${THEMES[def.world].name}`;
     $('#hud-beat').hidden = !s.beat;
     paintIcons();
-    setArmed(null);
     $('#intro-eyebrow').textContent = `Level ${pad2(i + 1)} · ${THEMES[def.world].name}`;
     $('#intro-title').textContent = def.name;
     $('#intro-hint').textContent = def.hint;
@@ -779,7 +777,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const dir = typeof action === 'string' ? action : null;
     const ti = dir ? (before.player.y + DIRS[dir].dy) * before.w + before.player.x + DIRS[dir].dx : -1;
     if (has('fizzle')) {
-      say(action.use === 'j' ? 'The jetpack needs a wall right next to you in that direction.' : 'Nothing to freeze.', 'warn');
+      say(action.use === 'j' ? 'The jetpack needs a wall right in front of you. Walk into a wall to face it.' : 'Nothing to freeze.', 'warn');
       tone(90, 0.1);
       bump();
       return;
@@ -864,11 +862,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         action = G.queue;
         G.queue = null;
         fresh = true;
-      } else if (G.held && !G.armed) action = G.held;
-      if (typeof action === 'string' && G.armed) {
-        action = { use: G.armed, dir: action };
-        setArmed(null);
-      }
+      } else if (G.held) action = G.held;
       r = Core.step(cur, action);
       if (r.state === cur && action) {
         describe(cur, action, r.events, true); // a power-up with nothing to hit: say so, and the turn passes
@@ -896,22 +890,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     }
   }
 
-  function setArmed(k) {
-    G.armed = k;
-    document.querySelectorAll('.power').forEach((b) => b.classList.toggle('armed', b.dataset.power === k));
-    if (k) say(`${POWER_NAME[k][0].toUpperCase() + POWER_NAME[k].slice(1)} ready. Pick a direction.`, 'alarm');
-  }
-
   function usePowerButton(k) {
     if (G.phase === 'intro') begin();
     if (G.phase !== 'play' || !G.state.powers[k]) return;
-    if (!Core.AIMED[k]) {
-      setArmed(null);
-      input({ use: k });
-      return;
-    }
-    if (G.armed === k) { setArmed(null); say('Cancelled.'); return; }
-    setArmed(k);
+    input({ use: k }); // fires the way the robot faces
   }
 
   function undo() {
@@ -921,7 +903,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     G.queue = null;
     G.lastTick = performance.now();
     G.undos++;
-    setArmed(null);
     say('Undone.');
     hud();
   }
@@ -947,7 +928,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const s = G.state;
     const def = LEVELS[G.idx];
     G.phase = 'over';
-    setArmed(null);
     overlay('result');
     const card = $('#res-card');
     card.classList.toggle('won', s.status === 'won');
@@ -1206,7 +1186,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function toMenu() {
     G.phase = 'menu';
-    setArmed(null);
     applyTheme(skin === 'auto' ? 'arcade' : skin);
     renderLevels();
     $('#game').hidden = true;
@@ -1296,8 +1275,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     else if (e.code === 'KeyR') startLevel(G.idx);
     else if (e.code === 'KeyZ' || e.code === 'KeyU') undo();
     else if (e.code === 'Escape') {
-      if (G.armed) { setArmed(null); say('Cancelled.'); }
-      else if (G.phase === 'over') toMenu();
+      if (G.phase === 'over') toMenu();
       else pause();
     } else if (e.code === 'KeyP') pause();
   });
@@ -1351,8 +1329,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   const CapApp = cap && ((cap.Plugins && cap.Plugins.App) || (cap.registerPlugin && cap.registerPlugin('App')));
   if (cap && cap.isNativePlatform && cap.isNativePlatform() && CapApp) {
     CapApp.addListener('backButton', () => {
-      if (G.armed) { setArmed(null); say('Cancelled.'); }
-      else if (G.phase === 'play') pause();
+      if (G.phase === 'play') pause();
       else if (G.phase === 'menu') CapApp.exitApp();
       else toMenu();
     });

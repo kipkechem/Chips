@@ -490,7 +490,9 @@
   function usePower(s, k, dir, events) {
     if (!s.powers[k]) return false;
     const p = s.player;
-    const { dx, dy } = dir ? DIRS[dir] : { dx: 0, dy: 0 };
+    // Aimed power-ups fire the way you face (walk or bump into something to turn).
+    const aim = dir || (AIMED[k] ? s.facing : null);
+    const { dx, dy } = aim ? DIRS[aim] : { dx: 0, dy: 0 };
     const blocksFire = (g, i) => '#%WHRGBYEINLC'.includes(g) || beatSolid(s, g) || s.crates.includes(i);
     if (k === 'j') {
       const nx = p.x + dx;
@@ -698,6 +700,7 @@
       s.enemies.map((e) => `${e.id},${e.x},${e.y},${e.dx || 0},${e.dy || 0},${e.mode || ''}${e.alert || ''},${e.frozen}`).join('|'),
       KEY_COLORS.map((k) => s.keys[k]).join('') + POWERS.map((k) => s.powers[k]).join('') + BOOTS.map((k) => s.boots[k]).join(''),
       s.steps % s.cycle,
+      POWERS.some((k) => AIMED[k] && s.powers[k]) ? s.facing : '', // only matters while you can aim
     ].join(';');
   }
 

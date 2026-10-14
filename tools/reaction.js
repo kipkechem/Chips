@@ -2,7 +2,7 @@
 // How much reaction time does each spider chase give a human? Follows the solver's winning
 // path; at each moment a spider spots you (or you use a freeze bomb), it stands still for
 // N turns and checks the level can still be won. Prints the largest N for each moment.
-// Aim for about 1 second (6 turns) or more. Usage: node tools/reaction.js [levelNumber,...]
+// Usage: node tools/reaction.js [levelNumber,...]
 'use strict';
 const L = require('../core.js');
 const LEVELS = require('../levels.js');

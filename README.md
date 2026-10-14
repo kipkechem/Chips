@@ -23,8 +23,8 @@ python3 -m http.server 8000
 ```
 
 On a phone, hold it sideways: press a direction on the circle on the left to step, hold to run, slide your thumb to turn; tap power-ups on the right
-(then pick a direction to fire). Keyboard:
-arrows or WASD to move (hold to run), 1–4 to ready a power-up, Z undo, R restart,
+(they fire the way the robot faces). Keyboard:
+arrows or WASD to move (hold to run), 1–4 to fire a power-up, Z undo, R restart,
 P pause.
 
 ## Play on Android
@@ -61,7 +61,7 @@ cd android && ./gradlew assembleDebug
 | `tools/solve.js` | Solver. Proves each level is winnable and checks its par. |
 | `tools/test-rules.js` | One small test per game rule (water, ice, traps, monsters...). |
 | `tools/test-browser.js` | Plays every level in a headless browser with the solver's moves (needs Playwright). |
-| `tools/reaction.js` | Measures how much reaction time each spider chase gives a human (aim for 1 second or more). |
+| `tools/reaction.js` | Measures how much reaction time each spider chase gives a human. |
 | `tools/build-web.js` | Packs the game into `www/` for the Android app, with fonts bundled for offline play. |
 | `assets/` | App icon sources. |
 

@@ -29,11 +29,12 @@ every chase can be planned, and the solver can prove every level is winnable.
   right. Press a quadrant and you step at once; keep holding to run; slide your thumb
   to another quadrant to turn. Resting your thumb in the center stops you.
 - **Center: the board.** Swipes on the board also move you.
-- **Right: the power-up rack.** Tap a power-up to ready it (it glows), then pick a
-  direction on the circle to fire it. Tap again to cancel. The freeze bomb fires at once.
+- **Right: the power-up rack.** Tap a power-up and it fires at once, the way the robot
+  faces (a small yellow arrow shows which way). Walking or bumping into something turns
+  you to face it.
 - On a phone held upright, the game asks you to turn it sideways. It also requests full screen
   and a landscape lock, where the browser allows that.
-- Keyboard: arrows or WASD (hold to run), 1–4 to ready a power-up, Z undo, R restart, P pause.
+- Keyboard: arrows or WASD (hold to run), 1–4 to fire a power-up, Z undo, R restart, P pause.
 
 ## Spiders
 
@@ -50,9 +51,9 @@ every chase can be planned, and the solver can prove every level is winnable.
 
 On screen, a blocked spider strains toward you, so you can always see it trying to reach you.
 
-**A fair head start.** Every nest either sits at least 5 tiles from the thing it guards, or
-can be dealt with from safety first: burned through a fence, or frozen from the doorway. After
-you grab what it guards you have at least a second to react, on top of the half-second alert.
+**A fair head start.** Every nest sits 2 empty squares from the thing it guards, or can be
+dealt with from safety first: burned through a fence, or frozen from the doorway. With the
+half-second alert, that leaves about two thirds of a second to turn and run.
 `node tools/reaction.js` measures this for every spider level.
 
 ## Power-ups
@@ -61,7 +62,7 @@ Introduced one per level, then combined.
 
 | Power-up | Charges | Effect |
 |---|---|---|
-| Jetpack | 1 | Smash through one wall next to you and move into the gap. |
+| Jetpack | 1 | Smash through the wall in front of you and move into the gap. |
 | Flamethrower | 3 | Burn every enemy in a line up to 3 tiles. Fire passes over items, gates and fences. |
 | Mega blaster | 3 | A shot travels in a straight line: it breaks the first cracked wall or crate, or kills the first enemy it hits. |
 | Freeze bomb | 1 | Every enemy freezes for 3 seconds. Frozen enemies are solid blocks: they can't hurt you, but you can't pass them either. |

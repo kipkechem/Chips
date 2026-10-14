@@ -1123,6 +1123,19 @@
 
     const [rx, ry] = at(view.prev && view.prev.player, s.player);
     ctx.drawImage(sp.robot, rx, ry);
+    // While you hold an aimed power-up, a small arrow shows which way it will fire.
+    if (s.status === 'play' && ['j', 'f', 'm'].some((k) => s.powers[k])) {
+      // A chevron just outside the robot, pointing into the tile it will hit.
+      const { dx, dy } = { up: { dx: 0, dy: -1 }, down: { dx: 0, dy: 1 }, left: { dx: -1, dy: 0 }, right: { dx: 1, dy: 0 } }[s.facing];
+      for (let n = 0; n < 3; n++) {
+        const along = 9 + n; // pixels out from the robot's center, just past its edge
+        const half = 3 - n;
+        const cx = rx + 8 + dx * along - (dx < 0 ? 1 : 0);
+        const cy = ry + 8 + dy * along - (dy < 0 ? 1 : 0);
+        if (dx) px(ctx, cx, cy - half, 1, half * 2, '#ffd23f');
+        else px(ctx, cx - half, cy, half * 2, 1, '#ffd23f');
+      }
+    }
     if (s.status === 'dead' && s.cause !== 'battery') {
       for (let n = 2; n < 14; n++) {
         px(ctx, rx + n, ry + n, 2, 1, '#ff3b30');

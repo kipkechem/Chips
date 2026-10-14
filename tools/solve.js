@@ -12,8 +12,7 @@ function actions(s) {
   const out = [...DIRS, null];
   for (const k of L.POWERS) {
     if (!s.powers[k]) continue;
-    if (L.AIMED[k]) for (const d of DIRS) out.push({ use: k, dir: d });
-    else out.push({ use: k });
+    out.push({ use: k }); // aimed power-ups fire the way you face
   }
   return out;
 }
