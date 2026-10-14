@@ -105,6 +105,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .skin select { font-size: 16px; padding: 3px 8px; }
   #hero-art { width: 150px; height: 100px; }
 }
+#build { color: var(--muted); font-size: 12px; margin-left: auto; }
 #hero-art { width: 192px; height: 128px; border: 3px solid var(--frame); border-radius: 4px; }
 @media (max-width: 620px) { .hero { grid-template-columns: 1fr; } #hero-art { width: 100%; height: auto; max-width: 100%; aspect-ratio: 3 / 2; } }
 .label {
@@ -381,6 +382,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
             <option value="dpad">D-pad</option>
             <option value="analog">Analog stick</option>
           </select>
+          <span id="build"></span>
         </div>
       </div>
       <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
@@ -467,7 +469,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <div class="row">
             <button id="pause-resume" class="btn primary" type="button">Resume</button>
             <button id="pause-restart" class="btn" type="button">Restart</button>
-            <button id="pause-menu" class="btn" type="button">Levels</button>
+            <button id="pause-menu" class="btn" type="button">Main menu</button>
           </div>
         </div>
       </div>
@@ -494,7 +496,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <div class="row">
             <button id="res-next" class="btn primary" type="button">Next</button>
             <button id="res-retry" class="btn" type="button">Retry</button>
-            <button id="res-menu" class="btn" type="button">Levels</button>
+            <button id="res-menu" class="btn" type="button">Main menu</button>
           </div>
         </div>
       </div>
@@ -1372,7 +1374,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <rect class="hub" x="-30" y="-30" width="60" height="60"/>`,
     },
     analog: {
-      dead: 0.2,
+      dead: 0.08, // measured from where your thumb first lands, so a short push is enough
       svg: `<circle class="base" cx="0" cy="0" r="98"/><circle class="ring" cx="0" cy="0" r="40"/>
         <polygon class="tick" data-dir="up" points="0,-92 -10,-78 10,-78"/><polygon class="tick" data-dir="right" points="92,0 78,-10 78,10"/>
         <polygon class="tick" data-dir="down" points="0,92 -10,78 10,78"/><polygon class="tick" data-dir="left" points="-92,0 -78,-10 -78,10"/>
@@ -1393,12 +1395,15 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const k = len > 60 ? 60 / len : 1;
     knob.setAttribute('transform', `translate(${dx * k} ${dy * k})`);
   }
+  // The analog stick measures from where your thumb landed; the others from their center.
+  let stickOrigin = null;
   function stickDir(e) {
     const r = stick.getBoundingClientRect();
-    const dx = e.clientX - (r.left + r.width / 2);
-    const dy = e.clientY - (r.top + r.height / 2);
+    const [ox, oy] = stickOrigin || [r.left + r.width / 2, r.top + r.height / 2];
+    const dx = e.clientX - ox;
+    const dy = e.clientY - oy;
     const units = 204 / r.width; // screen pixels to the SVG's units
-    moveKnob(dx * units, dy * units);
+    moveKnob(dx * units * 2, dy * units * 2); // the knob shows a short push as a full one
     if (Math.hypot(dx, dy) < r.width * PADS[pad].dead) return null;
     return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
   }
@@ -1417,6 +1422,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     stick.setPointerCapture(e.pointerId);
     stickOn = true;
     stick.classList.add('held');
+    stickOrigin = pad === 'analog' ? [e.clientX, e.clientY] : null;
     if (G.phase === 'intro') begin();
     aim(stickDir(e));
   });
@@ -1431,6 +1437,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       light(null);
       stick.classList.remove('held');
       moveKnob(0, 0); // the knob springs back to the middle
+      stickOrigin = null;
     });
   }
 
@@ -1474,7 +1481,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     else if (e.code === 'KeyR') startLevel(G.idx);
     else if (e.code === 'KeyZ' || e.code === 'KeyU') undo();
     else if (e.code === 'Escape') {
-      if (G.phase === 'over') toMenu();
+      if (G.phase === 'over') toMenu('home');
       else pause();
     } else if (e.code === 'KeyP') pause();
     else if (e.code === 'KeyH') pause(true);
@@ -1507,10 +1514,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => showView('home')));
   $('#pause-resume').addEventListener('click', resume);
   $('#pause-restart').addEventListener('click', () => startLevel(G.idx));
-  $('#pause-menu').addEventListener('click', () => toMenu());
+  $('#pause-menu').addEventListener('click', () => toMenu('home'));
   $('#res-retry').addEventListener('click', () => startLevel(G.idx));
   $('#res-next').addEventListener('click', () => startLevel(Math.min(G.idx + 1, LEVELS.length - 1)));
-  $('#res-menu').addEventListener('click', () => toMenu());
+  $('#res-menu').addEventListener('click', () => toMenu('home'));
   $('#pad').addEventListener('change', (e) => {
     pad = e.target.value;
     store.set('lockstep:pad', pad);
@@ -1535,7 +1542,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       if (G.phase === 'play') pause();
       else if (G.phase === 'menu' && $('#home').hidden) showView('home');
       else if (G.phase === 'menu') CapApp.exitApp();
-      else toMenu();
+      else toMenu('home');
     });
   }
 

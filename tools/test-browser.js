@@ -43,6 +43,7 @@ const parse = (a) => {
 async function play(page, idx) {
   const def = LEVELS[idx];
   const r = def.route ? waypoints(def, def.route) : solve(def);
+  if (await page.isHidden('#levels-view')) await page.click('#btn-levels');
   await page.click(`#menu .level >> nth=${idx}`);
   await page.clock.runFor(300);
   await page.click('#intro-go');

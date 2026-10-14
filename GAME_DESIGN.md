@@ -29,7 +29,8 @@ every chase can be planned, and the solver can prove every level is winnable.
   the same spot:
   - **Circle:** a circle split diagonally into up, down, left and right.
   - **D-pad:** a cross of four buttons.
-  - **Analog stick:** a knob that follows your thumb and springs back when you let go.
+  - **Analog stick:** a knob that follows your thumb and springs back when you let go. It
+    measures from wherever your thumb lands, so a short push in any direction is enough.
 
   In each, press and you step at once; keep holding to run; move your thumb to turn.
   Resting your thumb in the middle stops you.
@@ -247,7 +248,8 @@ The home screen has **Continue** (the first level you have not finished; **Play*
 **Levels** (every world and level, with your stars and best times) and **Field guide**. It also
 picks who you play as: a robot, cat, astronaut, frog, ghost or ninja, in its own colors or one of
 seven others. The whole home screen fits a phone held sideways. In a level,
-the right panel has **Hint**, **Undo** and **Retry**; Hint pauses the game and shows the level's hint.
+the right panel has **Hint**, **Undo** and **Retry**; Hint pauses the game and shows the level's hint. The pause and results cards have **Main menu**, which goes straight home. The home screen
+shows the build number in the Android app, so you can tell which build is installed.
 
 ## Revenue
 

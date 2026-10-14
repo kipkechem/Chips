@@ -41,6 +41,8 @@ jobs:
 
       - name: Bundle the game for the app
         run: node tools/build-web.js
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
 
       - name: Create the Android project
         run: npx cap add android

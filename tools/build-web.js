@@ -36,6 +36,8 @@ async function main() {
       console.warn(`Could not bundle fonts (${err.message}); keeping the Google Fonts link.`);
     }
   }
+  // Show the build number on the home screen, so you can tell which build is installed.
+  if (process.env.BUILD_NUMBER) html = html.replace('<span id="build"></span>', `<span id="build">Build ${process.env.BUILD_NUMBER}</span>`);
   fs.writeFileSync(path.join(out, 'index.html'), html);
   console.log('Wrote www/');
 }
