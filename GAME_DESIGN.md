@@ -177,19 +177,30 @@ and gates stop them all. "Speed" is relative to you.
 | 28 | The Zoo | Grand Zoo | Everything at once | bigger |
 | 29 | The Zoo | Shadow Play | The mimic: bump walls to steer it onto a button and off a bomb | bigger |
 
-## Modes and scoring
+## Scoring
 
-- **Explorer** (default): no time limit.
-- **Classic**: a time limit of 2 × par.
+There is no time limit: take as long as you like. The clock only decides your stars.
 
-Undo rewinds to before your last move and costs the clean-run star. Stars: ★ escaped,
-★ within 1.5 × par time, ★ no undo.
+| Stars | Time |
+|---|---|
+| ★★★ | Within 1.5 × par, rounded up to whole seconds |
+| ★★ | Within 3 × par, rounded up to whole seconds |
+| ★ | Any finish: every chip collected and the flag reached |
+
+The intro card, the level list and the HUD show the ★★★ and ★★ times; each one dims in the HUD
+once you pass it. Undo rewinds the board but not the clock. The multipliers are `STAR_TIMES`
+in `index.html`.
 
 **Par** is the fastest possible time, counted in turns (6 per second), found by `tools/solve.js` with a
 cheapest-first search over every reachable state (standing still costs turns too, and an ice slide
-costs one turn per tile). Beat Drop and Disco Inferno are too large to search exhaustively, so their pars are the best
-known route: the shortest path through their items in a fixed order. They are labeled
-"best known" in the game.
+costs one turn per tile). Beat Drop and Disco Inferno are too large to search exhaustively, so their
+pars are the best known route: the shortest path through their items in a fixed order.
+
+## Menus
+
+The home screen has **Continue** (the first level you have not finished; **Play** on a first run),
+**Levels** (every world and level, with your stars and best times) and **Field guide**. In a level,
+the right panel has **Hint**, **Undo** and **Retry**; Hint pauses the game and shows the level's hint.
 
 ## Revenue
 

@@ -24,7 +24,7 @@ python3 -m http.server 8000
 
 On a phone, hold it sideways: press a direction on the circle on the left to step, hold to run, slide your thumb to turn; tap power-ups on the right
 (they fire the way the robot faces). Keyboard:
-arrows or WASD to move (hold to run), 1–4 to fire a power-up, Z undo, R restart,
+arrows or WASD to move (hold to run), 1–4 to fire a power-up, H hint, Z undo, R restart,
 P pause.
 
 ## Play on Android
@@ -37,6 +37,10 @@ Every push builds the Android app and publishes it as a release:
 
 The app runs offline, opens in landscape and full screen, and the back button pauses
 the game. To update, install a newer build over the old one; your stars are kept.
+
+Every build is signed with the same key (`android-signing/debug.keystore`), which is what lets
+Android install a new build over the old one. It is a test key, so it is fine to keep in the
+repository; an app for the Play Store needs its own private upload key, kept out of git.
 
 The build lives in `.github/workflows/android.yml`. It wraps the same web files with
 [Capacitor](https://capacitorjs.com). To build locally you need Node 20, Java 17 and

@@ -83,6 +83,8 @@ async function play(page, idx) {
   await page.goto(`http://localhost:${server.address().port}/index.html`);
   await page.clock.pauseAt(Date.now() + 1000);
   await page.clock.runFor(800);
+  await page.click('#btn-levels');
+  await page.clock.runFor(300);
 
   const only = process.argv.slice(2).map((n) => Number(n) - 1);
   const which = only.length ? only : LEVELS.map((_, i) => i);

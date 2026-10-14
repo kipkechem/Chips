@@ -59,6 +59,16 @@ jobs:
       - name: Sync the game into the Android project
         run: npx cap sync android
 
+      # Android only installs an update over the old app when both are signed with the same
+      # key, so every build uses the key kept in android-signing/ (a fresh runner would
+      # otherwise make a new random one). The version number goes up with every build.
+      - name: Sign with the same key every time, and number the version
+        run: |
+          mkdir -p ~/.android
+          cp android-signing/debug.keystore ~/.android/debug.keystore
+          sed -i 's/versionCode 1$/versionCode ${{ github.run_number }}/; s/versionName "1.0"/versionName "1.${{ github.run_number }}"/' android/app/build.gradle
+          grep -n 'versionCode ${{ github.run_number }}' android/app/build.gradle
+
       - name: Build the APK
         working-directory: android
         run: ./gradlew assembleDebug --no-daemon

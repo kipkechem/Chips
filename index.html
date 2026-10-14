@@ -72,6 +72,15 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .hero h2 { margin: 0 0 8px; font: 400 clamp(34px, 6vw, 50px)/1 var(--font-pixel); text-wrap: balance; }
 .hero h2 em { font-style: normal; color: var(--accent); }
 .hero p { margin: 0; color: var(--muted); max-width: 62ch; }
+.view { display: flex; flex-direction: column; gap: 22px; }
+.view[hidden] { display: none; }
+.brand.small { font-size: 30px; }
+.homebtns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.btn.big { flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 18px; min-width: 190px; text-align: left; }
+.btn.big span { font: 400 28px/1 var(--font-pixel); letter-spacing: 0.04em; }
+.btn.big small { font-size: 13px; opacity: 0.8; }
+.skin { display: flex; align-items: center; gap: 10px; }
+.skin .label { margin: 0; }
 #hero-art { width: 192px; height: 128px; border: 3px solid var(--frame); border-radius: 4px; }
 @media (max-width: 620px) { .hero { grid-template-columns: 1fr; } #hero-art { width: 100%; height: auto; max-width: 100%; aspect-ratio: 3 / 2; } }
 .label {
@@ -81,18 +90,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
   text-transform: uppercase;
   color: var(--frame-hi);
 }
-.options { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: flex-start; }
-.modes { display: flex; flex-wrap: wrap; gap: 10px; }
-.modes input { position: absolute; opacity: 0; pointer-events: none; }
-.modes label {
-  display: flex; flex-direction: column; gap: 2px; width: 240px; max-width: 100%; box-sizing: border-box;
-  padding: 10px 14px; background: var(--panel); border: 2px solid var(--frame); border-radius: 4px; cursor: pointer;
-}
-.modes label strong { font: 400 23px/1.1 var(--font-pixel); letter-spacing: 0.04em; }
-.modes label span { color: var(--muted); font-size: 14px; line-height: 1.4; }
-.modes input:checked + label { border-color: var(--accent); box-shadow: inset 0 0 0 2px var(--accent); }
-.modes input:checked + label strong { color: var(--accent); }
-.modes input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
 .skin select {
   font: 400 20px var(--font-pixel); color: var(--ink); background: var(--panel);
   border: 2px solid var(--frame); border-radius: 4px; padding: 6px 10px;
@@ -147,6 +144,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .bar .stat { display: flex; gap: 6px; align-items: baseline; color: var(--muted); }
 .bar .stat b { color: var(--accent); font-weight: 400; font-variant-numeric: tabular-nums; }
 .bar .stat b small { color: var(--muted); font-size: 15px; }
+.targets { display: flex; gap: 10px; color: var(--accent); font-variant-numeric: tabular-nums; }
+.targets span.gone { color: var(--muted); opacity: 0.45; text-decoration: line-through; }
+.card .targets { margin: 0; font: 400 20px/1 var(--font-pixel); letter-spacing: 0.04em; }
 .keys { display: flex; gap: 8px; }
 .keychip { display: flex; align-items: center; gap: 2px; color: var(--muted); }
 .keychip.has { color: var(--accent); }
@@ -227,7 +227,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .power canvas { width: 40px; height: 40px; }
 .power .n { position: absolute; top: 2px; right: 6px; color: var(--accent); font-size: 20px; }
 .power:disabled { opacity: 0.35; cursor: default; }
-.sys { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sys { width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .sys .btn { min-width: 0; }
 @media (max-width: 1000px) { .sys .t { display: none; } .sys .btn svg { width: 22px; height: 22px; } }
 .btn {
@@ -311,33 +311,23 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 </head>
 <body>
 <div class="app" id="menu">
-  <header class="top">
-    <h1 class="brand">Lock<span>step</span></h1>
-    <button id="btn-sound" class="chipbtn" type="button" aria-pressed="false">Sound off</button>
-  </header>
-
-  <section class="hero">
-    <div>
-      <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
-      <p>Every key opens one door of its color (the green key opens them all). Spiders sit boxed in behind chips and keys. Pick one up and they spot you, react half a second later, and chase at nearly your speed. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen.</p>
-    </div>
-    <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
-  </section>
-
-  <section class="options">
-    <div>
-      <p id="mode-label" class="label">Mode</p>
-      <div class="modes" role="radiogroup" aria-labelledby="mode-label">
-        <div>
-          <input type="radio" name="mode" id="mode-explorer" value="explorer">
-          <label for="mode-explorer"><strong>Explorer</strong><span>No time limit.</span></label>
-        </div>
-        <div>
-          <input type="radio" name="mode" id="mode-classic" value="classic">
-          <label for="mode-classic"><strong>Classic</strong><span>A time limit of 2 × par. Undo costs the clean-run star.</span></label>
+  <!-- Home: one tap to play. Levels and the field guide each have their own screen. -->
+  <div id="home" class="view">
+    <header class="top">
+      <h1 class="brand">Lock<span>step</span></h1>
+      <button id="btn-sound" class="chipbtn" type="button" aria-pressed="false">Sound off</button>
+    </header>
+    <section class="hero">
+      <div>
+        <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
+        <div class="homebtns">
+          <button id="btn-continue" class="btn primary big" type="button"><span id="continue-label">Play</span><small id="continue-sub"></small></button>
+          <button id="btn-levels" class="btn big" type="button"><span>Levels</span><small id="levels-sub"></small></button>
+          <button id="btn-guide" class="btn big" type="button"><span>Field guide</span><small>What everything does</small></button>
         </div>
       </div>
-    </div>
+      <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
+    </section>
     <div class="skin">
       <label class="label" for="skin">Art style</label>
       <select id="skin">
@@ -353,30 +343,37 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <option value="zoo">The Zoo</option>
       </select>
     </div>
-  </section>
+  </div>
 
-  <section aria-labelledby="levels-label">
-    <p id="levels-label" class="label">Levels</p>
+  <div id="levels-view" class="view" hidden>
+    <header class="top">
+      <button class="chipbtn back" type="button" data-back>&larr; Home</button>
+      <h1 class="brand small">Levels</h1>
+    </header>
+    <p class="help">Stars come from your time: beat the ★★★ time for three stars, the ★★ time for two. Any finish earns one.</p>
     <div id="worlds" class="worlds"></div>
-  </section>
+  </div>
 
-  <section aria-labelledby="legend-label">
-    <p id="legend-label" class="label">Field guide</p>
+  <div id="guide-view" class="view" hidden>
+    <header class="top">
+      <button class="chipbtn back" type="button" data-back>&larr; Home</button>
+      <h1 class="brand small">Field guide</h1>
+    </header>
+    <p class="help">Every key opens one door of its color (the green key opens them all). Spiders sit boxed in behind chips and keys. Pick one up and they spot you, react half a second later, and chase at nearly your speed. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen.</p>
     <ul id="legend" class="legend"></ul>
-  </section>
-
-  <p class="help">
-    Play in landscape. Press a direction on the circle to step; hold to run; slide your thumb to turn.
-    On a keyboard: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> or <kbd>WASD</kbd> move (hold to run),
-    <kbd>1</kbd>–<kbd>4</kbd> fire a power-up the way you face,
-    <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
-  </p>
+    <p class="help">
+      Play in landscape. Press a direction on the circle to step; hold to run; slide your thumb to turn.
+      Tap a power-up to fire it the way you face. On a keyboard: <kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd> or <kbd>WASD</kbd> move (hold to run),
+      <kbd>1</kbd>&ndash;<kbd>4</kbd> fire a power-up, <kbd>H</kbd> hint, <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
+    </p>
+  </div>
 </div>
 
 <main id="game" class="game" hidden>
   <header class="bar">
     <span id="crumb" class="crumb">01 / Pixel Arcade</span>
     <span class="stat">TIME <b id="hud-moves">0.0s</b></span>
+    <span class="targets" id="hud-targets" aria-label="Star times"><span data-t="3"></span><span data-t="2"></span><span data-t="1"></span></span>
     <span class="keys" aria-label="Keys">
       <span class="keychip" id="kc-r"><canvas data-key="r" width="16" height="16"></canvas><span>0</span></span>
       <span class="keychip" id="kc-b"><canvas data-key="b" width="16" height="16"></canvas><span>0</span></span>
@@ -422,7 +419,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
       <div id="pause" class="overlay" hidden>
         <div class="card">
-          <p class="eyebrow">Paused</p>
+          <p class="eyebrow" id="pause-eyebrow">Paused</p>
           <h2 id="pause-title">Level</h2>
           <p id="pause-hint"></p>
           <div class="row">
@@ -438,6 +435,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <p class="eyebrow" id="intro-eyebrow">Level</p>
           <h2 id="intro-title"></h2>
           <p id="intro-hint"></p>
+          <p class="targets" id="intro-targets"></p>
           <div class="row"><button id="intro-go" class="btn primary" type="button">Play</button></div>
         </div>
       </div>
@@ -468,6 +466,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <button class="power" type="button" data-power="z"><span class="n"></span><canvas width="16" height="16"></canvas>Freeze</button>
       </div>
       <div class="sys">
+        <button id="btn-hint" class="btn" type="button" aria-label="Hint">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.5a6 6 0 0 0-3.6 10.8c.6.5 1.1 1.2 1.1 2V15h5v-.7c0-.8.5-1.5 1.1-2A6 6 0 0 0 10 1.5zM7.5 16.5h5V18a1 1 0 0 1-1 1h-3a1 1 0 0 1-1-1z" fill="currentColor"/></svg><span class="t">Hint</span>
+        </button>
         <button id="btn-undo" class="btn" type="button" aria-label="Undo">
           <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3 2 8l5 5V9.5h5a3.5 3.5 0 0 1 0 7H8V19h4a6 6 0 0 0 0-12H7z" fill="currentColor"/></svg><span class="t">Undo</span>
         </button>
@@ -500,10 +501,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   const VIEW_W = 15; // tiles visible across
   const VIEW_H = 9; // tiles visible down
-  const MODES = {
-    explorer: { limit: 0 },
-    classic: { limit: 2 },
-  };
+  // Stars come from your time alone: three for finishing within STAR_TIMES[0] x par, two
+  // within STAR_TIMES[1] x par (each rounded up to whole seconds), one for any finish.
+  // There is no time limit: you can take as long as you like.
+  const STAR_TIMES = [1.5, 3];
   const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar', 'tide', 'yard', 'machine', 'zoo'];
   const WORLD_RULE = {
     arcade: 'The basics: keys, doors, chips and spiders.',
@@ -540,12 +541,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } },
   };
-  let mode = MODES[store.get('lockstep:mode')] ? store.get('lockstep:mode') : 'explorer';
   let skin = store.get('lockstep:skin') || 'auto';
   if (skin !== 'auto' && !THEMES[skin]) skin = 'auto';
 
   const G = {
-    idx: 0, state: null, prev: null, history: [], phase: 'menu', undos: 0,
+    idx: 0, state: null, prev: null, history: [], phase: 'menu', lost: 0,
     effects: [], lastTick: 0, held: null, queue: null,
   };
   // The world turns every Core.TURN_MS. A fresh press acts at once, but never sooner than
@@ -662,18 +662,30 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   // ---------- Flow ----------
   // Stars are saved by level name, so adding or reordering levels never moves them.
-  const bestKey = (i) => `lockstep:v5:${mode}:${LEVELS[i].name}`;
-  // One-time move of stars saved by position (builds 1 to 5) to the by-name keys.
+  // Your best time per level, saved by level name so adding levels never moves it.
+  const bestKey = (i) => `lockstep:best:${LEVELS[i].name}`;
+  const bestTime = (i) => { const b = store.get(bestKey(i)); return b && b.steps != null ? b.steps : null; };
+  // The turns you may take for three and for two stars.
+  const starTimes = (def) => STAR_TIMES.map((f) => Math.ceil((def.par * f) / Core.TURNS_PER_SECOND) * Core.TURNS_PER_SECOND);
+  const starsFor = (def, steps) => (steps == null ? 0 : 1 + starTimes(def).filter((t) => steps <= t).length);
+  const wholeSecs = (turns) => `${Math.round(turns / Core.TURNS_PER_SECOND)}s`;
+  // One-time move of best times saved by earlier builds (by position, then by mode).
   const V4_ORDER = ['Boot Up', 'Spend Wisely', 'Spider Nest', 'Jetpack', 'Crumbling Ruins', 'Thin Ice',
     'Flamethrower', 'Mega Blaster', 'Beat Drop', 'Freeze Frame', 'Disco Inferno', 'Deep End', 'Firewalk',
     'Cold Feet', 'Pickpocket', 'Conveyor', 'Beam Me Up', 'Minefield', 'Smoke and Mirrors', 'Switchback',
     'Snare', 'Copy Machine', 'Tank Trap', 'Bug Hunt', 'Hot and Cold', 'Feeding Time', 'Grand Zoo'];
-  for (const m of Object.keys(MODES)) {
-    V4_ORDER.forEach((name, i) => {
-      const old = store.get(`lockstep:v4:${m}:${i}`);
-      const key = `lockstep:v5:${m}:${name}`;
-      if (old && !store.get(key)) store.set(key, old);
+  if (!store.get('lockstep:migrated')) {
+    LEVELS.forEach((def, i) => {
+      const old = [];
+      for (const m of ['explorer', 'classic']) {
+        old.push(store.get(`lockstep:v5:${m}:${def.name}`));
+        const at = V4_ORDER.indexOf(def.name);
+        if (at >= 0) old.push(store.get(`lockstep:v4:${m}:${at}`));
+      }
+      const times = old.filter((b) => b && b.steps != null).map((b) => b.steps);
+      if (times.length && bestTime(i) == null) store.set(bestKey(i), { steps: Math.min(...times) });
     });
+    store.set('lockstep:migrated', true);
   }
 
   function overlay(name) {
@@ -701,9 +713,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function startLevel(i, fromMenu) {
     const def = LEVELS[i];
-    const limit = MODES[mode].limit;
-    const s = parseLevel({ ...def, battery: limit ? Math.ceil(def.par * limit) : 0 });
-    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', undos: 0, effects: [], lastTick: 0, queue: null });
+    const s = parseLevel({ ...def, battery: 0 });
+    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', lost: 0, effects: [], lastTick: 0, queue: null });
+    store.set('lockstep:last', def.name);
     applyTheme(themeFor(i));
     if (fromMenu) goLandscape();
     $('#menu').hidden = true;
@@ -714,6 +726,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     $('#intro-eyebrow').textContent = `Level ${pad2(i + 1)} · ${THEMES[def.world].name}`;
     $('#intro-title').textContent = def.name;
     $('#intro-hint').textContent = def.hint;
+    const [t3, t2] = starTimes(def);
+    $('#intro-targets').textContent = `★★★ ${wholeSecs(t3)}   ★★ ${wholeSecs(t2)}   ★ any time`;
     overlay('intro');
     say('');
     resize();
@@ -898,19 +912,22 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function undo() {
     if (G.phase !== 'play' || !G.history.length) return;
+    const from = G.state;
     G.state = G.history.pop();
+    G.lost += from.steps - G.state.steps; // undo rewinds the board, not the clock
     G.prev = G.state;
     G.queue = null;
     G.lastTick = performance.now();
-    G.undos++;
     say('Undone.');
     hud();
   }
 
-  function pause() {
+  function pause(asHint) {
+    if (G.phase === 'intro') begin();
     if (G.phase !== 'play') return;
     G.phase = 'paused';
     const def = LEVELS[G.idx];
+    $('#pause-eyebrow').textContent = asHint === true ? 'Hint' : 'Paused';
     $('#pause-title').textContent = `${pad2(G.idx + 1)} ${def.name}`;
     $('#pause-hint').textContent = def.hint;
     overlay('pause');
@@ -936,13 +953,14 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     list.innerHTML = '';
     const next = $('#res-next');
     if (s.status === 'won') {
-      const target = Math.ceil(def.par * 1.5);
+      const time = s.steps + G.lost;
+      const [t3, t2] = starTimes(def);
       const rows = [
-        [true, 'Escaped'],
-        [s.steps <= target, `Time ${secs(s.steps)} (par ${secs(def.par)}${def.route ? ', best known' : ''}; star at ${secs(target)} or less)`],
-        [G.undos === 0, G.undos ? `Used undo ${G.undos} ${G.undos === 1 ? 'time' : 'times'}` : 'Clean run: no undo'],
+        [true, `Escaped in ${secs(time)}`],
+        [time <= t2, `Within ${wholeSecs(t2)}`],
+        [time <= t3, `Within ${wholeSecs(t3)}`],
       ];
-      const stars = rows.filter((r) => r[0]).length;
+      const stars = starsFor(def, time);
       for (const [got, text] of rows) {
         const li = document.createElement('li');
         li.className = got ? 'got' : '';
@@ -950,8 +968,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         li.lastChild.textContent = text;
         list.append(li);
       }
-      const prev = store.get(bestKey(G.idx)) || { stars: 0, steps: null };
-      store.set(bestKey(G.idx), { stars: Math.max(prev.stars, stars), steps: prev.steps == null ? s.steps : Math.min(prev.steps, s.steps) });
+      const best = bestTime(G.idx);
+      if (best == null || time < best) store.set(bestKey(G.idx), { steps: time });
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} cleared`;
       const score = $('#res-score');
       score.hidden = false;
@@ -974,7 +992,6 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         water: ['You sank.', 'Water needs flippers. Or push a crate in: it turns into dirt you can walk on.'],
         fire: ['You got burned.', 'Fire needs fire boots.'],
         bomb: ['You stepped on a bomb.', 'Push a crate onto a bomb, or let a monster set it off.'],
-        battery: ['Out of time.', `You had ${secs(s.battery)}. Par is ${secs(def.par)}. Plan the route before you run it.`],
       }[s.cause];
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} failed`;
       $('#res-score').hidden = true;
@@ -989,7 +1006,16 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function hud() {
     const s = G.state;
     $('#hud-moves').dataset.steps = s.steps; // read by the browser tests
-    $('#hud-moves').innerHTML = s.battery ? `${secs(s.steps)}<small> / ${secs(s.battery)}</small>` : secs(s.steps);
+    const time = s.steps + G.lost;
+    $('#hud-moves').textContent = secs(time);
+    const [t3, t2] = starTimes(LEVELS[G.idx]);
+    const tg = $('#hud-targets');
+    const [e3, e2, e1] = tg.children;
+    e3.textContent = `★★★ ${wholeSecs(t3)}`;
+    e2.textContent = `★★ ${wholeSecs(t2)}`;
+    e1.textContent = '★ ∞';
+    e3.classList.toggle('gone', time > t3);
+    e2.classList.toggle('gone', time > t2);
     const box = $('#chipbox');
     const done = s.chips >= s.chipsTotal;
     $('#chip-count').textContent = `${s.chips}/${s.chipsTotal}`;
@@ -1086,8 +1112,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       const grid = sec.querySelector('.levels');
       for (const i of idxs) {
         const def = LEVELS[i];
-        const best = store.get(bestKey(i));
-        const stars = best ? best.stars : 0;
+        const best = bestTime(i);
+        const stars = starsFor(def, best);
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'level';
@@ -1100,7 +1126,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         const meta = document.createElement('div');
         meta.className = 'row meta';
         meta.innerHTML = '<span></span><span class="tag"></span>';
-        meta.firstChild.textContent = `Par ${secs(def.par)}${best && best.steps != null ? ` · best ${secs(best.steps)}` : ''}`;
+        const [t3, t2] = starTimes(def);
+        meta.firstChild.textContent = `★★★ ${wholeSecs(t3)} · ★★ ${wholeSecs(t2)}${best != null ? ` · best ${secs(best)}` : ''}`;
         meta.lastChild.textContent = thumb.bigger ? 'Bigger than the screen' : '';
         b.append(row, meta);
         b.addEventListener('click', () => startLevel(i, true));
@@ -1184,10 +1211,34 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     Art.drawBoard(c.getContext('2d'), s, { theme: skin === 'auto' ? 'arcade' : skin, t: 0, phase: 0 });
   }
 
-  function toMenu() {
+  // The first level you have not finished yet (or the last one you played, once all are done).
+  function nextUp() {
+    const open = LEVELS.findIndex((d, i) => bestTime(i) == null);
+    if (open >= 0) return open;
+    const last = LEVELS.findIndex((d) => d.name === store.get('lockstep:last'));
+    return last >= 0 ? last : 0;
+  }
+
+  function renderHome() {
+    const i = nextUp();
+    const started = LEVELS.some((d, k) => bestTime(k) != null);
+    $('#continue-label').textContent = started ? 'Continue' : 'Play';
+    $('#continue-sub').textContent = `${pad2(i + 1)} ${LEVELS[i].name}`;
+    const stars = LEVELS.reduce((n, d, k) => n + starsFor(d, bestTime(k)), 0);
+    $('#levels-sub').textContent = `${LEVELS.length} levels · ${stars}/${LEVELS.length * 3} ★`;
+  }
+
+  function showView(name) {
+    for (const v of ['home', 'levels-view', 'guide-view']) $('#' + v).hidden = v !== name;
+    if (name === 'home') renderHome();
+    if (name === 'levels-view') renderLevels();
+    window.scrollTo(0, 0);
+  }
+
+  function toMenu(view = 'levels-view') {
     G.phase = 'menu';
     applyTheme(skin === 'auto' ? 'arcade' : skin);
-    renderLevels();
+    showView(view);
     $('#game').hidden = true;
     $('#menu').hidden = false;
     if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
@@ -1256,7 +1307,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   document.addEventListener('keydown', (e) => {
     if (G.phase === 'menu' || e.metaKey || e.ctrlKey || e.altKey) return;
     if (G.phase === 'paused') {
-      if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); resume(); }
+      if (e.code === 'Escape' || e.code === 'KeyP' || e.code === 'KeyH') { e.preventDefault(); resume(); }
       return;
     }
     const dir = KEYMAP[e.code];
@@ -1278,6 +1329,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       if (G.phase === 'over') toMenu();
       else pause();
     } else if (e.code === 'KeyP') pause();
+    else if (e.code === 'KeyH') pause(true);
   });
   let touch = null;
   canvas.addEventListener('touchstart', (e) => {
@@ -1300,26 +1352,24 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   $('#btn-undo').addEventListener('click', undo);
   $('#btn-restart').addEventListener('click', () => startLevel(G.idx));
   $('#btn-pause').addEventListener('click', pause);
+  $('#btn-hint').addEventListener('click', () => pause(true));
+  $('#btn-continue').addEventListener('click', () => startLevel(nextUp(), true));
+  $('#btn-levels').addEventListener('click', () => showView('levels-view'));
+  $('#btn-guide').addEventListener('click', () => showView('guide-view'));
+  document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => showView('home')));
   $('#pause-resume').addEventListener('click', resume);
   $('#pause-restart').addEventListener('click', () => startLevel(G.idx));
-  $('#pause-menu').addEventListener('click', toMenu);
+  $('#pause-menu').addEventListener('click', () => toMenu());
   $('#res-retry').addEventListener('click', () => startLevel(G.idx));
   $('#res-next').addEventListener('click', () => startLevel(Math.min(G.idx + 1, LEVELS.length - 1)));
-  $('#res-menu').addEventListener('click', toMenu);
-  document.querySelectorAll('input[name="mode"]').forEach((r) => {
-    r.addEventListener('change', () => {
-      mode = r.value;
-      store.set('lockstep:mode', mode);
-      renderLevels();
-    });
-  });
+  $('#res-menu').addEventListener('click', () => toMenu());
   $('#skin').addEventListener('change', (e) => {
     skin = e.target.value;
     store.set('lockstep:skin', skin);
     applyTheme(skin === 'auto' ? 'arcade' : skin);
     renderHero();
     renderLegend();
-    renderLevels();
+    renderHome();
   });
   window.addEventListener('resize', resize);
   if (screen.orientation && screen.orientation.addEventListener) screen.orientation.addEventListener('change', () => setTimeout(resize, 50));
@@ -1330,6 +1380,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   if (cap && cap.isNativePlatform && cap.isNativePlatform() && CapApp) {
     CapApp.addListener('backButton', () => {
       if (G.phase === 'play') pause();
+      else if (G.phase === 'menu' && $('#home').hidden) showView('home');
       else if (G.phase === 'menu') CapApp.exitApp();
       else toMenu();
     });
@@ -1337,18 +1388,16 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   // ---------- Boot ----------
   function boot(data) {
-    if (data && MODES[data.mode]) mode = data.mode;
-    document.querySelectorAll('input[name="mode"]').forEach((r) => { r.checked = r.value === mode; });
     $('#skin').value = skin;
     applyTheme(skin === 'auto' ? 'arcade' : skin);
     renderHero();
     renderLegend();
-    renderLevels();
+    showView('home');
     if (data && data.screen === 'game' && LEVELS[data.idx]) startLevel(data.idx);
     requestAnimationFrame(frame);
   }
   const hot = window.claude && window.claude.hot;
-  if (hot && hot.snapshot) hot.snapshot(() => ({ mode, screen: G.phase === 'menu' ? 'menu' : 'game', idx: G.idx }));
+  if (hot && hot.snapshot) hot.snapshot(() => ({ screen: G.phase === 'menu' ? 'menu' : 'game', idx: G.idx }));
   if (hot && hot.ready) hot.ready(boot);
   else boot((hot && hot.data) || {});
 })();
