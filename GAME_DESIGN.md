@@ -50,9 +50,10 @@ every chase can be planned, and the solver can prove every level is winnable.
 
 On screen, a blocked spider strains toward you, so you can always see it trying to reach you.
 
-**A fair head start.** Every nest sits at least 5 tiles from the thing it guards. After you
-grab it you have at least a second to react, on top of the half-second alert, before the
-escape is lost. `node tools/reaction.js` measures this for every spider level.
+**A fair head start.** Every nest either sits at least 5 tiles from the thing it guards, or
+can be dealt with from safety first: burned through a fence, or frozen from the doorway. After
+you grab what it guards you have at least a second to react, on top of the half-second alert.
+`node tools/reaction.js` measures this for every spider level.
 
 ## Power-ups
 
@@ -185,8 +186,8 @@ Undo rewinds to before your last move and costs the clean-run star. Stars: ★ e
 
 **Par** is the fastest possible time, counted in turns (6 per second), found by `tools/solve.js` with a
 cheapest-first search over every reachable state (standing still costs turns too, and an ice slide
-costs one turn per tile). Disco Inferno is too large to search exhaustively, so its par is the best
-known route: the shortest path through its items in a fixed order. It is labeled
+costs one turn per tile). Beat Drop and Disco Inferno are too large to search exhaustively, so their pars are the best
+known route: the shortest path through their items in a fixed order. They are labeled
 "best known" in the game.
 
 ## Revenue

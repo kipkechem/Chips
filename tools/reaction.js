@@ -42,12 +42,16 @@ function reach(s0, done, limit) {
   return null;
 }
 
-// Can the level still be won from here? Levels with a route are searched leg by leg.
+// Can the level still be won from here? Levels with a route are searched leg by leg: the
+// items not yet collected, in route order, then any '@x,y' tiles to stand on.
 function winnable(s, route, limit = 400000) {
-  const goals = route ? route.filter((g) => !g.startsWith('@') && itemAt(s, g) !== undefined) : [];
+  const goals = (route || []).filter((g) => (g.startsWith('@') ? true : itemAt(s, g) !== undefined));
   for (const g of goals) {
-    s = reach(s, (t) => t.status === 'play' && itemAt(t, g) === undefined, limit);
+    const at = g.startsWith('@') ? g.slice(1) : null;
+    const done = (t) => t.status === 'won' || (t.status === 'play' && (at ? `${t.player.x},${t.player.y}` === at : itemAt(t, g) === undefined));
+    s = reach(s, done, limit);
     if (!s) return false;
+    if (s.status === 'won') return true;
   }
   return !!reach(s, (t) => t.status === 'won', limit);
 }
