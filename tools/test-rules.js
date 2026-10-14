@@ -127,6 +127,28 @@ test('blobs wander the same way every time', () => {
   const b = play(lvl(map), Array(32).fill('wait')).s.enemies[0];
   assert.deepStrictEqual([a.x, a.y], [b.x, b.y]);
 });
+test('the mimic copies your moves, even a bump into a wall', () => {
+  const s0 = lvl(['#######', '#M....#', '#######', '#@....#', '#######']);
+  let { s } = play(s0, ['right', 'right']);
+  assert.strictEqual(s.enemies[0].x, 3);
+  ({ s } = play(s, ['up'])); // you bump the wall; the mimic bumps its wall too
+  assert.strictEqual(at(s), '3,3');
+  ({ s } = play(s, ['right', 'right', 'right'])); // the last press bumps you, but the mimic is already at its end
+  assert.strictEqual(at(s), '5,3');
+  ({ s } = play(s, ['left'])); // both step left together
+  assert.strictEqual(s.enemies[0].x, 4);
+  ({ s } = play(lvl(['######', '#..M.#', '######', '#@...#', '######']), ['left', 'left']));
+  assert.strictEqual(s.enemies[0].x, 1); // you bumped twice; it walked twice
+  assert.strictEqual(at(s), '1,3');
+});
+test('a walker goes straight until it is blocked, then turns', () => {
+  const s0 = lvl(['#######', '#e....#', '#.....#', '#....@#', '#######']);
+  const { s } = play(s0, Array(8).fill('wait'));
+  const e = s.enemies[0];
+  assert.deepStrictEqual([e.x, e.y], [5, 1]); // 4 moves right in 8 turns
+  const t = play(s, ['wait', 'wait']).s.enemies[0];
+  assert.ok(t.x !== 5 || t.y !== 1, 'blocked, it picks a new way');
+});
 test('a monster that walks onto a bomb is destroyed with it', () => {
   const s0 = lvl(['########', '#@...KD#', '########'], { facing: { '6,1': 'left' } });
   const { s, events } = play(s0, ['wait', 'wait', 'wait']);

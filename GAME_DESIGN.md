@@ -50,6 +50,10 @@ every chase can be planned, and the solver can prove every level is winnable.
 
 On screen, a blocked spider strains toward you, so you can always see it trying to reach you.
 
+**A fair head start.** Every nest sits at least 5 tiles from the thing it guards. After you
+grab it you have at least a second to react, on top of the half-second alert, before the
+escape is lost. `node tools/reaction.js` measures this for every spider level.
+
 ## Power-ups
 
 Introduced one per level, then combined.
@@ -134,9 +138,8 @@ and gates stop them all. "Speed" is relative to you.
 | Teeth | 1/4 | Chases you. |
 | Blob | 1/4 | Wanders at random (the same way every try). |
 | Walker | 1/2 | Straight on; picks a random turn when blocked. |
-| Mimic | 1 | Copies your moves. |
+| Mimic | 1 | Copies every move you try, even into a wall: bump a wall to move it while you stay put. |
 
-Walker and mimic are in the rules but not in a level yet.
 
 ## Levels
 
@@ -168,7 +171,9 @@ Walker and mimic are in the rules but not in a level yet.
 | 24 | The Zoo | Bug Hunt | Bugs and paramecia | bigger |
 | 25 | The Zoo | Hot and Cold | Fireballs and gliders | bigger |
 | 26 | The Zoo | Feeding Time | Teeth and a blob | fits |
-| 27 | The Zoo | Grand Zoo | Everything at once | bigger |
+| 27 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
+| 28 | The Zoo | Grand Zoo | Everything at once | bigger |
+| 29 | The Zoo | Shadow Play | The mimic: bump walls to steer it onto a button and off a bomb | bigger |
 
 ## Modes and scoring
 
@@ -241,4 +246,3 @@ so it stays a hint, not autoplay).
   diagonally; a mother spider whose death frees the whole nest.
 - **More power-ups:** a decoy that spiders chase instead of you; a teleporter pair.
 - **Level editor** with the solver built in, so shared levels are guaranteed winnable.
-- Levels for the walker and the mimic.

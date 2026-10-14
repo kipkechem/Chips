@@ -61,6 +61,7 @@ cd android && ./gradlew assembleDebug
 | `tools/solve.js` | Solver. Proves each level is winnable and checks its par. |
 | `tools/test-rules.js` | One small test per game rule (water, ice, traps, monsters...). |
 | `tools/test-browser.js` | Plays every level in a headless browser with the solver's moves (needs Playwright). |
+| `tools/reaction.js` | Measures how much reaction time each spider chase gives a human (aim for 1 second or more). |
 | `tools/build-web.js` | Packs the game into `www/` for the Android app, with fonts bundled for offline play. |
 | `assets/` | App icon sources. |
 

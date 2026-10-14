@@ -515,7 +515,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     tide: 'Elements: water and fire, and the boots that get you through them. Watch out for the thief.',
     yard: 'Terrain: force floors, teleports, bombs, gravel, dirt and walls that are not what they seem.',
     machine: 'Machines: buttons that flip walls, spring traps, fire clone machines and turn tanks around.',
-    zoo: 'The monster zoo: bugs, paramecia, fireballs, gliders, teeth and blobs.',
+    zoo: 'The monster zoo: bugs, paramecia, fireballs, gliders, teeth, blobs, walkers and the mimic.',
   };
   const BOOT_NAME = { p: 'flippers', h: 'fire boots', k: 'ice skates', u: 'suction boots' };
   const BOOT_HELP = {
@@ -662,7 +662,20 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   });
 
   // ---------- Flow ----------
-  const bestKey = (i) => `lockstep:v4:${mode}:${i}`;
+  // Stars are saved by level name, so adding or reordering levels never moves them.
+  const bestKey = (i) => `lockstep:v5:${mode}:${LEVELS[i].name}`;
+  // One-time move of stars saved by position (builds 1 to 5) to the by-name keys.
+  const V4_ORDER = ['Boot Up', 'Spend Wisely', 'Spider Nest', 'Jetpack', 'Crumbling Ruins', 'Thin Ice',
+    'Flamethrower', 'Mega Blaster', 'Beat Drop', 'Freeze Frame', 'Disco Inferno', 'Deep End', 'Firewalk',
+    'Cold Feet', 'Pickpocket', 'Conveyor', 'Beam Me Up', 'Minefield', 'Smoke and Mirrors', 'Switchback',
+    'Snare', 'Copy Machine', 'Tank Trap', 'Bug Hunt', 'Hot and Cold', 'Feeding Time', 'Grand Zoo'];
+  for (const m of Object.keys(MODES)) {
+    V4_ORDER.forEach((name, i) => {
+      const old = store.get(`lockstep:v4:${m}:${i}`);
+      const key = `lockstep:v5:${m}:${name}`;
+      if (old && !store.get(key)) store.set(key, old);
+    });
+  }
 
   function overlay(name) {
     for (const id of ['pause', 'result', 'intro']) $('#' + id).hidden = id !== name;
@@ -974,7 +987,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         lava: ['You stepped into lava.', 'Push a crate into it first, or find another way around.'],
         caught: [`Caught by ${ENEMY_NAME[caught ? caught.type : 'spider']}.`, caught && caught.type === 'spider'
           ? 'Spiders react half a second after they spot you, then chase at nearly your speed. Get through a gate, or turn a corner they cannot follow.'
-          : 'Every monster follows a fixed pattern. Watch it go round once before you cross its path.'],
+          : caught && caught.type === 'mimic'
+            ? 'The mimic copies every move you try. Walk into a wall and it still moves, while you stay put.'
+            : 'Every monster follows a fixed pattern. Watch it go round once before you cross its path.'],
         crushed: ['Crushed by a beat block.', `Pink and cyan blocks swap every ${secs(Core.BEAT)}. Watch the BEAT pips.`],
         water: ['You sank.', 'Water needs flippers. Or push a crate in: it turns into dirt you can walk on.'],
         fire: ['You got burned.', 'Fire needs fire boots.'],
@@ -1166,6 +1181,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => { floor(c); c.drawImage(sp.monsters.tank[1], 0, 0); }, 'Tank', 'Rolls straight and waits when blocked. A blue button turns every tank around.'],
       [(c) => { floor(c); c.drawImage(sp.monsters.teeth[0], 0, 0); }, 'Teeth', 'Chases you, slowly.'],
       [(c) => { floor(c); c.drawImage(sp.monsters.blob[0], 0, 0); }, 'Blob and walker', 'A blob wobbles about at random; a walker goes straight and picks a random turn when blocked.'],
+      [(c) => { floor(c); c.drawImage(sp.mimic, 0, 0); }, 'Mimic', 'Copies every move you try, even into a wall. Bump a wall to move it while you stay put.'],
     ];
     for (const [draw, name, text] of items) {
       const li = document.createElement('li');
