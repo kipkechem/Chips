@@ -152,6 +152,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .keychip.has { color: var(--accent); }
 .keychip canvas { width: 24px; height: 24px; }
 .beat { display: flex; align-items: center; gap: 4px; color: var(--muted); }
+.boots { display: flex; gap: 2px; }
+.boots canvas { width: 24px; height: 24px; opacity: 0.18; filter: grayscale(1); }
+.boots canvas.has { opacity: 1; filter: none; }
 .beat i { width: 9px; height: 9px; border: 2px solid currentColor; box-sizing: border-box; }
 .beat i.on { background: currentColor; }
 .iconbtn {
@@ -292,7 +295,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   .card .score { font-size: 32px; }
   .card p, .card ul { font-size: 14px; }
   .bar { font-size: 17px; }
-  .keychip canvas { width: 20px; height: 20px; }
+  .keychip canvas, .boots canvas { width: 20px; height: 20px; }
   .power { font-size: 14px; padding: 4px 2px 2px; }
   .power canvas { width: 30px; height: 30px; }
   .btn { font-size: 17px; padding: 6px 8px; }
@@ -317,7 +320,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   <section class="hero">
     <div>
       <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
-      <p>Every key opens one door of its color. Spiders sit boxed in behind chips and keys. Pick one up and they spot you, react half a second later, and chase at nearly your speed. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen.</p>
+      <p>Every key opens one door of its color (the green key opens them all). Spiders sit boxed in behind chips and keys. Pick one up and they spot you, react half a second later, and chase at nearly your speed. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen.</p>
     </div>
     <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
   </section>
@@ -345,6 +348,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <option value="ice">Ice Station</option>
         <option value="neon">Neon Mixtape</option>
         <option value="solar">Solar Disco</option>
+        <option value="tide">Tide Works</option>
+        <option value="yard">Conveyor Yard</option>
+        <option value="machine">Machine Room</option>
+        <option value="zoo">The Zoo</option>
       </select>
     </div>
   </section>
@@ -376,6 +383,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       <span class="keychip" id="kc-b"><canvas data-key="b" width="16" height="16"></canvas><span>0</span></span>
       <span class="keychip" id="kc-y"><canvas data-key="y" width="16" height="16"></canvas><span>0</span></span>
       <span class="keychip" id="kc-g"><canvas data-key="g" width="16" height="16"></canvas><span>0</span></span>
+    </span>
+    <span class="boots" id="hud-boots" aria-label="Boots">
+      <canvas data-boot="p" width="16" height="16" title="Flippers"></canvas>
+      <canvas data-boot="h" width="16" height="16" title="Fire boots"></canvas>
+      <canvas data-boot="k" width="16" height="16" title="Ice skates"></canvas>
+      <canvas data-boot="u" width="16" height="16" title="Suction boots"></canvas>
     </span>
     <span id="hud-beat" class="beat" hidden title="Beat blocks swap when the four pips fill">BEAT <i></i><i></i><i></i><i></i></span>
     <button id="btn-pause" class="iconbtn" type="button" aria-label="Pause">
@@ -492,13 +505,24 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     explorer: { limit: 0 },
     classic: { limit: 2 },
   };
-  const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar'];
+  const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar', 'tide', 'yard', 'machine', 'zoo'];
   const WORLD_RULE = {
     arcade: 'The basics: keys, doors, chips and spiders.',
     circuits: 'Modifier: crumbling floor gives way once you step off it.',
     ice: 'Modifier: ice. You slide until something stops you.',
     neon: 'Modifier: beat blocks. Pink and cyan blocks swap on the beat.',
     solar: 'Modifier: lava. Everything comes together.',
+    tide: 'Elements: water and fire, and the boots that get you through them. Watch out for the thief.',
+    yard: 'Terrain: force floors, teleports, bombs, gravel, dirt and walls that are not what they seem.',
+    machine: 'Machines: buttons that flip walls, spring traps, fire clone machines and turn tanks around.',
+    zoo: 'The monster zoo: bugs, paramecia, fireballs, gliders, teeth and blobs.',
+  };
+  const BOOT_NAME = { p: 'flippers', h: 'fire boots', k: 'ice skates', u: 'suction boots' };
+  const BOOT_HELP = {
+    p: 'You can swim through water.',
+    h: 'You can walk through fire.',
+    k: 'You walk on ice instead of sliding.',
+    u: 'Force floors no longer push you around.',
   };
   const POWER_NAME = { j: 'jetpack', f: 'flamethrower', m: 'mega blaster', z: 'freeze bomb' };
   const POWER_HELP = {
@@ -508,7 +532,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     z: `Freezes every enemy for ${Core.FREEZE_TURNS / Core.TURNS_PER_SECOND} seconds.`,
   };
   const KEY_NAME = { r: 'red', g: 'green', b: 'blue', y: 'yellow' };
-  const ENEMY_NAME = { patrol: 'a patrol drone', spider: 'a spider', mimic: 'the mimic' };
+  const ENEMY_NAME = {
+    patrol: 'a patrol drone', spider: 'a spider', mimic: 'the mimic', bug: 'a bug', para: 'a paramecium',
+    fireball: 'a fireball', glider: 'a glider', tank: 'a tank', teeth: 'the teeth', blob: 'a blob', walker: 'a walker',
+  };
 
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
@@ -590,7 +617,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const s = G.state;
     const t = now / 1000;
     const k = turnProgress(now);
-    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k });
+    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k, trapsOpen: Core.trapsOpen(s) });
     G.effects = G.effects.filter((fx) => t - fx.t0 < (fx.dur || 0.45));
     Art.drawEffects(bctx, G.effects, t);
     const cam = camTarget(s, glide(G.prev && G.prev.player, s.player, k));
@@ -720,8 +747,14 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         G.effects.push({ kind: 'splat', at: [xy(arg)], t0: t + 0.05, dur: 0.4 });
       } else if (kind === 'break') {
         G.effects.push({ kind: 'boom', at: [xy(arg)], t0: t + 0.1, dur: 0.4 });
-      } else if (kind === 'crumble') {
+      } else if (kind === 'crumble' || kind === 'reveal' || kind === 'fakewall') {
         G.effects.push({ kind: 'dust', at: [xy(arg)], t0: t, dur: 0.35 });
+      } else if (kind === 'boom') {
+        G.effects.push({ kind: 'boom', at: [xy(arg)], t0: t, dur: 0.45 });
+      } else if (kind === 'splash') {
+        G.effects.push({ kind: 'splash', at: [xy(arg)], t0: t, dur: 0.4 });
+      } else if (kind === 'clone' || kind === 'teleport') {
+        G.effects.push({ kind: 'sparkle', at: [xy(arg)], t0: t, dur: 0.35 });
       }
     }
   }
@@ -749,6 +782,24 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     if (has('fx:freeze')) { say(`Everything is frozen for ${secs(Core.FREEZE_TURNS)}. Frozen enemies are solid.`); tone(1200, 0.3, 'sine', 0.04); return; }
     if (has('fx:flame')) { say(kills ? `Burned ${kills} ${kills === 1 ? 'enemy' : 'enemies'}.` : 'The flames hit nothing.'); tone(160, 0.25, 'sawtooth', 0.04); return; }
     if (has('fx:shot')) { say(kills ? 'Direct hit.' : has('break') ? 'The wall shatters.' : 'The shot hit solid wall.'); tone(900, 0.06); tone(200, 0.2, 'sawtooth', 0.04, 0.05); return; }
+    const def = LEVELS[G.idx];
+    const hintEv = has('hint');
+    if (hintEv) {
+      const pos = hintEv.slice(5);
+      say((def.hints && def.hints[pos]) || def.hint);
+      tone(700, 0.08, 'sine', 0.03);
+      return;
+    }
+    if (has('thief')) { say('The thief stole your boots!', 'warn'); tone(300, 0.1); tone(200, 0.15, 'square', 0.035, 0.1); return; }
+    if (has('boom') && !events.includes('dead')) { say('Boom! The bomb is gone.'); tone(90, 0.3, 'sawtooth', 0.05); return; }
+    if (has('clone')) { say('The clone machines fired.', 'alarm'); tone(600, 0.06); tone(900, 0.06, 'square', 0.03, 0.06); return; }
+    if (events.includes('toggle')) { say('The green walls flipped.'); tone(440, 0.08, 'triangle'); tone(660, 0.08, 'triangle', 0.03, 0.06); return; }
+    if (events.includes('reverse')) { say('The tanks turned around.'); tone(330, 0.12, 'triangle'); return; }
+    if (has('teleport')) { tone(1200, 0.06, 'sine', 0.03); tone(1600, 0.08, 'sine', 0.03, 0.05); return; }
+    if (has('reveal')) { say('A hidden wall!', 'warn'); tone(150, 0.12); return; }
+    if (has('fakewall')) { say('That wall was a fake.'); tone(500, 0.06, 'triangle'); return; }
+    if (has('splash')) { say('The crate sinks and fills the water with dirt.'); tone(220, 0.2, 'sine', 0.04); return; }
+    if (events.includes('trapped')) { if (fresh) say('Caught in a trap. Something has to hold a brown button down.', 'warn'); return; }
     for (const ev of events) {
       if (ev === 'bump') { if (fresh) { tone(90, 0.1); bump(); } return; }
       if (ev === 'locked') { say(`Locked. You need a ${KEY_NAME[before.grid[ti].toLowerCase()]} key.`, 'warn'); if (fresh) { tone(90, 0.1); bump(); } return; }
@@ -762,6 +813,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         const it = ev.slice(7);
         if (it === '*') say(`Chip ${s.chips} of ${s.chipsTotal}.${s.chips === s.chipsTotal ? ' The flag is open!' : ''}${run}`, run ? 'alarm' : '');
         else if (POWER_NAME[it]) say(`Picked up the ${POWER_NAME[it]}. ${POWER_HELP[it]}${run}`, 'alarm');
+        else if (BOOT_NAME[it]) say(`Got the ${BOOT_NAME[it]}. ${BOOT_HELP[it]}${run}`, 'alarm');
         else say(`Got the ${KEY_NAME[it]} key.${run}`, run ? 'alarm' : '');
         tone(880, 0.06); tone(1320, 0.08, 'square', 0.035, 0.06);
         return;
@@ -817,7 +869,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     }
     G.prev = cur;
     G.state = r.state;
-    G.lastTick = now;
+    // Keep the clock on its exact 1/6 s schedule rather than rounding up to whole frames
+    // (which would run a 60 Hz screen at 5.5 turns a second). A press that arrives early
+    // starts a new schedule from now.
+    const due = G.lastTick + Core.TURN_MS;
+    G.lastTick = fresh || now - due >= Core.TURN_MS || now < due ? now : due;
     spawnEffects(r.events, now / 1000);
     describe(cur, action, r.events, fresh);
     hud();
@@ -918,8 +974,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         lava: ['You stepped into lava.', 'Push a crate into it first, or find another way around.'],
         caught: [`Caught by ${ENEMY_NAME[caught ? caught.type : 'spider']}.`, caught && caught.type === 'spider'
           ? 'Spiders react half a second after they spot you, then chase at nearly your speed. Get through a gate, or turn a corner they cannot follow.'
-          : 'Enemies only move when you do. Count their steps against yours.'],
+          : 'Every monster follows a fixed pattern. Watch it go round once before you cross its path.'],
         crushed: ['Crushed by a beat block.', `Pink and cyan blocks swap every ${secs(Core.BEAT)}. Watch the BEAT pips.`],
+        water: ['You sank.', 'Water needs flippers. Or push a crate in: it turns into dirt you can walk on.'],
+        fire: ['You got burned.', 'Fire needs fire boots.'],
+        bomb: ['You stepped on a bomb.', 'Push a crate onto a bomb, or let a monster set it off.'],
         battery: ['Out of time.', `You had ${secs(s.battery)}. Par is ${secs(def.par)}. Plan the route before you run it.`],
       }[s.cause];
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} failed`;
@@ -934,6 +993,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function hud() {
     const s = G.state;
+    $('#hud-moves').dataset.steps = s.steps; // read by the browser tests
     $('#hud-moves').innerHTML = s.battery ? `${secs(s.steps)}<small> / ${secs(s.battery)}</small>` : secs(s.steps);
     const box = $('#chipbox');
     const done = s.chips >= s.chipsTotal;
@@ -948,6 +1008,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       box.classList.add('pulse');
     }
     G.shownChips = s.chips;
+    document.querySelectorAll('canvas[data-boot]').forEach((c) => c.classList.toggle('has', !!s.boots[c.dataset.boot]));
     for (const k of ['r', 'b', 'y', 'g']) {
       const el = $('#kc-' + k);
       el.lastChild.textContent = s.keys[k];
@@ -978,6 +1039,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       const x = c.getContext('2d');
       x.clearRect(0, 0, 16, 16);
       x.drawImage(sp.powers[c.parentElement.dataset.power], 0, 0);
+    });
+    document.querySelectorAll('canvas[data-boot]').forEach((c) => {
+      const x = c.getContext('2d');
+      x.clearRect(0, 0, 16, 16);
+      x.drawImage(sp.boots[c.dataset.boot], 0, 0);
     });
     // One chip icon per chip in the level; each lights up when collected.
     const pips = $('#chip-pips');
@@ -1066,7 +1132,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const floor = (c) => Art.drawFloor(c, 0, 0, th, 5);
     const items = [
       [(c) => { floor(c); c.drawImage(sp.spider, 0, 0); }, 'Spider', 'Waits until it sees you along a row or column (it sees past other spiders). Half a second later it chases at 95% of your speed, until a wall, item or gate stops it.'],
-      [(c) => Art.drawDoor(c, 0, 0, 'b'), 'Keys and doors', 'A key opens one door of its color and is used up. Each color has its own symbol.'],
+      [(c) => Art.drawDoor(c, 0, 0, 'b'), 'Keys and doors', 'A key opens one door of its color and is used up. The green key is never used up: it opens every green door. Each color has its own symbol.'],
       [(c) => { floor(c); Art.drawGate(c, 0, 0, 'y'); }, 'Gate', 'An opened door. You walk through; no enemy can cross it.'],
       [(c) => { floor(c); Art.drawFence(c, 0, 0); }, 'Fence', 'You can pass, enemies cannot. Flames and shots go straight through.'],
       [(c) => { floor(c); Art.drawChip(c, 0, 0, 0); }, 'Chip', 'Collect every chip to unlock the flag.'],
@@ -1081,6 +1147,25 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => { floor(c); Art.drawCracks(c, 0, 0, th.detail); }, 'Crumbling floor', 'Turns into a hole once you step off it.'],
       [(c) => { floor(c); Art.drawBeat(c, 0, 0, '1', true, th); }, 'Beat blocks', `Pink and cyan swap every ${secs(Core.BEAT)}. Anything inside one when it closes is crushed.`],
       [(c) => Art.drawLava(c, 0, 0, 0, 3), 'Lava', 'Deadly. Push a crate in to fill it.'],
+      [(c) => Art.drawWater(c, 0, 0, 0, 3), 'Water', 'You sink without flippers. A crate pushed in turns into dirt.'],
+      [(c) => Art.drawFire(c, 0, 0, 0, 3), 'Fire', 'You burn without fire boots. Only fireballs cross it.'],
+      [(c) => { floor(c); c.drawImage(sp.boots.p, 0, 0); }, 'Boots', 'Flippers (water), fire boots (fire), ice skates (no sliding), suction boots (force floors). Kept until a thief takes them.'],
+      [(c) => { floor(c); c.drawImage(sp.thief, 0, 0); }, 'Thief', 'Step on him and he takes all your boots.'],
+      [(c) => Art.drawForce(c, 0, 0, 'right', 0), 'Force floor', 'Carries you the way the arrows point. Suction boots hold you still.'],
+      [(c) => Art.drawTeleport(c, 0, 0, 0), 'Teleport', 'Sends you to the next teleport, and you carry on out of it the same way.'],
+      [(c) => { floor(c); Art.drawBomb(c, 0, 0, 0); }, 'Bomb', 'Deadly to step on. A crate or a monster sets it off and clears it.'],
+      [(c) => { floor(c); Art.drawGravel(c, 0, 0, 3); }, 'Gravel', 'You walk on it; monsters will not.'],
+      [(c) => Art.drawDirt(c, 0, 0, 3), 'Dirt', 'Clears as you walk over it. Monsters cannot cross it.'],
+      [(c) => { Art.drawWall(c, 0, 0, th, 3); }, 'Hidden and fake walls', 'Some floor is really wall, and some walls give way when you touch them. Remember which.'],
+      [(c) => { floor(c); Art.drawToggle(c, 0, 0, true); }, 'Toggle walls', 'A green button flips every green wall open or shut.'],
+      [(c) => { floor(c); Art.drawTrap(c, 0, 0, false); }, 'Trap', 'Holds whatever steps in until something holds a brown button down.'],
+      [(c) => { floor(c); Art.drawButton(c, 0, 0, '['); }, 'Buttons', 'Green flips walls, brown opens traps, red fires clone machines, blue turns tanks around.'],
+      [(c) => { floor(c); Art.drawHintTile(c, 0, 0); }, 'Hint', 'Step on it for a tip.'],
+      [(c) => { floor(c); c.drawImage(sp.monsters.bug[1], 0, 0); }, 'Bug and paramecium', 'The bug hugs the wall on its left, the paramecium the wall on its right.'],
+      [(c) => { floor(c); c.drawImage(sp.monsters.fireball[0], 0, 0); }, 'Fireball and glider', 'Both fly straight. A fireball turns right when blocked and crosses fire; a glider turns left and crosses water.'],
+      [(c) => { floor(c); c.drawImage(sp.monsters.tank[1], 0, 0); }, 'Tank', 'Rolls straight and waits when blocked. A blue button turns every tank around.'],
+      [(c) => { floor(c); c.drawImage(sp.monsters.teeth[0], 0, 0); }, 'Teeth', 'Chases you, slowly.'],
+      [(c) => { floor(c); c.drawImage(sp.monsters.blob[0], 0, 0); }, 'Blob and walker', 'A blob wobbles about at random; a walker goes straight and picks a random turn when blocked.'],
     ];
     for (const [draw, name, text] of items) {
       const li = document.createElement('li');

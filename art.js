@@ -46,6 +46,36 @@
       checker: '#ea6c1f',
       enemy: '#3fe0c8', enemyDark: '#138a78', style: 'solar',
     },
+    tide: {
+      name: 'Tide Works',
+      bg: '#04161c', panel: '#082630', frame: '#1fb5a8', frameHi: '#7ff0e2', ink: '#e6fbf8', muted: '#8cc4bd',
+      floor: '#0b2129', floorGrid: '#0e2831', detail: '#1c4450',
+      wall: '#1aa39a', wallHi: '#6fe3d6', wallLo: '#0d6b66', wallEdge: '#032a28',
+      enemy: '#ff6f3c', enemyDark: '#a3361a', style: 'plain',
+    },
+    yard: {
+      name: 'Conveyor Yard',
+      bg: '#0d0d10', panel: '#1a1a1f', frame: '#e0b21c', frameHi: '#ffe27a', ink: '#f7f3e6', muted: '#c2b98f',
+      floor: '#18181d', floorGrid: '#1e1e24', detail: '#34343d',
+      wall: '#d4a62a', wallHi: '#f5d870', wallLo: '#8f6b12', wallEdge: '#2a2003',
+      checker: '#22222a',
+      enemy: '#ff4d6d', enemyDark: '#a3203a', style: 'solar',
+    },
+    machine: {
+      name: 'Machine Room',
+      bg: '#0b0e15', panel: '#141a26', frame: '#8a9bbf', frameHi: '#c9d6f2', ink: '#eef2fb', muted: '#9aa6c0',
+      floor: '#131824', floorGrid: '#171d2b', detail: '#2a3346',
+      wall: '#6b7a99', wallHi: '#a9b6d1', wallLo: '#3e4a66', wallEdge: '#161b27',
+      enemy: '#ffb23a', enemyDark: '#a3650f', style: 'plain',
+    },
+    zoo: {
+      name: 'The Zoo',
+      bg: '#08130a', panel: '#0f2212', frame: '#5cbf4a', frameHi: '#a8ef8f', ink: '#eefbe8', muted: '#9fc495',
+      floor: '#122112', floorGrid: '#162716', detail: '#274227',
+      wall: '#3f8f3a', wallHi: '#7fd66f', wallLo: '#24561f', wallEdge: '#0a1d08',
+      speck: '#357a30', moss: '#2f6b1f', mossHi: '#9fe07a',
+      enemy: '#e8312f', enemyDark: '#9a1410', style: 'moss',
+    },
   };
 
   const KEY_COLORS = {
@@ -253,6 +283,194 @@
     '................',
   ];
 
+  // Monsters with a heading are drawn facing up and rotated to face the way they move.
+  const BUG = [
+    '................',
+    '.....k....k.....',
+    '......k..k......',
+    '.....kkkkkk.....',
+    '....kddddddk....',
+    '..k.kkkkkkkk.k..',
+    '...kgggkkgggk...',
+    '.kkkghgkkghgkkk.',
+    '...kgggkkgggk...',
+    '.kkkgggkkgggkkk.',
+    '...kgggkkgggk...',
+    '.kkkgggkkgggkkk.',
+    '....kggkkggk....',
+    '.....kkkkkk.....',
+    '................',
+    '................',
+  ];
+  const PARA = [
+    '................',
+    '......kkkk......',
+    '.l..kkppppkk..l.',
+    '..lkppppppppkl..',
+    '...kpwwppwwpk...',
+    '.l.kpwkppwkpk.l.',
+    '...kppppppppk...',
+    '..lkppppppppkl..',
+    '...kppppppppk...',
+    '.l.kppppppppk.l.',
+    '...kppppppppk...',
+    '..lkppppppppkl..',
+    '....kkppppkk....',
+    '......kkkk......',
+    '................',
+    '................',
+  ];
+  const FIREBALL = [
+    '................',
+    '.......o........',
+    '....o..oo..o....',
+    '.....oooooo.....',
+    '...ooyyyyyyoo...',
+    '..ooyywwwwyyoo..',
+    '..oyywwwwwwyyo..',
+    '.ooyywwwwwwyyoo.',
+    '..oyywwwwwwyyo..',
+    '..ooyywwwwyyoo..',
+    '...ooyyyyyyoo...',
+    '....oooooooo....',
+    '.....oo..oo.....',
+    '................',
+    '................',
+    '................',
+  ];
+  const GLIDER = [
+    '................',
+    '.......kk.......',
+    '......kbbk......',
+    '.....kbhbbk.....',
+    '....kbbhbbbk....',
+    '...kbbbbbbbbk...',
+    '..kbbbwbbwbbbk..',
+    '.kbbbbbbbbbbbbk.',
+    'kbbbbbbbbbbbbbbk',
+    'kbbkkbbbbbbkkbbk',
+    'kbk..kbbbbk..kbk',
+    'kk....kbbk....kk',
+    '.......kk.......',
+    '.......kk.......',
+    '................',
+    '................',
+  ];
+  const TANK = [
+    '................',
+    '.......kk.......',
+    '.......kk.......',
+    '.......kk.......',
+    '..kkkkkkkkkkkk..',
+    '..kttkggggkttk..',
+    '..kttkghggkttk..',
+    '..kttkggggkttk..',
+    '..kttkgkkgkttk..',
+    '..kttkggggkttk..',
+    '..kttkggggkttk..',
+    '..kttkggggkttk..',
+    '..kkkkkkkkkkkk..',
+    '................',
+    '................',
+    '................',
+  ];
+  const TEETH = [
+    '................',
+    '................',
+    '....kkkkkkkk....',
+    '...kmmmmmmmmk...',
+    '..kmmwmmmmwmmk..',
+    '..kmmkmmmmkmmk..',
+    '..kmmmmmmmmmmk..',
+    '..kwwkwwkwwkwk..',
+    '..krrrrrrrrrrk..',
+    '..kwkwwkwwkwwk..',
+    '..kmmmmmmmmmmk..',
+    '...kmmmmmmmmk...',
+    '....kkkkkkkk....',
+    '................',
+    '................',
+    '................',
+  ];
+  const BLOB = [
+    '................',
+    '................',
+    '................',
+    '................',
+    '......kkkk......',
+    '....kksssskk....',
+    '...kshssssssk...',
+    '..kssssssssssk..',
+    '..ksswsssswssk..',
+    '.kssskssssksssk.',
+    '.kssssssssssssk.',
+    'kssssssssssssssk',
+    'kkkkkkkkkkkkkkkk',
+    '................',
+    '................',
+    '................',
+  ];
+  const WALKER = [
+    '................',
+    '................',
+    '.....kkkkkk.....',
+    '....kooooook....',
+    '...koohoooook...',
+    '..koowwoowwook..',
+    '..koowkoowkook..',
+    '..kooooooooook..',
+    '..kooookkooook..',
+    '...kooooooook...',
+    '....kkkkkkkk....',
+    '....kk....kk....',
+    '...kkk....kkk...',
+    '................',
+    '................',
+    '................',
+  ];
+  const THIEF = [
+    '................',
+    '................',
+    '.....kkkkkk.....',
+    '....kddddddk....',
+    '...kkkkkkkkkk...',
+    '...kffffffffk...',
+    '...kmmmmmmmmk...',
+    '...kmwmmmmwmk...',
+    '...kffffffffk...',
+    '...kfffkkfffk...',
+    '....kffffffk....',
+    '.....kkkkkk.....',
+    '................',
+    '................',
+    '................',
+    '................',
+  ];
+  const BOOT = [
+    '................',
+    '................',
+    '.....kkkkk......',
+    '.....kcchk......',
+    '.....kccck......',
+    '.....kccck......',
+    '.....kccck......',
+    '.....kccckkkk...',
+    '....kcccccccck..',
+    '....kccccccccck.',
+    '....kkkkkkkkkkk.',
+    '................',
+    '................',
+    '................',
+    '................',
+    '................',
+  ];
+  const BOOT_COLORS = {
+    p: { c: '#2f8cff', h: '#9ccbff' }, // flippers
+    h: { c: '#e8392f', h: '#ff9a8a' }, // fire boots
+    k: { c: '#e6ebf5', h: '#ffffff' }, // ice skates
+    u: { c: '#2fcf3a', h: '#a6f08f' }, // suction boots
+  };
+
   function makeCanvas(w, h) {
     if (typeof OffscreenCanvas !== 'undefined' && typeof document === 'undefined') return new OffscreenCanvas(w, h);
     const c = document.createElement('canvas');
@@ -277,6 +495,44 @@
   }
 
   const OUTLINE = '#0a0d14';
+
+  // Four copies of an up-facing sprite, turned to face up, right, down and left.
+  function turned(src) {
+    return [0, 1, 2, 3].map((q) => {
+      const c = makeCanvas(TILE, TILE);
+      const x = c.getContext('2d');
+      x.translate(TILE / 2, TILE / 2);
+      x.rotate((q * Math.PI) / 2);
+      x.drawImage(src, -TILE / 2, -TILE / 2);
+      return c;
+    });
+  }
+
+  function bootSprite(b) {
+    const col = BOOT_COLORS[b];
+    const c = sprite(BOOT, { k: OUTLINE, c: col.c, h: col.h });
+    const x = c.getContext('2d');
+    const dot = (a, y, w, h, color) => {
+      x.fillStyle = color;
+      x.fillRect(a, y, w, h);
+    };
+    if (b === 'p') {
+      dot(13, 8, 2, 3, col.h);
+      dot(14, 7, 2, 5, col.c);
+      dot(15, 6, 1, 7, OUTLINE);
+    } else if (b === 'h') {
+      dot(6, 0, 1, 2, '#ffd23f');
+      dot(8, 0, 1, 2, '#ff8a1f');
+      dot(7, 1, 1, 1, '#ffd23f');
+    } else if (b === 'k') {
+      dot(4, 11, 11, 1, '#9aa3b5');
+      dot(5, 12, 1, 1, '#9aa3b5');
+      dot(13, 12, 1, 1, '#9aa3b5');
+    } else if (b === 'u') {
+      for (const a of [5, 8, 11]) dot(a, 11, 2, 2, '#16801e');
+    }
+    return c;
+  }
   const spriteCache = new Map();
   function sprites(themeKey) {
     if (spriteCache.has(themeKey)) return spriteCache.get(themeKey);
@@ -296,8 +552,21 @@
         z: sprite(FREEZER, { k: OUTLINE, c: '#5ab8ff', h: '#d9f1ff', w: '#ffffff', y: '#ffd23f' }),
       },
       keys: {},
+      monsters: {
+        bug: turned(sprite(BUG, { k: OUTLINE, d: '#1e6b2a', g: '#3fbf4a', h: '#a6f08f' })),
+        para: turned(sprite(PARA, { k: OUTLINE, p: '#b06cf0', w: '#ffffff', l: '#e0b8ff' })),
+        fireball: [sprite(FIREBALL, { o: '#ff5a1f', y: '#ffb02a', w: '#fff2a8' })],
+        glider: turned(sprite(GLIDER, { k: OUTLINE, b: '#3aa8ff', h: '#bfe6ff', w: '#ffffff' })),
+        tank: turned(sprite(TANK, { k: OUTLINE, t: '#3a3f4a', g: '#8a9a4a', h: '#c9d68a' })),
+        teeth: [sprite(TEETH, { k: OUTLINE, m: '#ff6fae', w: '#ffffff', r: '#5a0f2a' })],
+        blob: [sprite(BLOB, { k: OUTLINE, s: '#6ad13a', h: '#d6ffb0', w: '#ffffff' })],
+        walker: [sprite(WALKER, { k: OUTLINE, o: '#ffa63a', h: '#ffe0a8', w: '#ffffff' })],
+      },
+      thief: sprite(THIEF, { k: OUTLINE, d: '#3b2b5c', f: '#e8b48a', m: '#241a36', w: '#ffffff' }),
+      boots: {},
     };
     for (const k of Object.keys(KEY_COLORS)) set.keys[k] = sprite(KEY, { k: OUTLINE, ...KEY_COLORS[k] });
+    for (const b of Object.keys(BOOT_COLORS)) set.boots[b] = bootSprite(b);
     spriteCache.set(themeKey, set);
     return set;
   }
@@ -560,10 +829,16 @@
           px(ctx, x * TILE + 6, y * TILE + 6, 4, 4, '#bff6ff');
           px(ctx, x * TILE + 7, y * TILE + 7, 2, 2, '#ffffff');
         }
-      } else if (fx.kind === 'boom' || fx.kind === 'splat' || fx.kind === 'dust') {
+      } else if (fx.kind === 'boom' || fx.kind === 'splat' || fx.kind === 'dust' || fx.kind === 'splash' || fx.kind === 'sparkle') {
         const [x, y] = fx.at[0];
         const r = Math.min(7, 2 + age * 30);
-        const color = fx.kind === 'boom' ? ['#fff2a8', '#ff8a1f'] : fx.kind === 'splat' ? ['#ffffff', '#7a1fe0'] : ['#c9b48a', '#6b5a3a'];
+        const color = {
+          boom: ['#fff2a8', '#ff8a1f'],
+          splat: ['#ffffff', '#7a1fe0'],
+          dust: ['#c9b48a', '#6b5a3a'],
+          splash: ['#bfe2ff', '#2f8cff'],
+          sparkle: ['#ffffff', '#36dcff'],
+        }[fx.kind];
         const cx = x * TILE + 8;
         const cy = y * TILE + 8;
         for (let k = 0; k < 8; k++) {
@@ -579,8 +854,153 @@
     }
   }
 
+  function drawWater(ctx, x0, y0, t, hv) {
+    px(ctx, x0, y0, 16, 16, '#1c5fc4');
+    const f = Math.floor(t * 3 + hv) % 4;
+    for (const yy of [3, 8, 13]) {
+      for (let xx = 0; xx < 16; xx++) {
+        if ((xx + f + yy) % 6 < 3) px(ctx, x0 + xx, y0 + yy + (((xx + f) % 6) < 1 ? -1 : 0), 1, 1, '#5aa8ff');
+      }
+    }
+    px(ctx, x0 + ((hv + f * 3) % 12) + 2, y0 + 5 + (hv % 3) * 3, 2, 1, '#bfe2ff');
+  }
+
+  function drawFire(ctx, x0, y0, t, hv) {
+    px(ctx, x0, y0, 16, 16, '#5a1408');
+    const f = Math.floor(t * 6 + hv) % 2;
+    for (const [cx, h] of [[3, 9], [8, 12], [13, 8]]) {
+      const top = 15 - h - f;
+      for (let yy = top; yy < 16; yy++) {
+        const half = Math.max(0, Math.floor(((yy - top) * 3) / h));
+        px(ctx, x0 + cx - half, y0 + yy, half * 2 + 1, 1, '#ff6a1a');
+      }
+      px(ctx, x0 + cx, y0 + top + 3, 1, h - 4, '#ffd23f');
+    }
+  }
+
+  // Draw pixels as if facing right, rotated to face dir.
+  function rotPx(ctx, x0, y0, dir, x, y, w, h, color) {
+    for (let a = 0; a < w; a++) {
+      for (let b = 0; b < h; b++) {
+        let X = x + a;
+        let Y = y + b;
+        if (dir === 'left') X = 15 - X;
+        else if (dir === 'down') [X, Y] = [15 - Y, X];
+        else if (dir === 'up') [X, Y] = [Y, 15 - X];
+        px(ctx, x0 + X, y0 + Y, 1, 1, color);
+      }
+    }
+  }
+
+  function drawForce(ctx, x0, y0, dir, t) {
+    px(ctx, x0, y0, 16, 16, '#22303e');
+    px(ctx, x0, y0, 16, 1, '#2d4052');
+    const off = Math.floor(t * 12) % 8;
+    for (const base of [0, 8]) {
+      const cx = (base + off) % 16;
+      for (let k = 0; k < 4; k++) {
+        rotPx(ctx, x0, y0, dir, (cx + k) % 16, 4 + k, 1, 1, '#7fe3ff');
+        rotPx(ctx, x0, y0, dir, (cx + k) % 16, 11 - k, 1, 1, '#7fe3ff');
+      }
+    }
+  }
+
+  function drawTeleport(ctx, x0, y0, t) {
+    px(ctx, x0, y0, 16, 16, '#090d1a');
+    const f = Math.floor(t * 8) % 3;
+    const cols = ['#36dcff', '#1f6fff', '#b98cff'];
+    for (let r = 0; r < 3; r++) {
+      const c = cols[(r + f) % 3];
+      const a = 2 + r * 2;
+      const b = 16 - a * 2;
+      px(ctx, x0 + a, y0 + a, b, 1, c);
+      px(ctx, x0 + a, y0 + a + b - 1, b, 1, c);
+      px(ctx, x0 + a, y0 + a, 1, b, c);
+      px(ctx, x0 + a + b - 1, y0 + a, 1, b, c);
+    }
+    px(ctx, x0 + 7, y0 + 7, 2, 2, '#ffffff');
+  }
+
+  function drawBomb(ctx, x0, y0, t) {
+    const cx = x0 + 7;
+    const cy = y0 + 9;
+    for (let yy = -5; yy <= 5; yy++) {
+      const half = Math.floor(Math.sqrt(25 - yy * yy));
+      px(ctx, cx - half, cy + yy, half * 2 + 1, 1, '#16181f');
+    }
+    px(ctx, cx - 3, cy - 3, 2, 2, '#5b6170');
+    px(ctx, cx + 2, cy - 6, 1, 2, '#b9a06a');
+    px(ctx, cx + 3, cy - 7, 1, 1, '#b9a06a');
+    px(ctx, cx + 4, cy - 8, 2, 2, Math.floor(t * 8) % 2 ? '#ffd23f' : '#ff5a1f');
+  }
+
+  function drawGravel(ctx, x0, y0, hv) {
+    let seed = hv * 7919 + 13;
+    const next = () => (seed = (Math.imul(seed, 1103515245) + 12345) >>> 0) >>> 16;
+    for (let k = 0; k < 16; k++) {
+      px(ctx, x0 + 1 + (next() % 13), y0 + 1 + (next() % 14), 2, 1, k % 3 ? '#7d8496' : '#5b6170');
+    }
+  }
+
+  function drawDirt(ctx, x0, y0, hv) {
+    px(ctx, x0, y0, 16, 16, '#5e4126');
+    for (let k = 0; k < 10; k++) {
+      px(ctx, x0 + ((hv * (k + 2) * 7) % 15), y0 + ((hv * (k + 5) * 3) % 15), 1, 1, k % 2 ? '#7d5a36' : '#3f2a17');
+    }
+  }
+
+  function drawToggle(ctx, x0, y0, closed) {
+    if (closed) {
+      px(ctx, x0, y0, 16, 16, '#0a2a12');
+      px(ctx, x0 + 1, y0 + 1, 14, 14, '#1f8a3a');
+      for (let k = -14; k < 16; k += 4) {
+        for (let a = 0; a < 14; a++) {
+          const b = a + k;
+          if (b >= 0 && b < 14) px(ctx, x0 + 1 + a, y0 + 1 + b, 1, 1, '#37d15a');
+        }
+      }
+    } else {
+      for (let i = 1; i < 15; i += 2) {
+        px(ctx, x0 + i, y0 + 1, 1, 1, '#2fcf3a');
+        px(ctx, x0 + i, y0 + 14, 1, 1, '#2fcf3a');
+        px(ctx, x0 + 1, y0 + i, 1, 1, '#2fcf3a');
+        px(ctx, x0 + 14, y0 + i, 1, 1, '#2fcf3a');
+      }
+    }
+  }
+
+  function drawTrap(ctx, x0, y0, open) {
+    px(ctx, x0 + 1, y0 + 1, 14, 2, '#7a4a1e');
+    px(ctx, x0 + 1, y0 + 13, 14, 2, '#7a4a1e');
+    px(ctx, x0 + 1, y0 + 1, 2, 14, '#7a4a1e');
+    px(ctx, x0 + 13, y0 + 1, 2, 14, '#7a4a1e');
+    if (!open) {
+      for (let a = 4; a < 13; a += 3) {
+        px(ctx, x0 + a, y0 + 3, 1, 3, '#c9ced8');
+        px(ctx, x0 + a, y0 + 10, 1, 3, '#c9ced8');
+      }
+    }
+  }
+
+  const BUTTON_COLORS = { '(': '#2fcf3a', ')': '#b0732f', '[': '#e8392f', ']': '#2f8cff' };
+  function drawButton(ctx, x0, y0, g) {
+    px(ctx, x0 + 3, y0 + 4, 10, 9, OUTLINE);
+    px(ctx, x0 + 4, y0 + 3, 8, 11, OUTLINE);
+    px(ctx, x0 + 4, y0 + 4, 8, 8, BUTTON_COLORS[g]);
+    px(ctx, x0 + 5, y0 + 5, 3, 2, '#ffffff');
+  }
+
+  function drawHintTile(ctx, x0, y0) {
+    px(ctx, x0 + 3, y0 + 2, 10, 12, '#2a2f3d');
+    const Q = ['.###.', '#...#', '...#.', '..#..', '..#..', '.....', '..#..'];
+    Q.forEach((row, yy) => {
+      for (let xx = 0; xx < 5; xx++) if (row[xx] === '#') px(ctx, x0 + 5 + xx, y0 + 4 + yy, 1, 1, '#ffd23f');
+    });
+  }
+
   // Draw the whole level into ctx (sized w*16 x h*16).
-  // view: { theme, t (seconds), phase (beat phase 0|1), prev (last turn's state), k (0..1 through the turn) }
+  // view: { theme, t (seconds), phase (beat phase 0|1), prev (last turn's state), k (0..1 through the turn),
+  //         trapsOpen (a brown button is held down) }
   function drawBoard(ctx, s, view) {
     const th = THEMES[view.theme];
     const sp = sprites(view.theme);
@@ -605,8 +1025,23 @@
           drawCracks(ctx, x0, y0, th.wallEdge);
           continue;
         }
-        if (g === '%') {
+        if (g === '%' || g === 'C') {
           drawSteel(ctx, x0, y0);
+          if (g === 'C') {
+            const c = (s.cloners || []).find((k) => k.x === x && k.y === y);
+            if (c) {
+              const art = sp.monsters[c.type] || [sp.spider];
+              const q = { up: 0, right: 1, down: 2, left: 3 }[c.dir] || 0;
+              ctx.globalAlpha = 0.85;
+              ctx.drawImage(art[art.length > 1 ? q : 0], x0 + 2, y0 + 2, 12, 12);
+              ctx.globalAlpha = 1;
+            }
+          }
+          continue;
+        }
+        if (g === 'N' || g === 'L') {
+          if (g === 'N') drawWall(ctx, x0, y0, th, hv);
+          else drawToggle(ctx, x0, y0, true);
           continue;
         }
         if (g === 'H') {
@@ -614,7 +1049,19 @@
           continue;
         }
         if (g === '~') drawIce(ctx, x0, y0, hv);
+        else if (g === 'w') drawWater(ctx, x0, y0, t, hv);
+        else if (g === 'F') drawFire(ctx, x0, y0, t, hv);
+        else if (g === ';') drawDirt(ctx, x0, y0, hv);
+        else if ('<>^v'.includes(g)) drawForce(ctx, x0, y0, { '<': 'left', '>': 'right', '^': 'up', v: 'down' }[g], t);
+        else if (g === 'o') drawTeleport(ctx, x0, y0, t);
         else drawFloor(ctx, x0, y0, th, hv);
+        if (g === ',') drawGravel(ctx, x0, y0, hv);
+        else if (g === 'K') drawBomb(ctx, x0, y0, t);
+        else if (g === 'l') drawToggle(ctx, x0, y0, false);
+        else if (g === 'J') drawTrap(ctx, x0, y0, view.trapsOpen);
+        else if (BUTTON_COLORS[g]) drawButton(ctx, x0, y0, g);
+        else if (g === '?') drawHintTile(ctx, x0, y0);
+        else if (g === 'T') ctx.drawImage(sp.thief, x0, y0);
         if (g === ':') drawCracks(ctx, x0, y0, th.detail);
         else if (g === 'x') drawLava(ctx, x0, y0, t, hv);
         else if (g === '1' || g === '2') drawBeat(ctx, x0, y0, g, (g === '1') === (phase === 0), th);
@@ -625,6 +1072,7 @@
         if (s.crates.includes(i)) drawCrate(ctx, x0, y0);
         const it = s.items[i];
         if (it === '*') drawChip(ctx, x0, y0, t);
+        else if (sp.boots[it]) ctx.drawImage(sp.boots[it], x0, y0);
         else if (sp.powers[it]) {
           const bob = Math.floor(t * 3) % 2;
           ctx.drawImage(sp.powers[it], x0, y0 - bob);
@@ -662,6 +1110,11 @@
       } else if (e.type === 'patrol') {
         ctx.drawImage(sp.ufo, x0, y0 + (frame && !e.frozen ? 1 : 0));
         px(ctx, x0 + 7 + e.dx * 6, y0 + 7 + e.dy * 6, 2, 2, '#ffd23f');
+      } else if (sp.monsters[e.type]) {
+        const art = sp.monsters[e.type];
+        const q = e.dy < 0 ? 0 : e.dx > 0 ? 1 : e.dy > 0 ? 2 : 3;
+        const bob = !e.frozen && frame && (e.type === 'blob' || e.type === 'teeth' || e.type === 'walker') ? 1 : 0;
+        ctx.drawImage(art.length > 1 ? art[q] : art[0], x0, y0 + bob);
       } else {
         ctx.drawImage(sp.mimic, x0, y0);
       }
@@ -681,7 +1134,8 @@
   const api = {
     TILE, THEMES, KEY_COLORS, SHAPES, sprites, drawBoard, drawEffects, drawDoor, drawGate, drawShape, drawChip, drawExit,
     drawLava, drawCrate, drawFloor, drawWall, drawSteel, drawCracks, drawIce, drawHole, drawBeat, drawFence, drawFrozen, makeCanvas,
-    SPRITE_ROWS: { ROBOT, SPIDER, SPIDER_B, UFO, MIMIC, KEY, JETPACK, FLAMER, BLASTER, FREEZER },
+    drawWater, drawFire, drawForce, drawTeleport, drawBomb, drawGravel, drawDirt, drawToggle, drawTrap, drawButton, drawHintTile,
+    SPRITE_ROWS: { ROBOT, SPIDER, SPIDER_B, UFO, MIMIC, KEY, JETPACK, FLAMER, BLASTER, FREEZER, BUG, PARA, FIREBALL, GLIDER, TANK, TEETH, BLOB, WALKER, THIEF, BOOT },
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.LockstepArt = api;

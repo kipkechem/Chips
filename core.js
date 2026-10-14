@@ -8,10 +8,15 @@
     left: { dx: -1, dy: 0 },
     right: { dx: 1, dy: 0 },
   };
+  const DIR_NAMES = ['up', 'right', 'down', 'left']; // clockwise
+  const LEFT_OF = { up: 'left', left: 'down', down: 'right', right: 'up' };
+  const RIGHT_OF = { up: 'right', right: 'down', down: 'left', left: 'up' };
+  const BACK_OF = { up: 'down', down: 'up', left: 'right', right: 'left' };
   const KEY_COLORS = ['r', 'g', 'b', 'y'];
   const POWERS = ['j', 'f', 'm', 'z']; // jetpack, flamethrower, mega blaster, freeze bomb
   const POWER_CHARGES = { j: 1, f: 3, m: 3, z: 1 };
   const AIMED = { j: true, f: true, m: true, z: false };
+  const BOOTS = ['p', 'h', 'k', 'u']; // flippers, fire boots, ice skates, suction boots
   const FLAME_RANGE = 3;
 
   // Real-time pacing. The world advances one turn every TURN_MS whether or not you move;
@@ -20,27 +25,62 @@
   const TURN_MS = 1000 / TURNS_PER_SECOND;
   const ALERT_TURNS = 3; // 0.5 s: how long a spider takes to react once it sees you
   const SPIDER_SKIP = 20; // a chasing spider sits out every 20th turn: 95% of your top speed
-  const PATROL_EVERY = 2; // drones move every other turn
   const FREEZE_TURNS = 18; // 3 s
   const BEAT = 8; // beat blocks swap every 8 turns (1.33 s)
-  const PATROL_DIRS = { '<': [-1, 0], '>': [1, 0], '^': [0, -1], v: [0, 1] };
+  const RNG_PERIOD = 16; // blobs and walkers repeat their "random" choices every 16 turns
+
+  // Monsters and how they move. `every`: they move on turns divisible by this (2 = half your
+  // speed). `turns`: the order of directions they try, relative to their heading.
+  const MONSTERS = {
+    D: { type: 'patrol', every: 2, face: 'right' }, // drone: straight, back when blocked
+    U: { type: 'bug', every: 2, face: 'up' }, // hugs the wall on its left
+    V: { type: 'para', every: 2, face: 'up' }, // hugs the wall on its right
+    Q: { type: 'fireball', every: 2, face: 'right' }, // straight, else right; walks through fire
+    P: { type: 'glider', every: 2, face: 'right' }, // straight, else left; glides over water
+    A: { type: 'tank', every: 2, face: 'right' }, // straight only; a blue button turns it around
+    X: { type: 'teeth', every: 4, face: 'down' }, // chases you, slowly
+    Z: { type: 'blob', every: 4, face: 'down' }, // wanders at random, slowly
+    e: { type: 'walker', every: 2, face: 'right' }, // straight; picks a random turn when blocked
+    M: { type: 'mimic', every: 1, face: 'down' }, // copies your moves
+  };
+  const TYPE_EVERY = Object.fromEntries(Object.values(MONSTERS).map((m) => [m.type, m.every]));
+  const TURN_ORDER = {
+    patrol: (h) => [h, BACK_OF[h]],
+    bug: (h) => [LEFT_OF[h], h, RIGHT_OF[h], BACK_OF[h]],
+    para: (h) => [RIGHT_OF[h], h, LEFT_OF[h], BACK_OF[h]],
+    fireball: (h) => [h, RIGHT_OF[h], LEFT_OF[h], BACK_OF[h]],
+    glider: (h) => [h, LEFT_OF[h], RIGHT_OF[h], BACK_OF[h]],
+    tank: (h) => [h],
+  };
+
+  const FORCE = { '<': 'left', '>': 'right', '^': 'up', v: 'down' };
 
   // Level map legend:
-  //   #  wall           %  steel wall (nothing breaks it)    W  cracked wall (blaster or jetpack breaks it)
-  //   .  floor          ~  ice (you slide until something stops you)
-  //   :  crumbling floor (turns into a hole once you step off it)     H  hole (a pit nothing can cross)
-  //   1 2  beat blocks (only one set is solid at a time; they swap every BEAT turns)
-  //   =  fence (you walk through it; enemies can't, but flames and shots pass)
-//   x  lava           E  exit (opens when every chip is collected)        @  start
-  //   *  chip           r g b y  keys      R G B Y  doors (each key opens one door, then it's gone)
-  //   j  jetpack        f  flamethrower    m  mega blaster      z  freeze bomb
-  //   O  crate (pushable; sinks into lava and leaves floor)
-  //   S  spider (once it sees you along a row or column, it reacts after 0.5 s and chases)
-  //   < > ^ v  patrol drone (flies straight, turns around when blocked)
-  //   M  mimic (copies every move you make)
+  //   Floors     .  floor       ~  ice (slide)        :  crumbling floor (becomes a hole H)
+  //              ,  gravel (monsters can't cross)    ;  dirt (clears when you walk on it)
+  //              < > ^ v  force floors (carry you along)    o  teleport
+  //              1 2  beat blocks (one set solid at a time, swapping every BEAT turns)
+  //              =  fence (you pass; enemies don't)  ?  hint tile    T  thief (takes your boots)
+  //              J  trap (holds whatever enters until a brown button is held down)
+  //              (  green button: flips toggle walls   )  brown button: opens traps while held
+  //              [  red button: clone machines fire      ]  blue button: tanks turn around
+  //   Walls      #  wall    %  steel    W  cracked (blaster/jetpack)    H  hole
+  //              I  hidden wall (looks like floor)   N  fake wall (gives way when you touch it)
+  //              L  toggle wall, closed    l  toggle wall, open    C  clone machine
+  //   Hazards    x  lava    w  water (flippers)    F  fire (fire boots)    K  bomb
+  //   Doors      R G B Y  doors (red, blue, yellow keys are used up; the green key is not)
+  //   Items      *  chip    r g b y  keys    j f m z  jetpack, flamethrower, mega blaster, freeze bomb
+  //              p h k u  flippers, fire boots, ice skates, suction boots
+  //   Things     @  start    E  exit    O  crate
+  //   Enemies    S  spider   D drone   U bug   V paramecium   Q fireball   P glider
+  //              A  tank     X teeth   Z blob  e walker       M mimic
+  // Optional level fields: facing {'x,y': dir} for a monster's first heading; clones
+  // {'x,y': ['U', 'left']} for the monster each clone machine copies; hints {'x,y': text}.
   //
   // An opened door stays in the grid as its lowercase letter: a gate. You can walk
-  // through it; no enemy can cross it. A crumbled floor tile becomes H (a hole).
+  // through it; no enemy can cross it.
+  const GRID_CHARS = '#%WH~:x12E=wF<>^voK,;INLlJC()[]?T' + 'RGBY';
+
   function parseLevel(def) {
     const rows = def.map;
     const h = rows.length;
@@ -49,38 +89,50 @@
     const items = {};
     const crates = [];
     const enemies = [];
+    const cloners = [];
     let player = null;
     let chipsTotal = 0;
     let beat = false;
+    const facing = def.facing || {};
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const c = rows[y][x] || '#';
         const i = y * w + x;
         let tile = '.';
-        if ('#%WH~:x12E='.includes(c) || 'RGBY'.includes(c)) {
+        if (GRID_CHARS.includes(c)) {
           tile = c;
           if (c === '1' || c === '2') beat = true;
+          if (c === 'C') {
+            const spec = (def.clones || {})[`${x},${y}`];
+            if (!spec) throw new Error(`Level "${def.name}": clone machine at ${x},${y} needs a clones entry`);
+            cloners.push({ x, y, type: MONSTERS[spec[0]] ? MONSTERS[spec[0]].type : 'spider', dir: spec[1] });
+          }
         } else if (c === '@') player = { x, y };
-        else if (c === '*' || KEY_COLORS.includes(c) || POWERS.includes(c)) {
+        else if (c === '*' || KEY_COLORS.includes(c) || POWERS.includes(c) || BOOTS.includes(c)) {
           items[i] = c;
           if (c === '*') chipsTotal++;
         } else if (c === 'O') crates.push(i);
         else if (c === 'S') enemies.push({ id: enemies.length, type: 'spider', x, y, mode: 'wait', alert: 0, frozen: 0 });
-        else if (PATROL_DIRS[c]) {
-          const [dx, dy] = PATROL_DIRS[c];
-          enemies.push({ id: enemies.length, type: 'patrol', x, y, dx, dy, frozen: 0 });
-        } else if (c === 'M') enemies.push({ id: enemies.length, type: 'mimic', x, y, frozen: 0 });
-        else if (c !== '.' && c !== ' ') throw new Error(`Level "${def.name}" has unknown tile "${c}"`);
+        else if (MONSTERS[c]) {
+          const { dx, dy } = DIRS[facing[`${x},${y}`] || MONSTERS[c].face];
+          enemies.push({ id: enemies.length, type: MONSTERS[c].type, x, y, dx, dy, frozen: 0 });
+        } else if (c !== '.' && c !== ' ') throw new Error(`Level "${def.name}" has unknown tile "${c}"`);
         grid.push(tile);
       }
     }
     if (!player) throw new Error(`Level "${def.name}" has no start (@)`);
-    // Turn-number rhythms in play (spider pace, drone pace, beat). The solver keys on steps % cycle.
+    // Turn-number rhythms in play. The solver keys on steps % cycle.
     const gcd = (a, b) => (b ? gcd(b, a % b) : a);
     let cycle = 1;
-    for (const [on, n] of [[enemies.some((e) => e.type === 'spider'), SPIDER_SKIP], [enemies.some((e) => e.type === 'patrol'), PATROL_EVERY], [beat, 2 * BEAT]]) {
-      if (on) cycle = (cycle * n) / gcd(cycle, n);
-    }
+    const types = new Set([...enemies.map((e) => e.type), ...cloners.map((c) => c.type)]);
+    const rhythms = [
+      [types.has('spider'), SPIDER_SKIP],
+      [[...types].some((t) => TYPE_EVERY[t] === 2), 2],
+      [[...types].some((t) => TYPE_EVERY[t] === 4), 4],
+      [types.has('blob') || types.has('walker'), RNG_PERIOD],
+      [beat, 2 * BEAT],
+    ];
+    for (const [on, n] of rhythms) if (on) cycle = (cycle * n) / gcd(cycle, n);
     return {
       cycle,
       w,
@@ -90,10 +142,13 @@
       items,
       crates,
       enemies,
+      cloners,
+      nextId: enemies.length,
       player,
       facing: 'down',
       keys: { r: 0, g: 0, b: 0, y: 0 },
       powers: { j: 0, f: 0, m: 0, z: 0 },
+      boots: { p: 0, h: 0, k: 0, u: 0 },
       chips: 0,
       chipsTotal,
       beat,
@@ -115,6 +170,7 @@
       player: { ...s.player },
       keys: { ...s.keys },
       powers: { ...s.powers },
+      boots: { ...s.boots },
     };
   }
 
@@ -123,13 +179,29 @@
   const phase = (s) => Math.floor(s.steps / BEAT) % 2;
   const beatSolid = (s, g) => (g === '1' && phase(s) === 0) || (g === '2' && phase(s) === 1);
   const isEdge = (s, x, y) => x === 0 || y === 0 || x === s.w - 1 || y === s.h - 1;
+  const headingOf = (e) => DIR_NAMES.find((d) => DIRS[d].dx === e.dx && DIRS[d].dy === e.dy) || 'down';
+  const rng = (s, e) => ((Math.imul((s.steps % RNG_PERIOD) + 1, 2654435761) ^ Math.imul(e.id + 7, 40503)) >>> 0) % 997;
+
+  // Anything that stops the player (and everyone else) like a wall.
+  const wallLike = (s, g) => '#%WHLC'.includes(g) || beatSolid(s, g);
+
+  // A trap releases whatever is in it only while something holds a brown button down.
+  function trapsOpen(s) {
+    for (let i = 0; i < s.grid.length; i++) {
+      if (s.grid[i] !== ')') continue;
+      const x = i % s.w;
+      const y = (i - x) / s.w;
+      if ((s.player.x === x && s.player.y === y) || s.crates.includes(i) || enemyAt(s, x, y)) return true;
+    }
+    return false;
+  }
 
   // Floor an enemy can stand on: plain, ice, crumbling, or a beat block that is currently open.
   function openFloor(s, g) {
     return g === '.' || g === '~' || g === ':' || ((g === '1' || g === '2') && !beatSolid(s, g));
   }
 
-  // Bare floor: no wall, door, gate, lava, exit, item or crate. Enemies only walk on this.
+  // Bare floor: no wall, door, gate, lava, exit, item or crate. Spiders only walk on this.
   function bare(s, x, y) {
     if (!inBounds(s, x, y)) return false;
     const i = y * s.w + x;
@@ -137,6 +209,65 @@
   }
 
   const enemyCanEnter = (s, x, y) => bare(s, x, y) && !enemyAt(s, x, y);
+
+  // Pattern monsters also walk onto buttons, traps and bombs; gliders cross water and
+  // fireballs cross fire. Nothing but you crosses gravel, dirt, force floors or teleports.
+  function monsterCanEnter(s, type, x, y) {
+    if (!inBounds(s, x, y)) return false;
+    const i = y * s.w + x;
+    if (s.items[i] || s.crates.includes(i) || enemyAt(s, x, y)) return false;
+    const g = s.grid[i];
+    if (openFloor(s, g) || '()[]JK'.includes(g)) return true;
+    if (g === 'w') return type === 'glider';
+    if (g === 'F') return type === 'fireball';
+    return false;
+  }
+
+  // What a button does the moment something steps onto it.
+  function press(s, g, events) {
+    if (g === '(') {
+      for (let i = 0; i < s.grid.length; i++) {
+        if (s.grid[i] === 'L') s.grid[i] = 'l';
+        else if (s.grid[i] === 'l') {
+          // A toggle wall can't close on anything standing in it.
+          const x = i % s.w;
+          const y = (i - x) / s.w;
+          const busy = (s.player.x === x && s.player.y === y) || s.crates.includes(i) || enemyAt(s, x, y);
+          if (!busy) s.grid[i] = 'L';
+        }
+      }
+      events.push('toggle');
+    } else if (g === '[') {
+      for (const c of s.cloners) {
+        const { dx, dy } = DIRS[c.dir];
+        const x = c.x + dx;
+        const y = c.y + dy;
+        if (!(s.player.x === x && s.player.y === y) && !monsterCanEnter(s, c.type, x, y)) continue;
+        const e = { id: s.nextId++, type: c.type, x, y, dx, dy, frozen: 0 };
+        if (c.type === 'spider') Object.assign(e, { mode: 'wait', alert: 0 });
+        s.enemies.push(e);
+        events.push(`clone:${x},${y}`);
+      }
+    } else if (g === ']') {
+      for (const e of s.enemies) {
+        if (e.type !== 'tank') continue;
+        e.dx = -e.dx;
+        e.dy = -e.dy;
+      }
+      events.push('reverse');
+    }
+  }
+
+  // What happens to a monster on the tile it just entered.
+  function landMonster(s, e, events) {
+    const i = e.y * s.w + e.x;
+    const g = s.grid[i];
+    if (g === 'K') {
+      s.grid[i] = '.';
+      s.enemies.splice(s.enemies.indexOf(e), 1);
+      events.push(`boom:${e.x},${e.y}`);
+    } else if ('([]'.includes(g)) press(s, g, events);
+  }
 
   // Spiders head for you along the longer axis first (ties go horizontal), else the other axis.
   function chaseOptions(s, e) {
@@ -200,46 +331,84 @@
     }
   }
 
-  function moveEnemies(s, dir) {
+  function tryMonster(s, e, dir) {
+    const { dx, dy } = DIRS[dir];
+    if (!monsterCanEnter(s, e.type, e.x + dx, e.y + dy)) return false;
+    e.x += dx;
+    e.y += dy;
+    e.dx = dx;
+    e.dy = dy;
+    return true;
+  }
+
+  function moveEnemies(s, dir, events) {
     moveSpiders(s);
-    for (const e of s.enemies) {
-      if (e.type === 'spider') continue;
+    const open = trapsOpen(s);
+    for (const e of s.enemies.slice()) {
+      if (e.type === 'spider' || !s.enemies.includes(e)) continue;
       if (e.frozen > 0) {
         e.frozen--;
         continue;
       }
-      if (e.type === 'patrol') {
-        if (s.steps % PATROL_EVERY) continue;
-        if (enemyCanEnter(s, e.x + e.dx, e.y + e.dy)) {
-          e.x += e.dx;
-          e.y += e.dy;
-        } else {
-          e.dx = -e.dx;
-          e.dy = -e.dy;
-          if (enemyCanEnter(s, e.x + e.dx, e.y + e.dy)) {
-            e.x += e.dx;
-            e.y += e.dy;
+      if (s.steps % TYPE_EVERY[e.type]) continue;
+      if (s.grid[e.y * s.w + e.x] === 'J' && !open) continue; // held in a trap
+      let moved = false;
+      if (e.type === 'mimic') {
+        moved = !!dir && tryMonster(s, e, dir);
+      } else if (e.type === 'teeth') {
+        for (const [dx, dy] of chaseOptions(s, e)) {
+          const d = DIR_NAMES.find((n) => DIRS[n].dx === dx && DIRS[n].dy === dy);
+          if (tryMonster(s, e, d)) {
+            moved = true;
+            break;
           }
         }
-      } else if (e.type === 'mimic' && dir) {
-        const { dx, dy } = DIRS[dir];
-        if (enemyCanEnter(s, e.x + dx, e.y + dy)) {
-          e.x += dx;
-          e.y += dy;
+      } else if (e.type === 'blob') {
+        moved = tryMonster(s, e, DIR_NAMES[rng(s, e) % 4]);
+      } else if (e.type === 'walker') {
+        const h = headingOf(e);
+        if (!(moved = tryMonster(s, e, h))) {
+          const others = DIR_NAMES.filter((d) => d !== h);
+          const start = rng(s, e) % 3;
+          for (let k = 0; k < 3 && !moved; k++) moved = tryMonster(s, e, others[(start + k) % 3]);
+        }
+      } else {
+        for (const d of TURN_ORDER[e.type](headingOf(e))) {
+          if ((moved = tryMonster(s, e, d))) break;
         }
       }
+      if (moved) landMonster(s, e, events);
     }
+  }
+
+  // Can the player step onto this tile right now (used to pick a teleport exit)?
+  function passable(s, x, y) {
+    if (!inBounds(s, x, y)) return false;
+    const i = y * s.w + x;
+    const g = s.grid[i];
+    if (wallLike(s, g) || 'INRGBY'.includes(g) || (g === 'E' && s.chips < s.chipsTotal)) return false;
+    return !s.crates.includes(i) && !(enemyAt(s, x, y) || {}).frozen;
   }
 
   // Player walks one tile. Returns false (and an event) when the way is blocked.
   function walk(s, dir, events, sliding) {
     const p = s.player;
     const { dx, dy } = DIRS[dir];
+    const from = p.y * s.w + p.x;
+    if (s.grid[from] === 'J' && !trapsOpen(s)) {
+      events.push('trapped');
+      return false;
+    }
     const nx = p.x + dx;
     const ny = p.y + dy;
     const i = ny * s.w + nx;
     const g = inBounds(s, nx, ny) ? s.grid[i] : '#';
-    if (g === '#' || g === '%' || g === 'W' || g === 'H' || beatSolid(s, g)) {
+    if (g === 'I') {
+      s.grid[i] = '#';
+      events.push(`reveal:${nx},${ny}`, 'bump');
+      return false;
+    }
+    if (wallLike(s, g)) {
       events.push('bump');
       return false;
     }
@@ -248,13 +417,16 @@
       events.push('bump');
       return false;
     }
-    if ('RGBY'.includes(g)) {
+    if (g === 'N') {
+      s.grid[i] = '.';
+      events.push(`fakewall:${nx},${ny}`);
+    } else if ('RGBY'.includes(g)) {
       const k = g.toLowerCase();
       if (!s.keys[k]) {
         events.push('locked');
         return false;
       }
-      s.keys[k]--;
+      if (k !== 'g') s.keys[k]--; // the green key opens every green door
       s.grid[i] = k;
       events.push('unlock');
     } else if (g === 'E' && s.chips < s.chipsTotal) {
@@ -265,7 +437,8 @@
       const by = ny + dy;
       const bi = by * s.w + bx;
       const bg = inBounds(s, bx, by) ? s.grid[bi] : '#';
-      const free = !sliding && '.~:x'.includes(bg) && !s.items[bi] && !s.crates.includes(bi) && !enemyAt(s, bx, by);
+      const stuck = g === 'J' && !trapsOpen(s);
+      const free = !sliding && !stuck && '.~:x,wK()[]J'.includes(bg) && !s.items[bi] && !s.crates.includes(bi) && !enemyAt(s, bx, by);
       if (!free) {
         events.push('bump');
         return false;
@@ -274,13 +447,19 @@
       if (bg === 'x') {
         s.grid[bi] = '.';
         events.push('sink');
+      } else if (bg === 'w') {
+        s.grid[bi] = ';';
+        events.push(`splash:${bx},${by}`);
+      } else if (bg === 'K') {
+        s.grid[bi] = '.';
+        events.push(`boom:${bx},${by}`);
       } else {
         s.crates.push(bi);
         events.push('push');
+        if ('([]'.includes(bg)) press(s, bg, events);
       }
     }
     // Crumbling floor gives way behind you.
-    const from = p.y * s.w + p.x;
     if (s.grid[from] === ':') {
       s.grid[from] = 'H';
       events.push(`crumble:${p.x},${p.y}`);
@@ -288,14 +467,22 @@
     p.x = nx;
     p.y = ny;
     events.push('move');
+    if (s.grid[i] === ';') s.grid[i] = '.';
     const item = s.items[i];
     if (item) {
       delete s.items[i];
       if (item === '*') s.chips++;
       else if (POWERS.includes(item)) s.powers[item] += POWER_CHARGES[item];
+      else if (BOOTS.includes(item)) s.boots[item] = 1;
       else s.keys[item]++;
       events.push('pickup:' + item);
     }
+    const here = s.grid[i];
+    if (here === 'T' && BOOTS.some((b) => s.boots[b])) {
+      for (const b of BOOTS) s.boots[b] = 0;
+      events.push('thief');
+    } else if (here === '?') events.push(`hint:${nx},${ny}`);
+    else if ('([]'.includes(here)) press(s, here, events);
     return true;
   }
 
@@ -304,11 +491,12 @@
     if (!s.powers[k]) return false;
     const p = s.player;
     const { dx, dy } = dir ? DIRS[dir] : { dx: 0, dy: 0 };
+    const blocksFire = (g, i) => '#%WHRGBYEINLC'.includes(g) || beatSolid(s, g) || s.crates.includes(i);
     if (k === 'j') {
       const nx = p.x + dx;
       const ny = p.y + dy;
       const i = ny * s.w + nx;
-      if (!inBounds(s, nx, ny) || isEdge(s, nx, ny) || (s.grid[i] !== '#' && s.grid[i] !== 'W')) return false;
+      if (!inBounds(s, nx, ny) || isEdge(s, nx, ny) || !'#WN'.includes(s.grid[i])) return false;
       s.grid[i] = '.';
       s.powers.j--;
       events.push(`fx:jet:${nx},${ny}`);
@@ -325,8 +513,8 @@
       s.powers.f--;
       const burned = [];
       for (let d = 1, x = p.x + dx, y = p.y + dy; d <= FLAME_RANGE && inBounds(s, x, y); d++, x += dx, y += dy) {
-        const g = s.grid[y * s.w + x];
-        if ('#%WHRGBYE'.includes(g) || beatSolid(s, g) || s.crates.includes(y * s.w + x)) break;
+        const i = y * s.w + x;
+        if (blocksFire(s.grid[i], i)) break;
         burned.push(`${x},${y}`);
         const e = enemyAt(s, x, y);
         if (e) {
@@ -360,7 +548,7 @@
           events.push(`break:${x},${y}`);
           break;
         }
-        if ('#%HRGBYE'.includes(g) || beatSolid(s, g)) break;
+        if (blocksFire(g, i)) break;
       }
       events.push(`fx:shot:${p.x},${p.y};${x},${y}`);
       return true;
@@ -375,8 +563,55 @@
     return false;
   }
 
+  // After the player lands on a tile: hazards, the exit, and whatever carries them on.
+  // Returns a finished result, or null to carry on with the turn.
+  function land(s, dir, events) {
+    const p = s.player;
+    const i = p.y * s.w + p.x;
+    const g = s.grid[i];
+    if (g === 'x') return finish(s, events, 'dead', 'lava');
+    if (g === 'w' && !s.boots.p) return finish(s, events, 'dead', 'water');
+    if (g === 'F' && !s.boots.h) return finish(s, events, 'dead', 'fire');
+    if (g === 'K') {
+      s.grid[i] = '.';
+      events.push(`boom:${p.x},${p.y}`);
+      return finish(s, events, 'dead', 'bomb');
+    }
+    if (enemyAt(s, p.x, p.y)) return finish(s, events, 'dead', 'caught');
+    if (g === 'E') {
+      s.steps++;
+      return finish(s, events, 'won', null);
+    }
+    if (g === 'o') {
+      // Teleport: arrive at the next teleport (in reading order) whose way out is clear,
+      // and carry on in the same direction.
+      const pads = [];
+      for (let k = 1; k <= s.grid.length; k++) {
+        const j = (i + k) % s.grid.length;
+        if (s.grid[j] === 'o') pads.push(j);
+      }
+      const { dx, dy } = DIRS[dir];
+      const to = pads.find((j) => {
+        const x = j % s.w;
+        const y = (j - x) / s.w;
+        return !enemyAt(s, x, y) && passable(s, x + dx, y + dy);
+      });
+      if (to !== undefined && to !== i) {
+        p.x = to % s.w;
+        p.y = (to - p.x) / s.w;
+        events.push(`teleport:${p.x},${p.y}`);
+      }
+      s.slide = dir;
+      return null;
+    }
+    const stopped = events.some((ev) => ev.startsWith('pickup:') || ev === 'unlock' || ev === 'push');
+    if (FORCE[g] && !s.boots.u) s.slide = FORCE[g];
+    else if (g === '~' && !s.boots.k && !stopped) s.slide = dir;
+    return null;
+  }
+
   // One turn. action: 'up'|'down'|'left'|'right', null (wait), or { use: 'j'|'f'|'m'|'z', dir }.
-  // Every turn counts as a move, including bumping into a wall.
+  // sliding: this move is forced (ice, force floor, teleport exit), so it can't push crates.
   function step(state, action, sliding) {
     if (state.status !== 'play') return { state, events: [] };
     const s = clone(state);
@@ -389,30 +624,21 @@
       if (action.dir) s.facing = action.dir;
     } else if (action) {
       s.facing = action;
-      const moved = walk(s, action, events, sliding);
-      if (moved) {
-        const i = p.y * s.w + p.x;
-        const g = s.grid[i];
-        if (g === 'x') return finish(s, events, 'dead', 'lava');
-        const e = enemyAt(s, p.x, p.y);
-        if (e) return finish(s, events, 'dead', 'caught');
-        if (g === 'E') {
-          s.steps++;
-          return finish(s, events, 'won', null);
-        }
-        // On ice you keep going, unless you just picked something up or came through a door.
-        if (g === '~' && !events.some((ev) => ev.startsWith('pickup:') || ev === 'unlock' || ev === 'push')) {
-          s.slide = action;
-        }
+      if (walk(s, action, events, sliding)) {
+        const done = land(s, action, events);
+        if (done) return done;
       } else if (sliding) {
         return { state, events }; // the slide simply ends; no turn spent
       }
     } else {
       events.push('wait');
     }
+    // A force floor keeps pushing you even when you stand still.
+    const under = s.grid[p.y * s.w + p.x];
+    if (!s.slide && FORCE[under] && !s.boots.u) s.slide = FORCE[under];
 
     const before = phase(s);
-    moveEnemies(s, action && typeof action === 'string' ? action : null);
+    moveEnemies(s, action && typeof action === 'string' ? action : null, events);
     s.steps++;
     if (s.beat && phase(s) !== before) {
       events.push('beat');
@@ -429,14 +655,15 @@
     return { state: s, events };
   }
 
-  // A full player action: one step, plus any ice slide that follows.
-  // frames holds the state after every tick, for animation.
+  // A full player action: one step, plus any forced movement that follows (ice, force
+  // floors, teleports). frames holds the state after every tick, for animation.
   function act(state, action) {
     let r = step(state, action);
     const frames = [r.state];
     const events = r.events.slice();
     let s = r.state;
-    while (s.status === 'play' && s.slide) {
+    let guard = 0;
+    while (s.status === 'play' && s.slide && guard++ < 400) {
       const dir = s.slide;
       r = step(s, dir, true);
       if (r.state === s) {
@@ -469,14 +696,14 @@
       Object.keys(s.items).join('.'),
       s.crates.join('.'),
       s.enemies.map((e) => `${e.id},${e.x},${e.y},${e.dx || 0},${e.dy || 0},${e.mode || ''}${e.alert || ''},${e.frozen}`).join('|'),
-      KEY_COLORS.map((k) => s.keys[k]).join('') + POWERS.map((k) => s.powers[k]).join(''),
+      KEY_COLORS.map((k) => s.keys[k]).join('') + POWERS.map((k) => s.powers[k]).join('') + BOOTS.map((k) => s.boots[k]).join(''),
       s.steps % s.cycle,
     ].join(';');
   }
 
   const api = {
-    DIRS, KEY_COLORS, POWERS, POWER_CHARGES, AIMED, FLAME_RANGE, FREEZE_TURNS, BEAT,
-    TURN_MS, TURNS_PER_SECOND, ALERT_TURNS, SPIDER_SKIP, spiderSees,
+    DIRS, KEY_COLORS, POWERS, POWER_CHARGES, AIMED, BOOTS, FLAME_RANGE, FREEZE_TURNS, BEAT, FORCE,
+    TURN_MS, TURNS_PER_SECOND, ALERT_TURNS, SPIDER_SKIP, spiderSees, trapsOpen,
     parseLevel, step, act, clone, stateKey, enemyAt, beatSolid, phase,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

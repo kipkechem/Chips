@@ -30,6 +30,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Check the game rules
+        run: node tools/test-rules.js
+
       - name: Check every level is winnable at its par
         run: node tools/solve.js
 

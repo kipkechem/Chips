@@ -6,6 +6,11 @@ wait behind the things you need: pick one up and they spot you, react half a sec
 a gate stops them. Later levels are bigger than the screen, so you play from memory. Pick up a
 jetpack, flamethrower, mega blaster or freeze bomb along the way.
 
+The later worlds bring in the full *Chip's Challenge* rule set, rebuilt from scratch with
+original levels and art: water, fire and the boots that cross them, force floors,
+teleports, bombs, hidden walls, toggle walls, traps, clone machines, tanks, and a zoo of
+monsters that each move by their own fixed rule.
+
 See [GAME_DESIGN.md](GAME_DESIGN.md) for the full concept.
 
 ## Play
@@ -54,6 +59,8 @@ cd android && ./gradlew assembleDebug
 | `art.js` | Pixel-art themes, sprites and the board renderer. |
 | `index.html` | The game page: HUD (chip counter, keys, moves), menus, input, sound. |
 | `tools/solve.js` | Solver. Proves each level is winnable and checks its par. |
+| `tools/test-rules.js` | One small test per game rule (water, ice, traps, monsters...). |
+| `tools/test-browser.js` | Plays every level in a headless browser with the solver's moves (needs Playwright). |
 | `tools/build-web.js` | Packs the game into `www/` for the Android app, with fonts bundled for offline play. |
 | `assets/` | App icon sources. |
 
@@ -65,3 +72,8 @@ cd android && ./gradlew assembleDebug
    winning moves. For a level too big to search, add a `route` (item positions to
    visit in order) and the solver uses the best route through them.
 3. Put the printed par into the level and run the solver again; every line should say `ok`.
+4. Optionally run `node tools/test-browser.js 12` to watch the browser play it through.
+
+Levels can also set `facing` (`{'x,y': 'left'}`, which way a monster starts out),
+`clones` (`{'x,y': ['U', 'right']}`, what each clone machine copies) and `hints`
+(`{'x,y': 'text'}`, the message for each `?` tile).

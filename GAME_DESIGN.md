@@ -75,6 +75,68 @@ Each art direction from the mockups is also a rule change.
 | Ice Station | **Ice.** You slide until something stops you: a wall, a rock, a chip or a key. Spiders grip ice fine. |
 | Neon Mixtape | **Beat blocks.** Pink and cyan blocks swap every 1.3 seconds (the HUD shows the beat). Anything inside one when it closes is crushed, spiders included. |
 | Solar Disco | **Lava** and crates, plus everything else. |
+| Tide Works | **Elements.** Water and fire, the boots that get you through them, and a thief who takes them. |
+| Conveyor Yard | **Terrain.** Force floors, teleports, bombs, gravel, dirt, hidden and fake walls. |
+| Machine Room | **Machines.** Buttons that flip toggle walls, open traps, fire clone machines and turn tanks. |
+| The Zoo | **Monsters.** Each one moves by its own fixed rule. |
+
+## The Chip's Challenge rule set
+
+Worlds 6 to 9 rebuild the rules of *Chip's Challenge* from scratch, with original levels,
+names and art (game rules can be reused; levels, names, art and sounds can't). Each level
+introduces one element on its own; the last level of each world combines them.
+
+**Boots** are kept until a thief takes them, and are shown top right in the HUD.
+
+| Boots | Lets you |
+|---|---|
+| Flippers | Swim through water (otherwise you drown). |
+| Fire boots | Walk through fire (otherwise you burn). |
+| Ice skates | Walk on ice like floor, instead of sliding. |
+| Suction boots | Walk on force floors without being carried. |
+
+**Terrain**
+
+| Tile | Rule |
+|---|---|
+| Force floor | Carries you one tile per turn in its direction, even if you stand still. |
+| Teleport | Sends you to the next pad (reading order) that you can step out of, moving the same way. |
+| Bomb | Kills you, or any monster. A crate pushed onto it destroys both. |
+| Gravel | You walk on it; monsters can't. |
+| Dirt | Monsters can't cross it; it clears to floor when you walk on it. A crate pushed into water becomes dirt. |
+| Hidden wall | Looks like floor until you bump it. |
+| Fake wall | Looks like wall, but gives way when you walk into it. |
+| Thief | Takes every pair of boots you carry. |
+| Green key | Never used up: it opens every green door. |
+
+**Machines and buttons**
+
+| Button | Effect |
+|---|---|
+| Green | Flips every toggle wall, open to closed and closed to open. A wall can't close on someone. |
+| Brown | Opens every trap while something stands on it: you, a crate or a monster. |
+| Red | Each clone machine makes a copy of its monster, heading its way. |
+| Blue | Every tank turns around. |
+
+A **trap** holds whatever walks in until the brown button is held down.
+
+**Monsters.** None of them can cross gravel, dirt, force floors, teleports or items,
+and gates stop them all. "Speed" is relative to you.
+
+| Monster | Speed | Rule |
+|---|---|---|
+| Drone | 1/2 | Back and forth along a line. |
+| Bug | 1/2 | Keeps a wall on its left. |
+| Paramecium | 1/2 | Keeps a wall on its right. |
+| Fireball | 1/2 | Straight on, turns right when blocked; walks through fire. |
+| Glider | 1/2 | Straight on, turns left when blocked; swims through water. |
+| Tank | 1/2 | Straight on only; stops when blocked; the blue button turns it around. |
+| Teeth | 1/4 | Chases you. |
+| Blob | 1/4 | Wanders at random (the same way every try). |
+| Walker | 1/2 | Straight on; picks a random turn when blocked. |
+| Mimic | 1 | Copies your moves. |
+
+Walker and mimic are in the rules but not in a level yet.
 
 ## Levels
 
@@ -91,6 +153,22 @@ Each art direction from the mockups is also a rule change.
 | 9 | Neon Mixtape | Beat Drop | Leading a spider into a closing beat block | bigger |
 | 10 | Solar Disco | Freeze Frame | Freeze bomb; lava and a crate | bigger |
 | 11 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
+| 12 | Tide Works | Deep End | Water and flippers | bigger |
+| 13 | Tide Works | Firewalk | Fire and fire boots; a crate fills water with dirt | fits |
+| 14 | Tide Works | Cold Feet | Ice skates | fits |
+| 15 | Tide Works | Pickpocket | The thief and the green key | bigger |
+| 16 | Conveyor Yard | Conveyor | Force floors and suction boots | bigger |
+| 17 | Conveyor Yard | Beam Me Up | Teleports | bigger |
+| 18 | Conveyor Yard | Minefield | Bombs, gravel, dirt and teeth | fits |
+| 19 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls | fits |
+| 20 | Machine Room | Switchback | Toggle walls and the green button | fits |
+| 21 | Machine Room | Snare | A trap, a crate and the brown button | fits |
+| 22 | Machine Room | Copy Machine | A clone machine and the red button | fits |
+| 23 | Machine Room | Tank Trap | A tank and the blue button | fits |
+| 24 | The Zoo | Bug Hunt | Bugs and paramecia | bigger |
+| 25 | The Zoo | Hot and Cold | Fireballs and gliders | bigger |
+| 26 | The Zoo | Feeding Time | Teeth and a blob | fits |
+| 27 | The Zoo | Grand Zoo | Everything at once | bigger |
 
 ## Modes and scoring
 
@@ -110,6 +188,6 @@ known route: the shortest path through its items in a fixed order. It is labeled
 
 - **Spider variants:** a fast spider that takes two steps per turn; a spider that sees
   diagonally; a mother spider whose death frees the whole nest.
-- **Solar Disco's own modifier:** disco arrows (conveyor tiles that push you).
 - **More power-ups:** a decoy that spiders chase instead of you; a teleporter pair.
 - **Level editor** with the solver built in, so shared levels are guaranteed winnable.
+- Levels for the walker and the mimic.
