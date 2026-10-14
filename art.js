@@ -76,6 +76,14 @@
       speck: '#357a30', moss: '#2f6b1f', mossHi: '#9fe07a',
       enemy: '#e8312f', enemyDark: '#9a1410', style: 'moss',
     },
+    glass: {
+      name: 'Glass Maze',
+      bg: '#0d0a18', panel: '#171228', frame: '#a07cff', frameHi: '#d6c4ff', ink: '#f3eeff', muted: '#b5a8d6',
+      floor: '#15112a', floorGrid: '#1b1633', detail: '#2f2752',
+      wall: '#7c5cf0', wallHi: '#c2adff', wallLo: '#4a33a8', wallEdge: '#140b33',
+      speck: '#5a44b8',
+      enemy: '#ff5a8a', enemyDark: '#a3204a', style: 'plain',
+    },
   };
 
   const KEY_COLORS = {
@@ -110,6 +118,98 @@
     '...kkwwkkwwkk...',
     '....kwk..kwk....',
     '....kkk..kkk....',
+  ];
+
+  // Player characters. 'w' is the main color, which the player can change.
+  const CAT = [
+    '................',
+    '..kk........kk..',
+    '..kpk......kpk..',
+    '..kwpkkkkkkpwk..',
+    '..kwwwwwwwwwwk..',
+    '.kwwwwwwwwwwwwk.',
+    '.kwwkekwwkekwwk.',
+    '.kwwkkkwwkkkwwk.',
+    '.kwwwwwppwwwwwk.',
+    '.kwwwwkwwkwwwwk.',
+    '..kwwwwkkwwwwk..',
+    '...kkwwwwwwkk...',
+    '...kwwwwwwwwk.k.',
+    '...kwwkwwkwwkkwk',
+    '...kwwkkkkwwkwk.',
+    '....kk....kkk...',
+  ];
+  const ASTRONAUT = [
+    '................',
+    '.....kkkkkk.....',
+    '...kkwwwwwwkk...',
+    '..kwwwwwwwwwwk..',
+    '..kwkkkkkkkkwk..',
+    '.kwkvvvvvvvvkwk.',
+    '.kwkvhhvvvvvkwk.',
+    '.kwkvvvvvvvvkwk.',
+    '..kwkkkkkkkkwk..',
+    '..kwwwwwwwwwwk..',
+    '.kgkwwwrrwwwkgk.',
+    '.kgkwwwwwwwwkgk.',
+    '..kkwwwwwwwwkk..',
+    '...kwwwkkwwwk...',
+    '...kwwk..kwwk...',
+    '...kkkk..kkkk...',
+  ];
+  const FROG = [
+    '................',
+    '..kkkk....kkkk..',
+    '.keeeek..keeeek.',
+    '.keekek..kekeek.',
+    '.kweeekkkkeeewk.',
+    '.kwwwwwwwwwwwwk.',
+    'kwwwwwwwwwwwwwwk',
+    'kwkwwwwwwwwwwkwk',
+    'kwwkkkkkkkkkkwwk',
+    '.kwwwwwwwwwwwwk.',
+    '..kwwbbbbbbwwk..',
+    '..kwbbbbbbbbwk..',
+    '.kwwkbbbbbbkwwk.',
+    'kwwwk.kkkk.kwwwk',
+    'kkkkk......kkkkk',
+    '................',
+  ];
+  const GHOST = [
+    '................',
+    '.....kkkkkk.....',
+    '...kkwwwwwwkk...',
+    '..kwwwwwwwwwwk..',
+    '..kwwwwwwwwwwk..',
+    '.kwwkkwwwwkkwwk.',
+    '.kwwkekwwkekwwk.',
+    '.kwwkkwwwwkkwwk.',
+    '.kwwwwwwwwwwwwk.',
+    '.kwwwwwkkwwwwwk.',
+    '.kwwwwwkkwwwwwk.',
+    '.kwwwwwwwwwwwwk.',
+    '.kwwwwwwwwwwwwk.',
+    '.kwwkwwwkwwwkwk.',
+    '.kkk.kwk.kwk.kk.',
+    '......k...k.....',
+  ];
+  const NINJA = [
+    '................',
+    '.....kkkkkk.....',
+    '...kkwwwwwwkk...',
+    '..kwwwwwwwwwwkkk',
+    '..kwwwwwwwwwwrrk',
+    '..ksssssssssskrk',
+    '..kseekssekeesk.',
+    '..ksssssssssskk.',
+    '..kwwwwwwwwwwk..',
+    '...kkwwwwwwkk...',
+    '..kwkwwrrwwkwk..',
+    '..kwkwwwwwwkwk..',
+    '...kkwwwwwwkk...',
+    '...kwwwkkwwwk...',
+    '...kwwk..kwwk...',
+    '...kkkk..kkkk...',
   ];
 
   const SPIDER = [
@@ -495,6 +595,28 @@
   }
 
   const OUTLINE = '#0a0d14';
+  const EDGE_SIDES = {
+    '-': ['up'], _: ['down'], '{': ['left'], '}': ['right'],
+    7: ['up', 'left'], 9: ['up', 'right'], 3: ['down', 'right'], 0: ['down', 'left'],
+  };
+  // The characters you can play as. 'w' is each one's main color, which you can recolor.
+  const AVATARS = [
+    { id: 'robot', name: 'Robot', rows: ROBOT, pal: { w: '#f2f4f8', g: '#b9c1cf', c: '#3ad6ff', r: '#ff3b30', o: '#ff8a1f' } },
+    { id: 'cat', name: 'Cat', rows: CAT, pal: { w: '#ffa94d', p: '#ff8fb1', e: '#7dff6b' } },
+    { id: 'astronaut', name: 'Astronaut', rows: ASTRONAUT, pal: { w: '#e8ecf4', v: '#3ad6ff', h: '#e6fbff', g: '#9aa3b5', r: '#ff3b30' } },
+    { id: 'frog', name: 'Frog', rows: FROG, pal: { w: '#5fd35f', e: '#ffffff', b: '#f4f1b8' } },
+    { id: 'ghost', name: 'Ghost', rows: GHOST, pal: { w: '#d6dcff', e: '#3ad6ff' } },
+    { id: 'ninja', name: 'Ninja', rows: NINJA, pal: { w: '#3a3f58', s: '#f2c9a0', e: '#ffffff', r: '#ff3b30' } },
+  ];
+  const avatarCache = new Map();
+  function avatarSprite(id, color) {
+    const key = `${id}|${color || ''}`;
+    if (!avatarCache.has(key)) {
+      const a = AVATARS.find((v) => v.id === id) || AVATARS[0];
+      avatarCache.set(key, sprite(a.rows, { k: OUTLINE, ...a.pal, ...(color ? { w: color } : {}) }));
+    }
+    return avatarCache.get(key);
+  }
 
   // Four copies of an up-facing sprite, turned to face up, right, down and left.
   function turned(src) {
@@ -758,6 +880,65 @@
     for (let k = 0; k < 4; k++) px(ctx, x0 + 3 + o + k, y0 + 10 - k, 1, 1, '#e8f8ff');
     for (let k = 0; k < 3; k++) px(ctx, x0 + 8 + k, y0 + 13 - k, 1, 1, '#e8f8ff');
     px(ctx, x0 + 12, y0 + 3 + (hv % 3), 1, 1, '#ffffff');
+  }
+
+  // A wall along some edges of a tile (thin walls, ice corners).
+  function drawEdgeWalls(ctx, x0, y0, sides, th) {
+    for (const d of sides) {
+      const [x, y, w, h] = { up: [0, 0, 16, 4], down: [0, 12, 16, 4], left: [0, 0, 4, 16], right: [12, 0, 4, 16] }[d];
+      px(ctx, x0 + x, y0 + y, w, h, OUTLINE);
+      px(ctx, x0 + x + 1, y0 + y + 1, w - 2, h - 2, th.wall);
+      px(ctx, x0 + x + 1, y0 + y + 1, w - 2, 1, th.wallEdge);
+    }
+  }
+
+  // An ice corner: ice with two walled sides and a rounded fill where they meet.
+  function drawIceCorner(ctx, x0, y0, sides, th, hv) {
+    drawIce(ctx, x0, y0, hv);
+    const v = sides.includes('up') ? 0 : 1;
+    const h = sides.includes('left') ? 0 : 1;
+    for (let k = 0; k < 5; k++) {
+      const len = 5 - k;
+      const yy = v ? 15 - (4 + k) : 4 + k;
+      px(ctx, x0 + (h ? 12 - len : 4), y0 + yy, len, 1, '#5aa9d6');
+    }
+    drawEdgeWalls(ctx, x0, y0, sides, th);
+  }
+
+  // Pop-up wall: floor with a sunken outline, ready to rise.
+  function drawPopup(ctx, x0, y0, th) {
+    for (let k = 2; k < 14; k += 2) {
+      px(ctx, x0 + k, y0 + 2, 1, 1, th.wallEdge);
+      px(ctx, x0 + k, y0 + 13, 1, 1, th.wallEdge);
+      px(ctx, x0 + 2, y0 + k, 1, 1, th.wallEdge);
+      px(ctx, x0 + 13, y0 + k, 1, 1, th.wallEdge);
+    }
+    px(ctx, x0 + 7, y0 + 5, 2, 4, th.wallEdge);
+    px(ctx, x0 + 6, y0 + 6, 4, 1, th.wallEdge);
+  }
+
+  // Random force floor: arrows spinning through all four ways.
+  function drawRandomForce(ctx, x0, y0, t) {
+    px(ctx, x0, y0, 16, 16, '#2a2440');
+    px(ctx, x0, y0, 16, 1, '#3a3260');
+    const dir = ['up', 'right', 'down', 'left'][Math.floor(t * 4) % 4];
+    for (let k = 0; k < 4; k++) {
+      rotPx(ctx, x0, y0, dir, 6 + k, 4 + k, 1, 1, '#d6a8ff');
+      rotPx(ctx, x0, y0, dir, 6 + k, 11 - k, 1, 1, '#d6a8ff');
+    }
+    px(ctx, x0 + 2, y0 + 2, 2, 2, '#d6a8ff');
+    px(ctx, x0 + 12, y0 + 12, 2, 2, '#d6a8ff');
+  }
+
+  // Chip socket: a frame that takes every chip in the level before it opens.
+  function drawSocket(ctx, x0, y0, t) {
+    px(ctx, x0 + 1, y0, 14, 16, OUTLINE);
+    px(ctx, x0 + 2, y0 + 1, 12, 14, '#2c3b2e');
+    px(ctx, x0 + 2, y0 + 1, 12, 2, '#4b6b4f');
+    ctx.globalAlpha = 0.35; // a faded chip: what it is waiting for
+    drawChip(ctx, x0, y0, t);
+    ctx.globalAlpha = 1;
+    for (const y of [5, 10]) px(ctx, x0 + 2, y0 + y, 12, 2, '#c9a227'); // locked bars
   }
 
   function drawHole(ctx, x0, y0, th) {
@@ -1049,6 +1230,8 @@
           continue;
         }
         if (g === '~') drawIce(ctx, x0, y0, hv);
+        else if ('7930'.includes(g)) drawIceCorner(ctx, x0, y0, EDGE_SIDES[g], th, hv);
+        else if (g === '+') drawRandomForce(ctx, x0, y0, t);
         else if (g === 'w') drawWater(ctx, x0, y0, t, hv);
         else if (g === 'F') drawFire(ctx, x0, y0, t, hv);
         else if (g === ';') drawDirt(ctx, x0, y0, hv);
@@ -1062,6 +1245,9 @@
         else if (BUTTON_COLORS[g]) drawButton(ctx, x0, y0, g);
         else if (g === '?') drawHintTile(ctx, x0, y0);
         else if (g === 'T') ctx.drawImage(sp.thief, x0, y0);
+        else if ('-_{}'.includes(g)) drawEdgeWalls(ctx, x0, y0, EDGE_SIDES[g], th);
+        else if (g === '!') drawPopup(ctx, x0, y0, th);
+        else if (g === '$') drawSocket(ctx, x0, y0, t);
         if (g === ':') drawCracks(ctx, x0, y0, th.detail);
         else if (g === 'x') drawLava(ctx, x0, y0, t, hv);
         else if (g === '1' || g === '2') drawBeat(ctx, x0, y0, g, (g === '1') === (phase === 0), th);
@@ -1122,7 +1308,7 @@
     }
 
     const [rx, ry] = at(view.prev && view.prev.player, s.player);
-    ctx.drawImage(sp.robot, rx, ry);
+    ctx.drawImage(view.avatar || sp.robot, rx, ry);
     // While you hold an aimed power-up, a small arrow shows which way it will fire.
     if (s.status === 'play' && ['j', 'f', 'm'].some((k) => s.powers[k])) {
       // A chevron just outside the robot, pointing into the tile it will hit.
@@ -1148,7 +1334,9 @@
     TILE, THEMES, KEY_COLORS, SHAPES, sprites, drawBoard, drawEffects, drawDoor, drawGate, drawShape, drawChip, drawExit,
     drawLava, drawCrate, drawFloor, drawWall, drawSteel, drawCracks, drawIce, drawHole, drawBeat, drawFence, drawFrozen, makeCanvas,
     drawWater, drawFire, drawForce, drawTeleport, drawBomb, drawGravel, drawDirt, drawToggle, drawTrap, drawButton, drawHintTile,
-    SPRITE_ROWS: { ROBOT, SPIDER, SPIDER_B, UFO, MIMIC, KEY, JETPACK, FLAMER, BLASTER, FREEZER, BUG, PARA, FIREBALL, GLIDER, TANK, TEETH, BLOB, WALKER, THIEF, BOOT },
+    drawEdgeWalls, drawIceCorner, drawPopup, drawRandomForce, drawSocket,
+    AVATARS, avatarSprite,
+    SPRITE_ROWS: { ROBOT, CAT, ASTRONAUT, FROG, GHOST, NINJA, SPIDER, SPIDER_B, UFO, MIMIC, KEY, JETPACK, FLAMER, BLASTER, FREEZER, BUG, PARA, FIREBALL, GLIDER, TANK, TEETH, BLOB, WALKER, THIEF, BOOT },
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.LockstepArt = api;

@@ -64,8 +64,14 @@
   //              J  trap (holds whatever enters until a brown button is held down)
   //              (  green button: flips toggle walls   )  brown button: opens traps while held
   //              [  red button: clone machines fire      ]  blue button: tanks turn around
+  //              - _ { }  thin walls along the north, south, west or east edge of a tile
+  //              7 9 3 0  ice corners, walled north-west, north-east, south-east, south-west:
+  //                       you slide in and are turned out of the other open side
+  //              !  pop-up wall: floor that rises into a wall once you step off it
+  //              +  random force floor    $  chip socket (opens once you have every chip)
   //   Walls      #  wall    %  steel    W  cracked (blaster/jetpack)    H  hole
   //              I  hidden wall (looks like floor)   N  fake wall (gives way when you touch it)
+  //              &  invisible wall (looks like floor, and stays that way)
   //              L  toggle wall, closed    l  toggle wall, open    C  clone machine
   //   Hazards    x  lava    w  water (flippers)    F  fire (fire boots)    K  bomb
   //   Doors      R G B Y  doors (red, blue, yellow keys are used up; the green key is not)
@@ -79,7 +85,13 @@
   //
   // An opened door stays in the grid as its lowercase letter: a gate. You can walk
   // through it; no enemy can cross it.
-  const GRID_CHARS = '#%WH~:x12E=wF<>^voK,;INLlJC()[]?T' + 'RGBY';
+  const GRID_CHARS = '#%WH~:x12E=wF<>^voK,;INLlJC()[]?T' + 'RGBY' + '-_{}7930!&+$';
+  // Tiles that wall off some of their edges: thin walls and ice corners.
+  const EDGE_WALLS = {
+    '-': ['up'], _: ['down'], '{': ['left'], '}': ['right'],
+    7: ['up', 'left'], 9: ['up', 'right'], 3: ['down', 'right'], 0: ['down', 'left'],
+  };
+  const ICE_CORNERS = '7930';
 
   function parseLevel(def) {
     const rows = def.map;
@@ -129,7 +141,7 @@
       [types.has('spider'), SPIDER_SKIP],
       [[...types].some((t) => TYPE_EVERY[t] === 2), 2],
       [[...types].some((t) => TYPE_EVERY[t] === 4), 4],
-      [types.has('blob') || types.has('walker'), RNG_PERIOD],
+      [types.has('blob') || types.has('walker') || grid.includes('+'), RNG_PERIOD],
       [beat, 2 * BEAT],
     ];
     for (const [on, n] of rhythms) if (on) cycle = (cycle * n) / gcd(cycle, n);
@@ -183,7 +195,25 @@
   const rng = (s, e) => ((Math.imul((s.steps % RNG_PERIOD) + 1, 2654435761) ^ Math.imul(e.id + 7, 40503)) >>> 0) % 997;
 
   // Anything that stops the player (and everyone else) like a wall.
-  const wallLike = (s, g) => '#%WHLC'.includes(g) || beatSolid(s, g);
+  const wallLike = (s, g) => '#%WHLC&'.includes(g) || beatSolid(s, g);
+
+  // Can anything cross from (x, y) one step in dir? Thin walls and ice corners block
+  // their walled edges from both sides.
+  function edgeOpen(s, x, y, dir) {
+    const { dx, dy } = DIRS[dir];
+    const a = inBounds(s, x, y) ? EDGE_WALLS[s.grid[y * s.w + x]] : null;
+    const b = inBounds(s, x + dx, y + dy) ? EDGE_WALLS[s.grid[(y + dy) * s.w + x + dx]] : null;
+    return !(a && a.includes(dir)) && !(b && b.includes(BACK_OF[dir]));
+  }
+  const dirOf = (dx, dy) => DIR_NAMES.find((d) => DIRS[d].dx === dx && DIRS[d].dy === dy);
+
+  // Which way a force floor pushes you; a random one picks a new way every turn.
+  function forceDir(s, i) {
+    const g = s.grid[i];
+    if (g !== '+') return FORCE[g];
+    const h = Math.imul((s.steps % RNG_PERIOD) * 7919 + i * 104729 + 1, 2654435761) >>> 0;
+    return DIR_NAMES[h >>> 30]; // the top bits mix well; the low ones repeat in a pattern
+  }
 
   // A trap releases whatever is in it only while something holds a brown button down.
   function trapsOpen(s) {
@@ -198,7 +228,7 @@
 
   // Floor an enemy can stand on: plain, ice, crumbling, or a beat block that is currently open.
   function openFloor(s, g) {
-    return g === '.' || g === '~' || g === ':' || ((g === '1' || g === '2') && !beatSolid(s, g));
+    return g === '.' || g === '~' || g === ':' || !!EDGE_WALLS[g] || ((g === '1' || g === '2') && !beatSolid(s, g));
   }
 
   // Bare floor: no wall, door, gate, lava, exit, item or crate. Spiders only walk on this.
@@ -287,8 +317,10 @@
     if (px !== e.x && py !== e.y) return false;
     const dx = Math.sign(px - e.x);
     const dy = Math.sign(py - e.y);
-    for (let x = e.x + dx, y = e.y + dy; x !== px || y !== py; x += dx, y += dy) {
-      if (!bare(s, x, y)) return false;
+    const dir = dirOf(dx, dy);
+    for (let x = e.x, y = e.y; x !== px || y !== py; x += dx, y += dy) {
+      if (!edgeOpen(s, x, y, dir)) return false;
+      if ((x + dx !== px || y + dy !== py) && !bare(s, x + dx, y + dy)) return false;
     }
     return true;
   }
@@ -319,6 +351,7 @@
       let queued = false;
       let moved = false;
       for (const [dx, dy] of chaseOptions(s, e)) {
+        if (!edgeOpen(s, e.x, e.y, dirOf(dx, dy))) continue;
         if (enemyCanEnter(s, e.x + dx, e.y + dy)) {
           e.x += dx;
           e.y += dy;
@@ -333,7 +366,7 @@
 
   function tryMonster(s, e, dir) {
     const { dx, dy } = DIRS[dir];
-    if (!monsterCanEnter(s, e.type, e.x + dx, e.y + dy)) return false;
+    if (!edgeOpen(s, e.x, e.y, dir) || !monsterCanEnter(s, e.type, e.x + dx, e.y + dy)) return false;
     e.x += dx;
     e.y += dy;
     e.dx = dx;
@@ -386,7 +419,7 @@
     if (!inBounds(s, x, y)) return false;
     const i = y * s.w + x;
     const g = s.grid[i];
-    if (wallLike(s, g) || 'INRGBY'.includes(g) || (g === 'E' && s.chips < s.chipsTotal)) return false;
+    if (wallLike(s, g) || 'INRGBY'.includes(g) || ((g === 'E' || g === '$') && s.chips < s.chipsTotal)) return false;
     return !s.crates.includes(i) && !(enemyAt(s, x, y) || {}).frozen;
   }
 
@@ -403,6 +436,11 @@
     const ny = p.y + dy;
     const i = ny * s.w + nx;
     const g = inBounds(s, nx, ny) ? s.grid[i] : '#';
+    if (!edgeOpen(s, p.x, p.y, dir)) {
+      events.push('bump');
+      return false;
+    }
+    if (g === '&') events.push(`ghostwall:${nx},${ny}`);
     if (g === 'I') {
       s.grid[i] = '#';
       events.push(`reveal:${nx},${ny}`, 'bump');
@@ -432,13 +470,21 @@
     } else if (g === 'E' && s.chips < s.chipsTotal) {
       events.push('sealed');
       return false;
+    } else if (g === '$') {
+      if (s.chips < s.chipsTotal) {
+        events.push('socket-shut');
+        return false;
+      }
+      s.grid[i] = '.';
+      events.push(`socket:${nx},${ny}`);
     } else if (s.crates.includes(i)) {
       const bx = nx + dx;
       const by = ny + dy;
       const bi = by * s.w + bx;
       const bg = inBounds(s, bx, by) ? s.grid[bi] : '#';
       const stuck = g === 'J' && !trapsOpen(s);
-      const free = !sliding && !stuck && '.~:x,wK()[]J'.includes(bg) && !s.items[bi] && !s.crates.includes(bi) && !enemyAt(s, bx, by);
+      const free = !sliding && !stuck && edgeOpen(s, nx, ny, dir) && ('.~:x,wK()[]J'.includes(bg) || EDGE_WALLS[bg]) &&
+        !s.items[bi] && !s.crates.includes(bi) && !enemyAt(s, bx, by);
       if (!free) {
         events.push('bump');
         return false;
@@ -459,10 +505,13 @@
         if ('([]'.includes(bg)) press(s, bg, events);
       }
     }
-    // Crumbling floor gives way behind you.
+    // Crumbling floor gives way behind you; a pop-up wall rises behind you.
     if (s.grid[from] === ':') {
       s.grid[from] = 'H';
       events.push(`crumble:${p.x},${p.y}`);
+    } else if (s.grid[from] === '!') {
+      s.grid[from] = '#';
+      events.push(`popup:${p.x},${p.y}`);
     }
     p.x = nx;
     p.y = ny;
@@ -493,7 +542,7 @@
     // Aimed power-ups fire the way you face (walk or bump into something to turn).
     const aim = dir || (AIMED[k] ? s.facing : null);
     const { dx, dy } = aim ? DIRS[aim] : { dx: 0, dy: 0 };
-    const blocksFire = (g, i) => '#%WHRGBYEINLC'.includes(g) || beatSolid(s, g) || s.crates.includes(i);
+    const blocksFire = (g, i) => '#%WHRGBYEINLC&$'.includes(g) || beatSolid(s, g) || s.crates.includes(i);
     if (k === 'j') {
       const nx = p.x + dx;
       const ny = p.y + dy;
@@ -516,7 +565,7 @@
       const burned = [];
       for (let d = 1, x = p.x + dx, y = p.y + dy; d <= FLAME_RANGE && inBounds(s, x, y); d++, x += dx, y += dy) {
         const i = y * s.w + x;
-        if (blocksFire(s.grid[i], i)) break;
+        if (!edgeOpen(s, x - dx, y - dy, aim) || blocksFire(s.grid[i], i)) break;
         burned.push(`${x},${y}`);
         const e = enemyAt(s, x, y);
         if (e) {
@@ -532,6 +581,11 @@
       let x = p.x + dx;
       let y = p.y + dy;
       for (; inBounds(s, x, y); x += dx, y += dy) {
+        if (!edgeOpen(s, x - dx, y - dy, aim)) {
+          x -= dx;
+          y -= dy;
+          break;
+        }
         const i = y * s.w + x;
         const g = s.grid[i];
         const e = enemyAt(s, x, y);
@@ -596,7 +650,7 @@
       const to = pads.find((j) => {
         const x = j % s.w;
         const y = (j - x) / s.w;
-        return !enemyAt(s, x, y) && passable(s, x + dx, y + dy);
+        return !enemyAt(s, x, y) && edgeOpen(s, x, y, dir) && passable(s, x + dx, y + dy);
       });
       if (to !== undefined && to !== i) {
         p.x = to % s.w;
@@ -607,8 +661,12 @@
       return null;
     }
     const stopped = events.some((ev) => ev.startsWith('pickup:') || ev === 'unlock' || ev === 'push');
-    if (FORCE[g] && !s.boots.u) s.slide = FORCE[g];
+    if ((FORCE[g] || g === '+') && !s.boots.u) s.slide = forceDir(s, i);
     else if (g === '~' && !s.boots.k && !stopped) s.slide = dir;
+    else if (ICE_CORNERS.includes(g) && !s.boots.k && !stopped) {
+      // Turned out of the open side you did not come in by.
+      s.slide = DIR_NAMES.find((d) => !EDGE_WALLS[g].includes(d) && d !== BACK_OF[dir]);
+    }
     return null;
   }
 
@@ -637,7 +695,7 @@
     }
     // A force floor keeps pushing you even when you stand still.
     const under = s.grid[p.y * s.w + p.x];
-    if (!s.slide && FORCE[under] && !s.boots.u) s.slide = FORCE[under];
+    if (!s.slide && (FORCE[under] || under === '+') && !s.boots.u) s.slide = forceDir(s, p.y * s.w + p.x);
 
     const before = phase(s);
     moveEnemies(s, action && typeof action === 'string' ? action : null, events);

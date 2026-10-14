@@ -85,6 +85,7 @@ Each art direction from the mockups is also a rule change.
 | Conveyor Yard | **Terrain.** Force floors, teleports, bombs, gravel, dirt, hidden and fake walls. |
 | Machine Room | **Machines.** Buttons that flip toggle walls, open traps, fire clone machines and turn tanks. |
 | The Zoo | **Monsters.** Each one moves by its own fixed rule. |
+| Glass Maze | **Walls you can barely see.** Thin walls, ice corners, pop-up walls, invisible walls, random force floors and chip sockets. |
 
 ## The Chip's Challenge rule set
 
@@ -114,6 +115,12 @@ introduces one element on its own; the last level of each world combines them.
 | Fake wall | Looks like wall, but gives way when you walk into it. |
 | Thief | Takes every pair of boots you carry. |
 | Green key | Never used up: it opens every green door. |
+| Thin wall | A wall along one edge of a tile. Nothing crosses that edge, from either side. |
+| Ice corner | Ice walled on two sides. You slide in and are turned out of the other open side. |
+| Pop-up wall | Floor that rises into a wall once you step off it: each one can be crossed once. |
+| Invisible wall | Looks like floor and never shows itself; bumping it only sparkles. A pure memory test. |
+| Random force floor | Pushes you a new way every turn. Suction boots hold you steady. |
+| Chip socket | Stays shut until you carry every chip in the level. |
 
 **Machines and buttons**
 
@@ -176,6 +183,25 @@ and gates stop them all. "Speed" is relative to you.
 | 27 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
 | 28 | The Zoo | Grand Zoo | Everything at once | bigger |
 | 29 | The Zoo | Shadow Play | The mimic: bump walls to steer it onto a button and off a bomb | bigger |
+| 30 | Glass Maze | Panes | Thin walls: find the open side of each pen | bigger |
+| 31 | Glass Maze | Bobsled | Ice corners: four chutes that turn | bigger |
+| 32 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
+| 33 | Glass Maze | Ghost Walls | Invisible walls: three rings, one gap each | bigger |
+| 34 | Glass Maze | Roulette | Random force floors, suction boots, a chip socket | bigger |
+| 35 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
+| 36 | Glass Maze | Hall of Glass | Everything at once, and a secret way out round the outside | bigger |
+
+### Level design notes
+
+- **Start in the middle.** From the Glass Maze on, levels are bigger than the screen in every
+  direction and you start near the center, so every chip is off-screen and you carry the map
+  in your head.
+- **Secret ways out.** A level can hide a shortcut: a cracked wall in a corner of the boundary
+  opens onto a corridor running round the outside of the level, back in through a fake wall
+  somewhere else. In Hall of Glass it skips the long zigzag and the chip socket, and the par
+  (and so the three-star time) uses it.
+- **Power-up combos.** Some levels need two or three power-ups, each with its own job (Toolbox,
+  Hall of Glass, Disco Inferno), so the puzzle is which tool goes where.
 
 ## Scoring
 
@@ -199,7 +225,9 @@ pars are the best known route: the shortest path through their items in a fixed 
 ## Menus
 
 The home screen has **Continue** (the first level you have not finished; **Play** on a first run),
-**Levels** (every world and level, with your stars and best times) and **Field guide**. In a level,
+**Levels** (every world and level, with your stars and best times) and **Field guide**. It also
+picks who you play as: a robot, cat, astronaut, frog, ghost or ninja, in its own colors or one of
+seven others. The whole home screen fits a phone held sideways. In a level,
 the right panel has **Hint**, **Undo** and **Retry**; Hint pauses the game and shows the level's hint.
 
 ## Revenue

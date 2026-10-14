@@ -75,12 +75,36 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .view { display: flex; flex-direction: column; gap: 22px; }
 .view[hidden] { display: none; }
 .brand.small { font-size: 30px; }
-.homebtns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-.btn.big { flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 18px; min-width: 190px; text-align: left; }
+.hero-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.hero-main h2 { margin: 0; }
+.homebtns { display: flex; gap: 10px; }
+.btn.big { flex: 1 1 0; min-width: 0; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 16px; text-align: left; }
 .btn.big span { font: 400 28px/1 var(--font-pixel); letter-spacing: 0.04em; }
-.btn.big small { font-size: 13px; opacity: 0.8; }
-.skin { display: flex; align-items: center; gap: 10px; }
-.skin .label { margin: 0; }
+.btn.big small { font-size: 12px; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.look, .skin { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.look .label, .skin .label { margin: 0; }
+.avatars, .tints { display: flex; gap: 6px; flex-wrap: wrap; }
+.avatars button { padding: 3px; background: var(--panel); border: 2px solid var(--frame); border-radius: 4px; line-height: 0; }
+.avatars canvas { width: 32px; height: 32px; }
+.tints button { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--frame); padding: 0; }
+.avatars button[aria-checked="true"], .tints button[aria-checked="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.tints button.auto { background: conic-gradient(#ff6b6b, #ffd23f, #7dff6b, #3ad6ff, #c58bff, #ff6b6b); }
+/* Landscape phones: the whole home screen fits without scrolling. */
+@media (max-height: 560px) {
+  .app { padding-block: 10px 16px; gap: 12px; }
+  .view { gap: 12px; }
+  .brand { font-size: 28px; }
+  .chipbtn { font-size: 15px; padding: 4px 10px; }
+  .hero { gap: 14px; }
+  .hero h2 { font-size: 26px; }
+  .hero-main { gap: 10px; }
+  .btn.big { padding: 8px 12px; }
+  .btn.big span { font-size: 22px; }
+  .avatars canvas { width: 26px; height: 26px; }
+  .tints button { width: 20px; height: 20px; }
+  .skin select { font-size: 16px; padding: 3px 8px; }
+  #hero-art { width: 150px; height: 100px; }
+}
 #hero-art { width: 192px; height: 128px; border: 3px solid var(--frame); border-radius: 4px; }
 @media (max-width: 620px) { .hero { grid-template-columns: 1fr; } #hero-art { width: 100%; height: auto; max-width: 100%; aspect-ratio: 3 / 2; } }
 .label {
@@ -318,31 +342,37 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       <button id="btn-sound" class="chipbtn" type="button" aria-pressed="false">Sound off</button>
     </header>
     <section class="hero">
-      <div>
+      <div class="hero-main">
         <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
         <div class="homebtns">
           <button id="btn-continue" class="btn primary big" type="button"><span id="continue-label">Play</span><small id="continue-sub"></small></button>
           <button id="btn-levels" class="btn big" type="button"><span>Levels</span><small id="levels-sub"></small></button>
           <button id="btn-guide" class="btn big" type="button"><span>Field guide</span><small>What everything does</small></button>
         </div>
+        <div class="look">
+          <span class="label">You</span>
+          <div id="avatars" class="avatars" role="radiogroup" aria-label="Character"></div>
+          <div id="tints" class="tints" role="radiogroup" aria-label="Color"></div>
+        </div>
+        <div class="skin">
+          <label class="label" for="skin">Art style</label>
+          <select id="skin">
+            <option value="auto">Each world's own</option>
+            <option value="arcade">Pixel Arcade</option>
+            <option value="circuits">Lost Circuits</option>
+            <option value="ice">Ice Station</option>
+            <option value="neon">Neon Mixtape</option>
+            <option value="solar">Solar Disco</option>
+            <option value="tide">Tide Works</option>
+            <option value="yard">Conveyor Yard</option>
+            <option value="machine">Machine Room</option>
+            <option value="zoo">The Zoo</option>
+            <option value="glass">Glass Maze</option>
+          </select>
+        </div>
       </div>
       <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
     </section>
-    <div class="skin">
-      <label class="label" for="skin">Art style</label>
-      <select id="skin">
-        <option value="auto">Each world's own</option>
-        <option value="arcade">Pixel Arcade</option>
-        <option value="circuits">Lost Circuits</option>
-        <option value="ice">Ice Station</option>
-        <option value="neon">Neon Mixtape</option>
-        <option value="solar">Solar Disco</option>
-        <option value="tide">Tide Works</option>
-        <option value="yard">Conveyor Yard</option>
-        <option value="machine">Machine Room</option>
-        <option value="zoo">The Zoo</option>
-      </select>
-    </div>
   </div>
 
   <div id="levels-view" class="view" hidden>
@@ -505,7 +535,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   // within STAR_TIMES[1] x par (each rounded up to whole seconds), one for any finish.
   // There is no time limit: you can take as long as you like.
   const STAR_TIMES = [1.5, 3];
-  const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar', 'tide', 'yard', 'machine', 'zoo'];
+  const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar', 'tide', 'yard', 'machine', 'zoo', 'glass'];
   const WORLD_RULE = {
     arcade: 'The basics: keys, doors, chips and spiders.',
     circuits: 'Modifier: crumbling floor gives way once you step off it.',
@@ -516,6 +546,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     yard: 'Terrain: force floors, teleports, bombs, gravel, dirt and walls that are not what they seem.',
     machine: 'Machines: buttons that flip walls, spring traps, fire clone machines and turn tanks around.',
     zoo: 'The monster zoo: bugs, paramecia, fireballs, gliders, teeth, blobs, walkers and the mimic.',
+    glass: 'Walls you can barely see: thin walls, ice corners, pop-up walls, invisible walls, random force floors and chip sockets.',
   };
   const BOOT_NAME = { p: 'flippers', h: 'fire boots', k: 'ice skates', u: 'suction boots' };
   const BOOT_HELP = {
@@ -542,6 +573,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } },
   };
   let skin = store.get('lockstep:skin') || 'auto';
+  // Who you play as: a character and an optional color.
+  const TINTS = [null, '#f2f4f8', '#ff6b6b', '#ffa94d', '#ffd23f', '#7dff6b', '#3ad6ff', '#c58bff'];
+  let look = store.get('lockstep:look') || { id: 'robot', color: null };
+  if (!Art.AVATARS.some((a) => a.id === look.id)) look = { id: 'robot', color: null };
+  const avatarNow = () => Art.avatarSprite(look.id, look.color);
   if (skin !== 'auto' && !THEMES[skin]) skin = 'auto';
 
   const G = {
@@ -616,7 +652,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const s = G.state;
     const t = now / 1000;
     const k = turnProgress(now);
-    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k, trapsOpen: Core.trapsOpen(s) });
+    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k, trapsOpen: Core.trapsOpen(s), avatar: avatarNow() });
     G.effects = G.effects.filter((fx) => t - fx.t0 < (fx.dur || 0.45));
     Art.drawEffects(bctx, G.effects, t);
     const cam = camTarget(s, glide(G.prev && G.prev.player, s.player, k));
@@ -778,7 +814,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         G.effects.push({ kind: 'boom', at: [xy(arg)], t0: t, dur: 0.45 });
       } else if (kind === 'splash') {
         G.effects.push({ kind: 'splash', at: [xy(arg)], t0: t, dur: 0.4 });
-      } else if (kind === 'clone' || kind === 'teleport') {
+      } else if (kind === 'popup') {
+        G.effects.push({ kind: 'dust', at: [xy(arg)], t0: t, dur: 0.35 });
+      } else if (kind === 'clone' || kind === 'teleport' || kind === 'ghostwall' || kind === 'socket') {
         G.effects.push({ kind: 'sparkle', at: [xy(arg)], t0: t, dur: 0.35 });
       }
     }
@@ -822,6 +860,13 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     if (events.includes('reverse')) { say('The tanks turned around.'); tone(330, 0.12, 'triangle'); return; }
     if (has('teleport')) { tone(1200, 0.06, 'sine', 0.03); tone(1600, 0.08, 'sine', 0.03, 0.05); return; }
     if (has('reveal')) { say('A hidden wall!', 'warn'); tone(150, 0.12); return; }
+    if (has('ghostwall')) { say('An invisible wall. Remember it.', 'warn'); if (fresh) { tone(150, 0.12); bump(); } return; }
+    if (has('popup')) { say('The floor rose into a wall behind you.'); tone(180, 0.1, 'triangle'); return; }
+    if (has('socket')) { say('The chip socket opens.'); tone(660, 0.1, 'triangle'); return; }
+    if (events.includes('socket-shut')) {
+      const left = s.chipsTotal - s.chips;
+      say(`The socket needs every chip. ${left} ${left === 1 ? 'chip' : 'chips'} left.`, 'warn'); if (fresh) { tone(90, 0.1); bump(); } return;
+    }
     if (has('fakewall')) { say('That wall was a fake.'); tone(500, 0.06, 'triangle'); return; }
     if (has('splash')) { say('The crate sinks and fills the water with dirt.'); tone(220, 0.2, 'sine', 0.04); return; }
     if (events.includes('trapped')) { if (fresh) say('Caught in a trap. Something has to hold a brown button down.', 'warn'); return; }
@@ -1188,6 +1233,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => { floor(c); c.drawImage(sp.monsters.tank[1], 0, 0); }, 'Tank', 'Rolls straight and waits when blocked. A blue button turns every tank around.'],
       [(c) => { floor(c); c.drawImage(sp.monsters.teeth[0], 0, 0); }, 'Teeth', 'Chases you, slowly.'],
       [(c) => { floor(c); c.drawImage(sp.monsters.blob[0], 0, 0); }, 'Blob and walker', 'A blob wobbles about at random; a walker goes straight and picks a random turn when blocked.'],
+      [(c) => { floor(c); Art.drawEdgeWalls(c, 0, 0, ['right'], th); }, 'Thin wall', 'A wall along just one edge of a tile. Nothing crosses that edge, from either side.'],
+      [(c) => Art.drawIceCorner(c, 0, 0, ['up', 'right'], th, 1), 'Ice corner', 'Ice with two walled sides. Slide in and it turns you out of the other open side.'],
+      [(c) => { floor(c); Art.drawPopup(c, 0, 0, th); }, 'Pop-up wall', 'Floor that rises into a wall once you step off it. You only get to cross it once.'],
+      [(c) => floor(c), 'Invisible wall', 'Looks exactly like floor and never shows itself. Bump into it and remember where it was.'],
+      [(c) => Art.drawRandomForce(c, 0, 0, 0), 'Random force floor', 'Pushes you a different way each turn. Suction boots hold you steady.'],
+      [(c) => Art.drawSocket(c, 0, 0, 0), 'Chip socket', 'Stays shut until you are carrying every chip in the level.'],
       [(c) => { floor(c); c.drawImage(sp.mimic, 0, 0); }, 'Mimic', 'Copies every move you try, even into a wall. Bump a wall to move it while you stay put.'],
     ];
     for (const [draw, name, text] of items) {
@@ -1208,7 +1259,42 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     s.enemies[0].mode = 'alert';
     c.width = 6 * TILE;
     c.height = 4 * TILE;
-    Art.drawBoard(c.getContext('2d'), s, { theme: skin === 'auto' ? 'arcade' : skin, t: 0, phase: 0 });
+    Art.drawBoard(c.getContext('2d'), s, { theme: skin === 'auto' ? 'arcade' : skin, t: 0, phase: 0, avatar: avatarNow() });
+  }
+
+  // The character picker on the home screen.
+  function renderLook() {
+    const box = $('#avatars');
+    box.innerHTML = '';
+    for (const a of Art.AVATARS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(a.id === look.id));
+      b.setAttribute('aria-label', a.name);
+      b.title = a.name;
+      const c = document.createElement('canvas');
+      c.width = 16;
+      c.height = 16;
+      c.getContext('2d').drawImage(Art.avatarSprite(a.id, look.color), 0, 0);
+      b.append(c);
+      b.addEventListener('click', () => { look = { ...look, id: a.id }; store.set('lockstep:look', look); renderLook(); });
+      box.append(b);
+    }
+    const tints = $('#tints');
+    tints.innerHTML = '';
+    for (const color of TINTS) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', String(color === look.color));
+      b.setAttribute('aria-label', color ? `Color ${color}` : 'Its own colors');
+      if (color) b.style.background = color;
+      else b.className = 'auto';
+      b.addEventListener('click', () => { look = { ...look, color }; store.set('lockstep:look', look); renderLook(); });
+      tints.append(b);
+    }
+    renderHero();
   }
 
   // The first level you have not finished yet (or the last one you played, once all are done).
@@ -1390,7 +1476,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function boot(data) {
     $('#skin').value = skin;
     applyTheme(skin === 'auto' ? 'arcade' : skin);
-    renderHero();
+    renderLook();
     renderLegend();
     showView('home');
     if (data && data.screen === 'game' && LEVELS[data.idx]) startLevel(data.idx);

@@ -160,6 +160,46 @@ test('power-ups fire the way you face; bump a wall to turn', () => {
   assert.strictEqual(bumped.facing, 'down', 'bumping a wall faces it');
   assert.strictEqual(at(play(bumped, [{ use: 'j' }]).s), '2,2', 'the jetpack smashes the wall you face');
 });
+test('thin walls block one edge, from both sides', () => {
+  // '}' walls the east edge of its tile: you can step onto it from the west but not leave east.
+  let { s } = play(lvl(['######', '#@}.E#', '######']), ['right', 'right']);
+  assert.strictEqual(at(s), '2,1');
+  ({ s } = play(lvl(['######', '#@.{.#', '######']), ['right', 'right']));
+  assert.strictEqual(at(s), '2,1', 'a west-edge wall stops you entering from the west');
+  ({ s } = play(lvl(['#####', '#@.-#', '#####']), ['right', 'right']));
+  assert.strictEqual(at(s), '3,1', 'a north-edge wall does not stop sideways moves');
+});
+test('ice corners turn a slide', () => {
+  // Slide right along the ice into a corner walled north-east: you come out going down.
+  const s0 = lvl(['#######', '#@~~9.#', '#...~.#', '#...~.#', '#######']);
+  const { s } = play(s0, ['right']);
+  assert.strictEqual(at(s), '4,3');
+  assert.strictEqual(play(lvl(['#####', '#@.0#', '#####']), ['right', 'right']).s.player.x, 2, "you can't enter through a corner's wall");
+});
+test('pop-up walls rise behind you', () => {
+  const { s, events } = play(lvl(['######', '#@!..#', '######']), ['right', 'right', 'left']);
+  assert.strictEqual(s.grid[1 * 6 + 2], '#');
+  assert.strictEqual(at(s), '3,1');
+  assert.ok(events.some((e) => e.startsWith('popup')));
+});
+test('invisible walls stop you and stay invisible', () => {
+  const { s } = play(lvl(['#####', '#@&.#', '#####']), ['right', 'right']);
+  assert.strictEqual(at(s), '1,1');
+  assert.strictEqual(s.grid[1 * 5 + 2], '&');
+});
+test('random force floors push you some way every turn', () => {
+  const s0 = lvl(['#######', '#.....#', '#.....#', '#..+..#', '#.....#', '#.....#', '#@....#', '#######']);
+  const a = play(s0, ['up', 'up', 'right', 'right', 'up']).s; // walk onto the + tile
+  const b = play(s0, ['up', 'up', 'right', 'right', 'up']).s;
+  assert.strictEqual(at(a), at(b), 'the same moves give the same result');
+  assert.notStrictEqual(at(a), '3,3', 'you do not stay on it');
+});
+test('a chip socket opens only once you have every chip', () => {
+  const shut = play(lvl(['#######', '#@$*.E#', '#######']), ['right']).s;
+  assert.strictEqual(at(shut), '1,1');
+  const { s } = play(lvl(['#######', '#*@$.E#', '#######']), ['left', 'right', 'right', 'right', 'right']);
+  assert.strictEqual(s.status, 'won');
+});
 test('a monster that walks onto a bomb is destroyed with it', () => {
   const s0 = lvl(['########', '#@...KD#', '########'], { facing: { '6,1': 'left' } });
   const { s, events } = play(s0, ['wait', 'wait', 'wait']);
