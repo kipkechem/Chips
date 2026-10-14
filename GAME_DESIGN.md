@@ -184,6 +184,55 @@ costs one turn per tile). Disco Inferno is too large to search exhaustively, so 
 known route: the shortest path through its items in a fixed order. It is labeled
 "best known" in the game.
 
+## Revenue
+
+**One free app with a one-time unlock**, not a separate paid app. A single store listing
+keeps all the ratings in one place, and people can try the game before paying. Paid-up-front
+apps get far fewer installs.
+
+| | Free | Full game (one purchase, about $2.99) |
+|---|---|---|
+| Levels | 1 to 5 (Pixel Arcade and Lost Circuits, about 15 minutes) | All 27, and every future world |
+| Ads | Short ads between levels, plus optional "watch for a hint" ads | None (the optional hint becomes free) |
+
+The free levels end on a high: by level 5 the player has escaped spiders, used the jetpack and
+crossed a crumbling bridge. Level 6 (ice) is where the paywall sits. It shows the four worlds
+still to come, with a screenshot of each.
+
+### Where the ads go
+
+The game is real time and you die a lot while learning, so the ad rules protect the flow:
+
+| Place | Ad | Rule |
+|---|---|---|
+| After clearing a level, on **Next level** | Short interstitial (5 to 15 s, skippable) | At most one every 3 minutes, and never after the first two levels of a session. |
+| Fail or retry | **None** | Ads on retry are the fastest way to lose a puzzle player. |
+| During play or pause | **None** | An ad in the middle of a chase kills the run. |
+| Menu or game screen | **No banners** | The landscape screen has no room: the joystick and power-up rack would be covered. |
+| Pause menu: **Show me the way** | Rewarded (opt-in) | Watch an ad and a ghost robot walks the next 10 moves of the solver's route. The solver already proves every level, so the hints are always right. |
+| Results screen, after a fail | Rewarded (opt-in) | Same hint offer, shown only after 3 fails on a level. |
+
+Paying removes every interstitial and makes **Show me the way** free (limited to 3 per level,
+so it stays a hint, not autoplay).
+
+### What it needs
+
+- **Google Play.** The unlock needs Play Billing, which only works for apps installed from the Play
+  Store. The GitHub APK stays as a test build. Play needs a developer account ($25, one-time) and a
+  signed release build (AAB) instead of the current debug APK.
+- **Ads:** an AdMob account and the `@capacitor-community/admob` plugin.
+  **Purchase:** a billing plugin (RevenueCat's Capacitor plugin is the simplest). It also handles
+  "restore purchase" on a new phone.
+- **Rules:** a privacy policy page, the consent form AdMob provides (required in the EU and UK), the
+  "Contains ads" label, and the Play data-safety form. If the game is marketed to children
+  (it trains memory and problem solving), Google's Families rules apply: only certified ad
+  networks, and no personalized ads. Decide the target age before turning ads on.
+- **In the code:**
+  - A `full` flag, saved locally and confirmed with Play on launch.
+  - Levels after 5 locked until the game is unlocked.
+  - A paywall screen.
+  - One `showAd()` hook called from **Next level**, which does nothing on the web version.
+
 ## Ideas for later
 
 - **Spider variants:** a fast spider that takes two steps per turn; a spider that sees
