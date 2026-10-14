@@ -75,10 +75,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .view { display: flex; flex-direction: column; gap: 22px; }
 .view[hidden] { display: none; }
 .brand.small { font-size: 30px; }
-.hero-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* Home fills the screen: header, a main area that grows, then the settings row. */
+#home { min-height: calc(100svh - 56px); }
+#home .hero { flex: 1; align-items: stretch; }
+#home #hero-art { align-self: center; }
+.hero-main { display: flex; flex-direction: column; justify-content: center; gap: 14px; min-width: 0; }
 .hero-main h2 { margin: 0; }
-.homebtns { display: flex; gap: 10px; }
-.btn.big { flex: 1 1 0; min-width: 0; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 16px; text-align: left; }
+.homebtns { flex: 1; display: grid; grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; min-height: 140px; max-height: 340px; }
+.btn.big { min-width: 0; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; padding: 12px 16px; text-align: left; }
+.btn.big.main { grid-row: 1 / span 2; padding: 16px 22px; gap: 10px; }
+.btn.big.main span { font-size: clamp(40px, 7vw, 64px); }
+.btn.big.main small { font-size: 15px; }
+.home-foot { display: flex; flex-direction: column; gap: 10px; }
 .btn.big span { font: 400 28px/1 var(--font-pixel); letter-spacing: 0.04em; }
 .btn.big small { font-size: 12px; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .look, .skin { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -92,6 +100,9 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* Landscape phones: the whole home screen fits without scrolling. */
 @media (max-height: 560px) {
   .app { padding-block: 10px 16px; gap: 12px; }
+  #home { min-height: calc(100svh - 26px); }
+  .home-foot { flex-direction: row; flex-wrap: wrap; gap: 8px 18px; }
+  .btn.big.main span { font-size: 40px; }
   .view { gap: 12px; }
   .brand { font-size: 28px; }
   .chipbtn { font-size: 15px; padding: 4px 10px; }
@@ -352,47 +363,49 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       <div class="hero-main">
         <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
         <div class="homebtns">
-          <button id="btn-continue" class="btn primary big" type="button"><span id="continue-label">Play</span><small id="continue-sub"></small></button>
+          <button id="btn-continue" class="btn primary big main" type="button"><span id="continue-label">Play</span><small id="continue-sub"></small></button>
           <button id="btn-levels" class="btn big" type="button"><span>Levels</span><small id="levels-sub"></small></button>
           <button id="btn-guide" class="btn big" type="button"><span>Field guide</span><small>What everything does</small></button>
-        </div>
-        <div class="look">
-          <span class="label">You</span>
-          <div id="avatars" class="avatars" role="radiogroup" aria-label="Character"></div>
-          <div id="tints" class="tints" role="radiogroup" aria-label="Color"></div>
-        </div>
-        <div class="skin">
-          <label class="label" for="skin">Art style</label>
-          <select id="skin">
-            <option value="auto">Each world's own</option>
-            <option value="arcade">Pixel Arcade</option>
-            <option value="circuits">Lost Circuits</option>
-            <option value="ice">Ice Station</option>
-            <option value="neon">Neon Mixtape</option>
-            <option value="solar">Solar Disco</option>
-            <option value="tide">Tide Works</option>
-            <option value="yard">Conveyor Yard</option>
-            <option value="machine">Machine Room</option>
-            <option value="zoo">The Zoo</option>
-            <option value="glass">Glass Maze</option>
-          </select>
-          <label class="label" for="pad">Controls</label>
-          <select id="pad">
-            <option value="circle">Circle</option>
-            <option value="dpad">D-pad</option>
-            <option value="analog">Analog stick</option>
-          </select>
-          <label class="label" for="sens" id="sens-label">Sensitivity</label>
-          <select id="sens">
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
-          </select>
-          <span id="build"></span>
         </div>
       </div>
       <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
     </section>
+    <footer class="home-foot">
+      <div class="look">
+        <span class="label">You</span>
+        <div id="avatars" class="avatars" role="radiogroup" aria-label="Character"></div>
+        <div id="tints" class="tints" role="radiogroup" aria-label="Color"></div>
+      </div>
+      <div class="skin">
+        <label class="label" for="skin">Art style</label>
+        <select id="skin">
+          <option value="auto">Each world's own</option>
+          <option value="arcade">Pixel Arcade</option>
+          <option value="circuits">Lost Circuits</option>
+          <option value="ice">Ice Station</option>
+          <option value="neon">Neon Mixtape</option>
+          <option value="solar">Solar Disco</option>
+          <option value="tide">Tide Works</option>
+          <option value="yard">Conveyor Yard</option>
+          <option value="machine">Machine Room</option>
+          <option value="zoo">The Zoo</option>
+          <option value="glass">Glass Maze</option>
+        </select>
+        <label class="label" for="pad">Controls</label>
+        <select id="pad">
+          <option value="circle">Circle</option>
+          <option value="dpad">D-pad</option>
+          <option value="analog">Analog stick</option>
+        </select>
+        <label class="label" for="sens" id="sens-label">Sensitivity</label>
+        <select id="sens">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <span id="build"></span>
+      </div>
+    </footer>
   </div>
 
   <div id="levels-view" class="view" hidden>
