@@ -126,6 +126,29 @@
       ],
     },
     {
+      name: 'Curling',
+      world: 'ice',
+      hint: 'Crates slide on ice too, and ice corners turn them. Send one down each arm to bridge the water.',
+      par: 77,
+      map: [
+        '#######################',
+        '###########7~~~~~~w*###',
+        '###########~###########',
+        '###########~###########',
+        '###########~###########',
+        '#########..O..#########',
+        '#########.O...#########',
+        '#*w~~~~~~..@.O~~~~~~w*#',
+        '#########.....#########',
+        '#########.....#########',
+        '###########~###########',
+        '###########~###########',
+        '###########~###########',
+        '###########E###########',
+        '#######################',
+      ],
+    },
+    {
       name: 'Mega Blaster',
       world: 'neon',
       hint: 'Three shots for three cracked walls. Pink and cyan blocks swap every 1.3 seconds, so never be inside one when it closes.',
@@ -565,7 +588,7 @@
     {
       name: 'Roulette',
       world: 'glass',
-      hint: 'Random force floors push you a new way every turn. Fetch the suction boots first. The flag sits behind a chip socket.',
+      hint: 'Random force floors take turns: up, right, down, left, round and round. Fetch the suction boots first. The flag sits behind a chip socket.',
       par: 81,
       map: [
         '#########################',

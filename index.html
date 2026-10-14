@@ -225,6 +225,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .stick .q.on + .arrow { fill: var(--ink); }
 .stick .hub { fill: var(--bg); stroke: var(--frame); stroke-width: 3; }
 .stick .hub.on { fill: var(--frame); }
+.stick .base { fill: var(--panel); stroke: var(--frame); stroke-width: 3; }
+.stick .ring { fill: none; stroke: var(--frame); stroke-width: 2; stroke-dasharray: 4 6; }
+.stick .knob { fill: var(--frame); stroke: var(--frame-hi); stroke-width: 3; transition: transform 0.12s ease-out; }
+.stick.held .knob { transition: none; }
+.stick .tick { fill: var(--frame); pointer-events: none; }
+.stick .tick.on { fill: var(--ink); }
 .stick text { font: 400 15px var(--font-pixel); fill: var(--muted); letter-spacing: 0.05em; pointer-events: none; }
 .board-wrap {
   position: relative;
@@ -368,6 +374,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
             <option value="machine">Machine Room</option>
             <option value="zoo">The Zoo</option>
             <option value="glass">Glass Maze</option>
+          </select>
+          <label class="label" for="pad">Controls</label>
+          <select id="pad">
+            <option value="circle">Circle</option>
+            <option value="dpad">D-pad</option>
+            <option value="analog">Analog stick</option>
           </select>
         </div>
       </div>
@@ -1214,6 +1226,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => { floor(c); Art.drawCracks(c, 0, 0, th.detail); }, 'Crumbling floor', 'Turns into a hole once you step off it.'],
       [(c) => { floor(c); Art.drawBeat(c, 0, 0, '1', true, th); }, 'Beat blocks', `Pink and cyan swap every ${secs(Core.BEAT)}. Anything inside one when it closes is crushed.`],
       [(c) => Art.drawLava(c, 0, 0, 0, 3), 'Lava', 'Deadly. Push a crate in to fill it.'],
+      [(c) => { floor(c); Art.drawCrate(c, 0, 0); }, 'Crate', 'Push it one tile. On ice it slides until something stops it, and ice corners turn it; force floors carry it.'],
       [(c) => Art.drawWater(c, 0, 0, 0, 3), 'Water', 'You sink without flippers. A crate pushed in turns into dirt.'],
       [(c) => Art.drawFire(c, 0, 0, 0, 3), 'Fire', 'You burn without fire boots. Only fireballs cross it.'],
       [(c) => { floor(c); c.drawImage(sp.boots.p, 0, 0); }, 'Boots', 'Flippers (water), fire boots (fire), ice skates (no sliding), suction boots (force floors). Kept until a thief takes them.'],
@@ -1237,7 +1250,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => Art.drawIceCorner(c, 0, 0, ['up', 'right'], th, 1), 'Ice corner', 'Ice with two walled sides. Slide in and it turns you out of the other open side.'],
       [(c) => { floor(c); Art.drawPopup(c, 0, 0, th); }, 'Pop-up wall', 'Floor that rises into a wall once you step off it. You only get to cross it once.'],
       [(c) => floor(c), 'Invisible wall', 'Looks exactly like floor and never shows itself. Bump into it and remember where it was.'],
-      [(c) => Art.drawRandomForce(c, 0, 0, 0), 'Random force floor', 'Pushes you a different way each turn. Suction boots hold you steady.'],
+      [(c) => Art.drawRandomForce(c, 0, 0, 0), 'Random force floor', 'Pushes up, then right, then down, then left, turning each time any of them pushes. Suction boots hold you steady.'],
       [(c) => Art.drawSocket(c, 0, 0, 0), 'Chip socket', 'Stays shut until you are carrying every chip in the level.'],
       [(c) => { floor(c); c.drawImage(sp.mimic, 0, 0); }, 'Mimic', 'Copies every move you try, even into a wall. Bump a wall to move it while you stay put.'],
     ];
@@ -1336,15 +1349,58 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   const stick = $('#stick');
   let stickOn = false;
   let stickDirNow = null;
+  // Three styles share this footprint and the same rule: the axis your thumb has moved
+  // furthest along picks the direction, and a dead zone in the middle stops you.
+  const PADS = {
+    circle: {
+      dead: 0.14,
+      svg: `<path class="q" data-dir="up" d="M0 0 L-70.7 -70.7 A100 100 0 0 1 70.7 -70.7 Z"/><polygon class="arrow" points="0,-82 -14,-62 14,-62"/>
+        <path class="q" data-dir="right" d="M0 0 L70.7 -70.7 A100 100 0 0 1 70.7 70.7 Z"/><polygon class="arrow" points="82,0 62,-14 62,14"/>
+        <path class="q" data-dir="down" d="M0 0 L70.7 70.7 A100 100 0 0 1 -70.7 70.7 Z"/><polygon class="arrow" points="0,82 -14,62 14,62"/>
+        <path class="q" data-dir="left" d="M0 0 L-70.7 70.7 A100 100 0 0 1 -70.7 -70.7 Z"/><polygon class="arrow" points="-82,0 -62,-14 -62,14"/>
+        <circle class="hub" cx="0" cy="0" r="22"/>`,
+    },
+    dpad: {
+      dead: 0.12,
+      svg: `<rect class="q" data-dir="up" x="-30" y="-98" width="60" height="70" rx="8"/><polygon class="arrow" points="0,-80 -14,-58 14,-58"/>
+        <rect class="q" data-dir="right" x="28" y="-30" width="70" height="60" rx="8"/><polygon class="arrow" points="80,0 58,-14 58,14"/>
+        <rect class="q" data-dir="down" x="-30" y="28" width="60" height="70" rx="8"/><polygon class="arrow" points="0,80 -14,58 14,58"/>
+        <rect class="q" data-dir="left" x="-98" y="-30" width="70" height="60" rx="8"/><polygon class="arrow" points="-80,0 -58,-14 -58,14"/>
+        <rect class="hub" x="-30" y="-30" width="60" height="60"/>`,
+    },
+    analog: {
+      dead: 0.2,
+      svg: `<circle class="base" cx="0" cy="0" r="98"/><circle class="ring" cx="0" cy="0" r="40"/>
+        <polygon class="tick" data-dir="up" points="0,-92 -10,-78 10,-78"/><polygon class="tick" data-dir="right" points="92,0 78,-10 78,10"/>
+        <polygon class="tick" data-dir="down" points="0,92 -10,78 10,78"/><polygon class="tick" data-dir="left" points="-92,0 -78,-10 -78,10"/>
+        <circle class="knob" cx="0" cy="0" r="36"/>`,
+    },
+  };
+  let pad = PADS[store.get('lockstep:pad')] ? store.get('lockstep:pad') : 'circle';
+  function renderPad() {
+    stick.querySelector('svg').innerHTML = PADS[pad].svg;
+    stick.dataset.pad = pad;
+    $('#pad').value = pad;
+  }
+  // The analog knob follows your thumb, up to the edge of its base.
+  function moveKnob(dx, dy) {
+    const knob = stick.querySelector('.knob');
+    if (!knob) return;
+    const len = Math.hypot(dx, dy);
+    const k = len > 60 ? 60 / len : 1;
+    knob.setAttribute('transform', `translate(${dx * k} ${dy * k})`);
+  }
   function stickDir(e) {
     const r = stick.getBoundingClientRect();
     const dx = e.clientX - (r.left + r.width / 2);
     const dy = e.clientY - (r.top + r.height / 2);
-    if (Math.hypot(dx, dy) < r.width * 0.14) return null;
+    const units = 204 / r.width; // screen pixels to the SVG's units
+    moveKnob(dx * units, dy * units);
+    if (Math.hypot(dx, dy) < r.width * PADS[pad].dead) return null;
     return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
   }
   function light(d) {
-    stick.querySelectorAll('.q').forEach((q) => q.classList.toggle('on', q.dataset.dir === d));
+    stick.querySelectorAll('[data-dir]').forEach((q) => q.classList.toggle('on', q.dataset.dir === d));
   }
   function aim(d) {
     if (d === stickDirNow) return;
@@ -1357,6 +1413,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     e.preventDefault();
     stick.setPointerCapture(e.pointerId);
     stickOn = true;
+    stick.classList.add('held');
     if (G.phase === 'intro') begin();
     aim(stickDir(e));
   });
@@ -1369,6 +1426,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       stickDirNow = null;
       G.held = null;
       light(null);
+      stick.classList.remove('held');
+      moveKnob(0, 0); // the knob springs back to the middle
     });
   }
 
@@ -1449,6 +1508,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   $('#res-retry').addEventListener('click', () => startLevel(G.idx));
   $('#res-next').addEventListener('click', () => startLevel(Math.min(G.idx + 1, LEVELS.length - 1)));
   $('#res-menu').addEventListener('click', () => toMenu());
+  $('#pad').addEventListener('change', (e) => {
+    pad = e.target.value;
+    store.set('lockstep:pad', pad);
+    renderPad();
+  });
   $('#skin').addEventListener('change', (e) => {
     skin = e.target.value;
     store.set('lockstep:skin', skin);
@@ -1477,6 +1541,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     $('#skin').value = skin;
     applyTheme(skin === 'auto' ? 'arcade' : skin);
     renderLook();
+    renderPad();
     renderLegend();
     showView('home');
     if (data && data.screen === 'game' && LEVELS[data.idx]) startLevel(data.idx);

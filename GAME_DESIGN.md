@@ -25,9 +25,14 @@ every chase can be planned, and the solver can prove every level is winnable.
 
 ## Controls (landscape)
 
-- **Left: the direction circle.** A circle split diagonally into up, down, left and
-  right. Press a quadrant and you step at once; keep holding to run; slide your thumb
-  to another quadrant to turn. Resting your thumb in the center stops you.
+- **Left: the direction control**, in one of three styles chosen on the home screen, all in
+  the same spot:
+  - **Circle:** a circle split diagonally into up, down, left and right.
+  - **D-pad:** a cross of four buttons.
+  - **Analog stick:** a knob that follows your thumb and springs back when you let go.
+
+  In each, press and you step at once; keep holding to run; move your thumb to turn.
+  Resting your thumb in the middle stops you.
 - **Center: the board.** Swipes on the board also move you.
 - **Right: the power-up rack.** Tap a power-up and it fires at once, the way the robot
   faces (a small yellow arrow shows which way). Walking or bumping into something turns
@@ -110,6 +115,7 @@ introduces one element on its own; the last level of each world combines them.
 | Teleport | Sends you to the next pad (reading order) that you can step out of, moving the same way. |
 | Bomb | Kills you, or any monster. A crate pushed onto it destroys both. |
 | Gravel | You walk on it; monsters can't. |
+| Crate | Pushed one tile at a time. On ice it slides one tile a turn until something stops it, turning at ice corners; force floors carry it. Into water it becomes dirt; into lava or a bomb it is used up. |
 | Dirt | Monsters can't cross it; it clears to floor when you walk on it. A crate pushed into water becomes dirt. |
 | Hidden wall | Looks like floor until you bump it. |
 | Fake wall | Looks like wall, but gives way when you walk into it. |
@@ -119,7 +125,7 @@ introduces one element on its own; the last level of each world combines them.
 | Ice corner | Ice walled on two sides. You slide in and are turned out of the other open side. |
 | Pop-up wall | Floor that rises into a wall once you step off it: each one can be crossed once. |
 | Invisible wall | Looks like floor and never shows itself; bumping it only sparkles. A pure memory test. |
-| Random force floor | Pushes you a new way every turn. Suction boots hold you steady. |
+| Random force floor | Pushes up, right, down, left in turn: one counter shared by every random floor moves on clockwise with each push, like the Lynx original. Suction boots hold you steady. |
 | Chip socket | Stays shut until you carry every chip in the level. |
 
 **Machines and buttons**
@@ -161,35 +167,36 @@ and gates stop them all. "Speed" is relative to you.
 | 5 | Lost Circuits | Crumbling Ruins | Escaping spiders over a collapsing bridge | bigger |
 | 6 | Ice Station | Thin Ice | Sliding | bigger |
 | 7 | Ice Station | Flamethrower | Spiders fenced around the key: burn them | bigger |
-| 8 | Neon Mixtape | Mega Blaster | Three shots, three cracked walls, beat-block timing | bigger |
-| 9 | Neon Mixtape | Beat Drop | Leading a spider into a closing beat block | bigger |
-| 10 | Solar Disco | Freeze Frame | Freeze bomb; lava and a crate | bigger |
-| 11 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
-| 12 | Tide Works | Deep End | Water and flippers | bigger |
-| 13 | Tide Works | Firewalk | Fire and fire boots; a crate fills water with dirt | fits |
-| 14 | Tide Works | Cold Feet | Ice skates | fits |
-| 15 | Tide Works | Pickpocket | The thief and the green key | bigger |
-| 16 | Conveyor Yard | Conveyor | Force floors and suction boots | bigger |
-| 17 | Conveyor Yard | Beam Me Up | Teleports | bigger |
-| 18 | Conveyor Yard | Minefield | Bombs, gravel, dirt and teeth | fits |
-| 19 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls | fits |
-| 20 | Machine Room | Switchback | Toggle walls and the green button | fits |
-| 21 | Machine Room | Snare | A trap, a crate and the brown button | fits |
-| 22 | Machine Room | Copy Machine | A clone machine and the red button | fits |
-| 23 | Machine Room | Tank Trap | A tank and the blue button | fits |
-| 24 | The Zoo | Bug Hunt | Bugs and paramecia | bigger |
-| 25 | The Zoo | Hot and Cold | Fireballs and gliders | bigger |
-| 26 | The Zoo | Feeding Time | Teeth and a blob | fits |
-| 27 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
-| 28 | The Zoo | Grand Zoo | Everything at once | bigger |
-| 29 | The Zoo | Shadow Play | The mimic: bump walls to steer it onto a button and off a bomb | bigger |
-| 30 | Glass Maze | Panes | Thin walls: find the open side of each pen | bigger |
-| 31 | Glass Maze | Bobsled | Ice corners: four chutes that turn | bigger |
-| 32 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
-| 33 | Glass Maze | Ghost Walls | Invisible walls: three rings, one gap each | bigger |
-| 34 | Glass Maze | Roulette | Random force floors, suction boots, a chip socket | bigger |
-| 35 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
-| 36 | Glass Maze | Hall of Glass | Everything at once, and a secret way out round the outside | bigger |
+| 8 | Ice Station | Curling | Crates slide on ice and turn at ice corners: bridge the water | bigger |
+| 9 | Neon Mixtape | Mega Blaster | Three shots, three cracked walls, beat-block timing | bigger |
+| 10 | Neon Mixtape | Beat Drop | Leading a spider into a closing beat block | bigger |
+| 11 | Solar Disco | Freeze Frame | Freeze bomb; lava and a crate | bigger |
+| 12 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
+| 13 | Tide Works | Deep End | Water and flippers | bigger |
+| 14 | Tide Works | Firewalk | Fire and fire boots; a crate fills water with dirt | fits |
+| 15 | Tide Works | Cold Feet | Ice skates | fits |
+| 16 | Tide Works | Pickpocket | The thief and the green key | bigger |
+| 17 | Conveyor Yard | Conveyor | Force floors and suction boots | bigger |
+| 18 | Conveyor Yard | Beam Me Up | Teleports | bigger |
+| 19 | Conveyor Yard | Minefield | Bombs, gravel, dirt and teeth | fits |
+| 20 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls | fits |
+| 21 | Machine Room | Switchback | Toggle walls and the green button | fits |
+| 22 | Machine Room | Snare | A trap, a crate and the brown button | fits |
+| 23 | Machine Room | Copy Machine | A clone machine and the red button | fits |
+| 24 | Machine Room | Tank Trap | A tank and the blue button | fits |
+| 25 | The Zoo | Bug Hunt | Bugs and paramecia | bigger |
+| 26 | The Zoo | Hot and Cold | Fireballs and gliders | bigger |
+| 27 | The Zoo | Feeding Time | Teeth and a blob | fits |
+| 28 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
+| 29 | The Zoo | Grand Zoo | Everything at once | bigger |
+| 30 | The Zoo | Shadow Play | The mimic: bump walls to steer it onto a button and off a bomb | bigger |
+| 31 | Glass Maze | Panes | Thin walls: find the open side of each pen | bigger |
+| 32 | Glass Maze | Bobsled | Ice corners: four chutes that turn | bigger |
+| 33 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
+| 34 | Glass Maze | Ghost Walls | Invisible walls: three rings, one gap each | bigger |
+| 35 | Glass Maze | Roulette | Random force floors, suction boots, a chip socket | bigger |
+| 36 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
+| 37 | Glass Maze | Hall of Glass | Everything at once, and a secret way out round the outside | bigger |
 
 ### Level design notes
 

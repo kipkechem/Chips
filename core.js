@@ -68,7 +68,8 @@
   //              7 9 3 0  ice corners, walled north-west, north-east, south-east, south-west:
   //                       you slide in and are turned out of the other open side
   //              !  pop-up wall: floor that rises into a wall once you step off it
-  //              +  random force floor    $  chip socket (opens once you have every chip)
+  //              +  random force floor: pushes up, right, down, left in turn (one shared
+  //                 counter, clockwise, like the Lynx original)    $  chip socket
   //   Walls      #  wall    %  steel    W  cracked (blaster/jetpack)    H  hole
   //              I  hidden wall (looks like floor)   N  fake wall (gives way when you touch it)
   //              &  invisible wall (looks like floor, and stays that way)
@@ -141,7 +142,7 @@
       [types.has('spider'), SPIDER_SKIP],
       [[...types].some((t) => TYPE_EVERY[t] === 2), 2],
       [[...types].some((t) => TYPE_EVERY[t] === 4), 4],
-      [types.has('blob') || types.has('walker') || grid.includes('+'), RNG_PERIOD],
+      [types.has('blob') || types.has('walker'), RNG_PERIOD],
       [beat, 2 * BEAT],
     ];
     for (const [on, n] of rhythms) if (on) cycle = (cycle * n) / gcd(cycle, n);
@@ -153,6 +154,8 @@
       grid0: grid.slice(), // never mutated; lets stateKey store only what changed
       items,
       crates,
+      crateDir: {}, // crates sliding on ice: tile index -> direction
+      rff: 0, // which way the random force floors push next (index into DIR_NAMES)
       enemies,
       cloners,
       nextId: enemies.length,
@@ -178,6 +181,7 @@
       grid: s.grid.slice(),
       items: { ...s.items },
       crates: s.crates.slice(),
+      crateDir: { ...s.crateDir },
       enemies: s.enemies.map((e) => ({ ...e })),
       player: { ...s.player },
       keys: { ...s.keys },
@@ -207,12 +211,23 @@
   }
   const dirOf = (dx, dy) => DIR_NAMES.find((d) => DIRS[d].dx === dx && DIRS[d].dy === dy);
 
-  // Which way a force floor pushes you; a random one picks a new way every turn.
-  function forceDir(s, i) {
+  // Which way a force floor pushes. Random force floors take turns clockwise: each push,
+  // by any of them, moves the shared counter on one step.
+  function pushDir(s, i) {
     const g = s.grid[i];
     if (g !== '+') return FORCE[g];
-    const h = Math.imul((s.steps % RNG_PERIOD) * 7919 + i * 104729 + 1, 2654435761) >>> 0;
-    return DIR_NAMES[h >>> 30]; // the top bits mix well; the low ones repeat in a pattern
+    const d = DIR_NAMES[s.rff];
+    s.rff = (s.rff + 1) % 4;
+    return d;
+  }
+  const isForce = (g) => !!FORCE[g] || g === '+';
+
+  // Which way something carries on after sliding onto tile g going dir: straight on over
+  // ice, turned by an ice corner, or not at all.
+  function iceTurn(g, dir) {
+    if (g === '~') return dir;
+    if (ICE_CORNERS.includes(g)) return DIR_NAMES.find((d) => !EDGE_WALLS[g].includes(d) && d !== BACK_OF[dir]);
+    return null;
   }
 
   // A trap releases whatever is in it only while something holds a brown button down.
@@ -423,6 +438,66 @@
     return !s.crates.includes(i) && !(enemyAt(s, x, y) || {}).frozen;
   }
 
+  // Crates go onto floor, ice, gravel, force floors, buttons and traps, and into water,
+  // lava and bombs (which use them up).
+  const CRATE_TILES = '.~:x,wK()[]J<>^v+-_{}7930';
+  function crateCanGo(s, x, y, dir) {
+    const { dx, dy } = DIRS[dir];
+    const tx = x + dx;
+    const ty = y + dy;
+    if (!inBounds(s, tx, ty) || !edgeOpen(s, x, y, dir)) return false;
+    const ti = ty * s.w + tx;
+    return CRATE_TILES.includes(s.grid[ti]) && !s.items[ti] && !s.crates.includes(ti) && !enemyAt(s, tx, ty) &&
+      !(s.player.x === tx && s.player.y === ty);
+  }
+
+  // Move the crate at index i one tile. Returns its new index, or -1 if it was used up.
+  function moveCrate(s, i, dir, events) {
+    const { dx, dy } = DIRS[dir];
+    const x = i % s.w;
+    const bx = x + dx;
+    const by = (i - x) / s.w + dy;
+    const bi = by * s.w + bx;
+    const bg = s.grid[bi];
+    s.crates.splice(s.crates.indexOf(i), 1);
+    delete s.crateDir[i];
+    if (bg === 'x') {
+      s.grid[bi] = '.';
+      events.push('sink');
+      return -1;
+    }
+    if (bg === 'w') {
+      s.grid[bi] = ';';
+      events.push(`splash:${bx},${by}`);
+      return -1;
+    }
+    if (bg === 'K') {
+      s.grid[bi] = '.';
+      events.push(`boom:${bx},${by}`);
+      return -1;
+    }
+    s.crates.push(bi);
+    const on = iceTurn(bg, dir);
+    if (on) s.crateDir[bi] = on;
+    if ('([]'.includes(bg)) press(s, bg, events);
+    return bi;
+  }
+
+  // Each turn, crates on ice slide on one tile and crates on force floors are carried one.
+  // A sliding crate that is blocked stops; one on a force floor tries again next turn.
+  function moveCrates(s, events, skip) {
+    for (const i of s.crates.slice()) {
+      if (skip.includes(i) || !s.crates.includes(i)) continue;
+      const g = s.grid[i];
+      if (g === 'J' && !trapsOpen(s)) continue;
+      const dir = s.crateDir[i] || (isForce(g) ? pushDir(s, i) : null);
+      if (!dir) continue;
+      const x = i % s.w;
+      if (crateCanGo(s, x, (i - x) / s.w, dir)) moveCrate(s, i, dir, events);
+      else delete s.crateDir[i];
+    }
+  }
+
   // Player walks one tile. Returns false (and an event) when the way is blocked.
   function walk(s, dir, events, sliding) {
     const p = s.player;
@@ -478,32 +553,13 @@
       s.grid[i] = '.';
       events.push(`socket:${nx},${ny}`);
     } else if (s.crates.includes(i)) {
-      const bx = nx + dx;
-      const by = ny + dy;
-      const bi = by * s.w + bx;
-      const bg = inBounds(s, bx, by) ? s.grid[bi] : '#';
       const stuck = g === 'J' && !trapsOpen(s);
-      const free = !sliding && !stuck && edgeOpen(s, nx, ny, dir) && ('.~:x,wK()[]J'.includes(bg) || EDGE_WALLS[bg]) &&
-        !s.items[bi] && !s.crates.includes(bi) && !enemyAt(s, bx, by);
-      if (!free) {
+      if (sliding || stuck || !crateCanGo(s, nx, ny, dir)) {
         events.push('bump');
         return false;
       }
-      s.crates.splice(s.crates.indexOf(i), 1);
-      if (bg === 'x') {
-        s.grid[bi] = '.';
-        events.push('sink');
-      } else if (bg === 'w') {
-        s.grid[bi] = ';';
-        events.push(`splash:${bx},${by}`);
-      } else if (bg === 'K') {
-        s.grid[bi] = '.';
-        events.push(`boom:${bx},${by}`);
-      } else {
-        s.crates.push(bi);
-        events.push('push');
-        if ('([]'.includes(bg)) press(s, bg, events);
-      }
+      const to = moveCrate(s, i, dir, events);
+      events.push(`push:${to}`); // the crate's new tile (-1 if used up); it has moved this turn
     }
     // Crumbling floor gives way behind you; a pop-up wall rises behind you.
     if (s.grid[from] === ':') {
@@ -660,13 +716,10 @@
       s.slide = dir;
       return null;
     }
-    const stopped = events.some((ev) => ev.startsWith('pickup:') || ev === 'unlock' || ev === 'push');
-    if ((FORCE[g] || g === '+') && !s.boots.u) s.slide = forceDir(s, i);
+    const stopped = events.some((ev) => ev.startsWith('pickup:') || ev === 'unlock' || ev.startsWith('push:'));
+    if (isForce(g) && !s.boots.u) s.slide = pushDir(s, i);
     else if (g === '~' && !s.boots.k && !stopped) s.slide = dir;
-    else if (ICE_CORNERS.includes(g) && !s.boots.k && !stopped) {
-      // Turned out of the open side you did not come in by.
-      s.slide = DIR_NAMES.find((d) => !EDGE_WALLS[g].includes(d) && d !== BACK_OF[dir]);
-    }
+    else if (ICE_CORNERS.includes(g) && !s.boots.k && !stopped) s.slide = iceTurn(g, dir); // out of the other open side
     return null;
   }
 
@@ -695,8 +748,9 @@
     }
     // A force floor keeps pushing you even when you stand still.
     const under = s.grid[p.y * s.w + p.x];
-    if (!s.slide && (FORCE[under] || under === '+') && !s.boots.u) s.slide = forceDir(s, p.y * s.w + p.x);
+    if (!s.slide && isForce(under) && !s.boots.u) s.slide = pushDir(s, p.y * s.w + p.x);
 
+    moveCrates(s, events, events.filter((e) => e.startsWith('push:')).map((e) => +e.slice(5)));
     const before = phase(s);
     moveEnemies(s, action && typeof action === 'string' ? action : null, events);
     s.steps++;
@@ -754,10 +808,11 @@
       s.player.x + ',' + s.player.y,
       gridDiff,
       Object.keys(s.items).join('.'),
-      s.crates.join('.'),
+      s.crates.join('.') + Object.entries(s.crateDir).join('.'),
       s.enemies.map((e) => `${e.id},${e.x},${e.y},${e.dx || 0},${e.dy || 0},${e.mode || ''}${e.alert || ''},${e.frozen}`).join('|'),
       KEY_COLORS.map((k) => s.keys[k]).join('') + POWERS.map((k) => s.powers[k]).join('') + BOOTS.map((k) => s.boots[k]).join(''),
       s.steps % s.cycle,
+      s.rff,
       POWERS.some((k) => AIMED[k] && s.powers[k]) ? s.facing : '', // only matters while you can aim
     ].join(';');
   }

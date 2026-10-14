@@ -187,12 +187,26 @@ test('invisible walls stop you and stay invisible', () => {
   assert.strictEqual(at(s), '1,1');
   assert.strictEqual(s.grid[1 * 5 + 2], '&');
 });
-test('random force floors push you some way every turn', () => {
-  const s0 = lvl(['#######', '#.....#', '#.....#', '#..+..#', '#.....#', '#.....#', '#@....#', '#######']);
-  const a = play(s0, ['up', 'up', 'right', 'right', 'up']).s; // walk onto the + tile
-  const b = play(s0, ['up', 'up', 'right', 'right', 'up']).s;
-  assert.strictEqual(at(a), at(b), 'the same moves give the same result');
-  assert.notStrictEqual(at(a), '3,3', 'you do not stay on it');
+test('random force floors push up, right, down, left in turn', () => {
+  const s0 = lvl(['#######', '#.....#', '#.....#', '#..+..#', '#..@..#', '#.....#', '#######']);
+  let { s } = play(s0, ['up']); // onto the floor: pushed up
+  assert.strictEqual(at(s), '3,2');
+  ({ s } = play(s, ['down'])); // pushed right
+  assert.strictEqual(at(s), '4,3');
+  ({ s } = play(s, ['left'])); // pushed down
+  assert.strictEqual(at(s), '3,4');
+  ({ s } = play(s, ['up'])); // pushed left
+  assert.strictEqual(at(s), '2,3');
+});
+test('crates slide across ice and turn at ice corners', () => {
+  let { s } = play(lvl(['########', '#@O~~~.#', '########']), ['right', 'wait', 'wait', 'wait', 'wait']);
+  assert.deepStrictEqual(s.crates, [1 * 8 + 6], 'it slid to the floor at the far end');
+  ({ s } = play(lvl(['#######', '#@O~9.#', '####~.#', '####..#', '#######']), ['right', 'wait', 'wait', 'wait', 'wait']));
+  assert.deepStrictEqual(s.crates, [3 * 7 + 4], 'the corner turned it down');
+});
+test('crates ride force floors', () => {
+  const { s } = play(lvl(['#######', '#@O>>.#', '#######']), ['right', 'wait', 'wait', 'wait']);
+  assert.deepStrictEqual(s.crates, [1 * 7 + 5]);
 });
 test('a chip socket opens only once you have every chip', () => {
   const shut = play(lvl(['#######', '#@$*.E#', '#######']), ['right']).s;

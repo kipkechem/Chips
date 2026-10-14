@@ -22,7 +22,7 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-On a phone, hold it sideways: press a direction on the circle on the left to step, hold to run, slide your thumb to turn; tap power-ups on the right
+On a phone, hold it sideways: press a direction on the control on the left (a circle, a D-pad or an analog stick: pick one on the home screen) to step, hold to run, slide your thumb to turn; tap power-ups on the right
 (they fire the way the robot faces). Keyboard:
 arrows or WASD to move (hold to run), 1–4 to fire a power-up, H hint, Z undo, R restart,
 P pause.
