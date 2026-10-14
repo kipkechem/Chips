@@ -186,6 +186,8 @@ known route: the shortest path through its items in a fixed order. It is labeled
 
 ## Revenue
 
+*Planned, not built: this comes after the full game is finished.*
+
 **One free app with a one-time unlock**, not a separate paid app. A single store listing
 keeps all the ratings in one place, and people can try the game before paying. Paid-up-front
 apps get far fewer installs.
