@@ -225,6 +225,16 @@ test('a plain wall takes two blaster shots; steel and the outer edge take none',
   const edge = play(lvl(['#####', '#@m.#', '#####']), ['right', 'right', { use: 'm' }]).s;
   assert.strictEqual(edge.grid[1 * 5 + 4], '#', 'the edge of the level never breaks');
 });
+test('a chasing spider never gives up: blocked, it waits, then follows again', () => {
+  const s0 = lvl(['#########', '#S.....@#', '######.##', '#.......#', '#########']);
+  // It spots you, then you slip down to the lower corridor and run left: the wall holds it.
+  let { s } = play(s0, ['wait', 'wait', 'wait', 'left', 'down', 'down', 'left', 'left', 'left', 'left', 'left', 'wait', 'wait']);
+  const spider = () => s.enemies[0];
+  assert.strictEqual(spider().mode, 'chase', 'still chasing while blocked');
+  const held = spider().x;
+  ({ s } = play(s, ['right', 'right', 'right', 'right', 'right', 'right']));
+  assert.ok(spider().x > held, 'it follows you back along its row');
+});
 test('a monster that walks onto a bomb is destroyed with it', () => {
   const s0 = lvl(['########', '#@...KD#', '########'], { facing: { '6,1': 'left' } });
   const { s, events } = play(s0, ['wait', 'wait', 'wait']);

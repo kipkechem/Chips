@@ -342,8 +342,8 @@
     return true;
   }
 
-  // Spiders: wait (blocked, straining toward you) -> sees you -> alert for 0.5 s -> chase.
-  // A chaser that runs into anything but another spider loses you and waits again.
+  // Spiders: wait (boxed in, straining toward you) -> sees you -> alert for 0.5 s -> chase.
+  // Once chasing, a spider keeps after you for good (until it is frozen).
   function moveSpiders(s) {
     const turn = s.steps;
     const dist = (e) => Math.abs(e.x - s.player.x) + Math.abs(e.y - s.player.y);
@@ -365,7 +365,6 @@
         e.mode = 'chase';
       }
       if (turn % SPIDER_SKIP === SPIDER_SKIP - 1) continue; // 95% of your speed
-      let queued = false;
       let moved = false;
       for (const [dx, dy] of chaseOptions(s, e)) {
         if (!edgeOpen(s, e.x, e.y, dirOf(dx, dy))) continue;
@@ -375,9 +374,9 @@
           moved = true;
           break;
         }
-        if (bare(s, e.x + dx, e.y + dy)) queued = true; // only another enemy in the way
       }
-      if (!moved && !queued) e.mode = 'wait';
+      // A chaser never gives up: when blocked it strains toward you, and moves again as soon
+      // as a step toward you opens up.
     }
   }
 

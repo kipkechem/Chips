@@ -58,7 +58,9 @@ every chase can be planned, and the solver can prove every level is winnable.
    sitting out every 20th turn, so in a straight race you slowly pull away. Spiders
    queued behind another spider keep following it rather than giving up.
 4. **Gates are safety.** A door you open becomes a gate. You walk through it; no enemy ever does.
-   A chasing spider that runs into a wall, item or gate loses you and waits again.
+   A chasing spider never gives up: a wall or an item only holds it up, straining toward you,
+   and it moves on as soon as a step toward you opens. Only gates, holes and fences keep it off
+   you for good.
 
 On screen, a blocked spider strains toward you, so you can always see it trying to reach you.
 

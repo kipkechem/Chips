@@ -1069,7 +1069,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       const why = {
         lava: ['You stepped into lava.', 'Push a crate into it first, or find another way around.'],
         caught: [`Caught by ${ENEMY_NAME[caught ? caught.type : 'spider']}.`, caught && caught.type === 'spider'
-          ? 'Spiders react half a second after they spot you, then chase at nearly your speed. Get through a gate, or turn a corner they cannot follow.'
+          ? 'Spiders react half a second after they spot you, then chase at nearly your speed and never give up. Put a gate, a hole or a fence between you.'
           : caught && caught.type === 'mimic'
             ? 'The mimic copies every move you try. Walk into a wall and it still moves, while you stay put.'
             : 'Every monster follows a fixed pattern. Watch it go round once before you cross its path.'],
@@ -1238,7 +1238,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const sp = Art.sprites(themeKey);
     const floor = (c) => Art.drawFloor(c, 0, 0, th, 5);
     const items = [
-      [(c) => { floor(c); c.drawImage(sp.spider, 0, 0); }, 'Spider', 'Waits until it sees you along a row or column (it sees past other spiders). Half a second later it chases at 95% of your speed, until a wall, item or gate stops it.'],
+      [(c) => { floor(c); c.drawImage(sp.spider, 0, 0); }, 'Spider', 'Waits until it sees you along a row or column (it sees past other spiders). Half a second later it chases at 95% of your speed and keeps after you for good: walls and items only hold it up, and it cannot cross a gate.'],
       [(c) => Art.drawDoor(c, 0, 0, 'b'), 'Keys and doors', 'A key opens one door of its color and is used up. The green key is never used up: it opens every green door. Each color has its own symbol.'],
       [(c) => { floor(c); Art.drawGate(c, 0, 0, 'y'); }, 'Gate', 'An opened door. You walk through; no enemy can cross it.'],
       [(c) => { floor(c); Art.drawFence(c, 0, 0); }, 'Fence', 'You can pass, enemies cannot. Flames and shots go straight through.'],
@@ -1405,7 +1405,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <circle class="knob" cx="0" cy="0" r="36"/>`,
     },
   };
-  let pad = PADS[store.get('lockstep:pad')] ? store.get('lockstep:pad') : 'circle';
+  let pad = PADS[store.get('lockstep:pad')] ? store.get('lockstep:pad') : 'dpad';
   // The analog stick, as shares of its width: dead is how far you push before you move;
   // reach is how far its center trails behind your thumb. A small reach means turning or
   // reversing only ever takes a short move, however far you have pushed.
