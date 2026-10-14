@@ -241,6 +241,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .stick .ring { fill: none; stroke: var(--frame); stroke-width: 2; stroke-dasharray: 4 6; }
 .stick .knob { fill: var(--frame); stroke: var(--frame-hi); stroke-width: 3; transition: transform 0.12s ease-out; }
 .stick.held .knob { transition: none; }
+.stick svg { transition: transform 0.15s ease-out; }
+.stick.held svg { transition: none; opacity: 0.85; }
+/* The stick can slide out over the board while you hold it, so it sits above the board. */
+.left { position: relative; z-index: 4; }
 .stick .tick { fill: var(--frame); pointer-events: none; }
 .stick .tick.on { fill: var(--ink); }
 .stick text { font: 400 15px var(--font-pixel); fill: var(--muted); letter-spacing: 0.05em; pointer-events: none; }
@@ -1446,6 +1450,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         dy *= reach / len;
       }
       moveKnob((dx / reach) * 60, (dy / reach) * 60); // a full reach swings the knob to the edge
+      // The whole stick slides along under your thumb, so its center is always where you see it.
+      const [cx, cy] = stickOrigin;
+      stick.querySelector('svg').style.transform = `translate(${cx - (r.left + r.width / 2)}px, ${cy - (r.top + r.height / 2)}px)`;
     } else moveKnob(dx * units, dy * units);
     if (Math.hypot(dx, dy) < r.width * PADS[pad].dead) return null;
     return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
@@ -1481,6 +1488,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       stick.classList.remove('held');
       moveKnob(0, 0); // the knob springs back to the middle
       stickOrigin = null;
+      stick.querySelector('svg').style.transform = ''; // and the stick glides home
     });
   }
 

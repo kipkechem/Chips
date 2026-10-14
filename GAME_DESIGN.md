@@ -34,6 +34,8 @@ every chase can be planned, and the solver can prove every level is winnable.
     thumb, so turning or reversing only ever takes a short move however far you pushed.
     Sensitivity is Max, High (the default), Medium or Low: how far you push before you move,
     and how far the center trails.
+    While you hold it, the whole stick slides along under your thumb, so you can always see
+    where its center is; it glides back home when you let go.
 
   In each, press and you step at once; keep holding to run; move your thumb to turn.
   Resting your thumb in the middle stops you.
