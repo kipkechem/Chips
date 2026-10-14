@@ -1410,7 +1410,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   // reach is how far its center trails behind your thumb. A small reach means turning or
   // reversing only ever takes a short move, however far you have pushed.
   const SENSITIVITY = {
-    max: { dead: 0.02, reach: 0.05 },
+    max: { dead: 0.01, reach: 0.05 }, // about 1.5px: as small as a resting thumb allows
     high: { dead: 0.03, reach: 0.08 },
     medium: { dead: 0.05, reach: 0.13 },
     low: { dead: 0.08, reach: 0.2 },
