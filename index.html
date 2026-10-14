@@ -399,6 +399,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         </select>
         <label class="label" for="sens" id="sens-label">Sensitivity</label>
         <select id="sens">
+          <option value="max">Max</option>
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
@@ -1401,11 +1402,18 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     },
   };
   let pad = PADS[store.get('lockstep:pad')] ? store.get('lockstep:pad') : 'circle';
-  // How far the analog stick must travel before you move, as a share of its width.
-  const SENSITIVITY = { high: 0.04, medium: 0.08, low: 0.14 };
+  // The analog stick, as shares of its width: dead is how far you push before you move;
+  // reach is how far its center trails behind your thumb. A small reach means turning or
+  // reversing only ever takes a short move, however far you have pushed.
+  const SENSITIVITY = {
+    max: { dead: 0.02, reach: 0.05 },
+    high: { dead: 0.03, reach: 0.08 },
+    medium: { dead: 0.05, reach: 0.13 },
+    low: { dead: 0.08, reach: 0.2 },
+  };
   let sens = SENSITIVITY[store.get('lockstep:sens')] ? store.get('lockstep:sens') : 'high';
   function renderPad() {
-    PADS.analog.dead = SENSITIVITY[sens];
+    PADS.analog.dead = SENSITIVITY[sens].dead;
     stick.querySelector('svg').innerHTML = PADS[pad].svg;
     stick.dataset.pad = pad;
     $('#pad').value = pad;
@@ -1425,11 +1433,20 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function stickDir(e) {
     const r = stick.getBoundingClientRect();
     const [ox, oy] = stickOrigin || [r.left + r.width / 2, r.top + r.height / 2];
-    const dx = e.clientX - ox;
-    const dy = e.clientY - oy;
+    let dx = e.clientX - ox;
+    let dy = e.clientY - oy;
     const units = 204 / r.width; // screen pixels to the SVG's units
-    const gain = 0.16 / PADS[pad].dead; // the more sensitive, the further a short push swings the knob
-    moveKnob(dx * units * gain, dy * units * gain);
+    if (stickOrigin) {
+      // The center trails your thumb, never more than `reach` behind it.
+      const reach = SENSITIVITY[sens].reach * r.width;
+      const len = Math.hypot(dx, dy);
+      if (len > reach) {
+        stickOrigin = [ox + dx * (1 - reach / len), oy + dy * (1 - reach / len)];
+        dx *= reach / len;
+        dy *= reach / len;
+      }
+      moveKnob((dx / reach) * 60, (dy / reach) * 60); // a full reach swings the knob to the edge
+    } else moveKnob(dx * units, dy * units);
     if (Math.hypot(dx, dy) < r.width * PADS[pad].dead) return null;
     return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
   }

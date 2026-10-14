@@ -30,8 +30,10 @@ every chase can be planned, and the solver can prove every level is winnable.
   - **Circle:** a circle split diagonally into up, down, left and right.
   - **D-pad:** a cross of four buttons.
   - **Analog stick:** a knob that follows your thumb and springs back when you let go. It
-    measures from wherever your thumb lands, so a short push in any direction is enough.
-    Its sensitivity is High (the default), Medium or Low: how far you push before you move.
+    measures from wherever your thumb lands, and its center trails a short way behind your
+    thumb, so turning or reversing only ever takes a short move however far you pushed.
+    Sensitivity is Max, High (the default), Medium or Low: how far you push before you move,
+    and how far the center trails.
 
   In each, press and you step at once; keep holding to run; move your thumb to turn.
   Resting your thumb in the middle stops you.
