@@ -382,6 +382,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
             <option value="dpad">D-pad</option>
             <option value="analog">Analog stick</option>
           </select>
+          <label class="label" for="sens" id="sens-label">Sensitivity</label>
+          <select id="sens">
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+          </select>
           <span id="build"></span>
         </div>
       </div>
@@ -1374,7 +1380,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         <rect class="hub" x="-30" y="-30" width="60" height="60"/>`,
     },
     analog: {
-      dead: 0.08, // measured from where your thumb first lands, so a short push is enough
+      dead: 0.04, // measured from where your thumb first lands; set by the sensitivity
       svg: `<circle class="base" cx="0" cy="0" r="98"/><circle class="ring" cx="0" cy="0" r="40"/>
         <polygon class="tick" data-dir="up" points="0,-92 -10,-78 10,-78"/><polygon class="tick" data-dir="right" points="92,0 78,-10 78,10"/>
         <polygon class="tick" data-dir="down" points="0,92 -10,78 10,78"/><polygon class="tick" data-dir="left" points="-92,0 -78,-10 -78,10"/>
@@ -1382,10 +1388,16 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     },
   };
   let pad = PADS[store.get('lockstep:pad')] ? store.get('lockstep:pad') : 'circle';
+  // How far the analog stick must travel before you move, as a share of its width.
+  const SENSITIVITY = { high: 0.04, medium: 0.08, low: 0.14 };
+  let sens = SENSITIVITY[store.get('lockstep:sens')] ? store.get('lockstep:sens') : 'high';
   function renderPad() {
+    PADS.analog.dead = SENSITIVITY[sens];
     stick.querySelector('svg').innerHTML = PADS[pad].svg;
     stick.dataset.pad = pad;
     $('#pad').value = pad;
+    $('#sens').value = sens;
+    $('#sens').hidden = $('#sens-label').hidden = pad !== 'analog';
   }
   // The analog knob follows your thumb, up to the edge of its base.
   function moveKnob(dx, dy) {
@@ -1403,7 +1415,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const dx = e.clientX - ox;
     const dy = e.clientY - oy;
     const units = 204 / r.width; // screen pixels to the SVG's units
-    moveKnob(dx * units * 2, dy * units * 2); // the knob shows a short push as a full one
+    const gain = 0.16 / PADS[pad].dead; // the more sensitive, the further a short push swings the knob
+    moveKnob(dx * units * gain, dy * units * gain);
     if (Math.hypot(dx, dy) < r.width * PADS[pad].dead) return null;
     return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
   }
@@ -1518,6 +1531,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   $('#res-retry').addEventListener('click', () => startLevel(G.idx));
   $('#res-next').addEventListener('click', () => startLevel(Math.min(G.idx + 1, LEVELS.length - 1)));
   $('#res-menu').addEventListener('click', () => toMenu('home'));
+  $('#sens').addEventListener('change', (e) => {
+    sens = e.target.value;
+    store.set('lockstep:sens', sens);
+    renderPad();
+  });
   $('#pad').addEventListener('change', (e) => {
     pad = e.target.value;
     store.set('lockstep:pad', pad);

@@ -31,6 +31,7 @@ every chase can be planned, and the solver can prove every level is winnable.
   - **D-pad:** a cross of four buttons.
   - **Analog stick:** a knob that follows your thumb and springs back when you let go. It
     measures from wherever your thumb lands, so a short push in any direction is enough.
+    Its sensitivity is High (the default), Medium or Low: how far you push before you move.
 
   In each, press and you step at once; keep holding to run; move your thumb to turn.
   Resting your thumb in the middle stops you.
