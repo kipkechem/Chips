@@ -1,9 +1,9 @@
 # Lockstep
 
-A turn-based, pixel-art puzzle game inspired by *Chip's Challenge*, played in landscape.
-Collect the chips, use colored keys on colored doors, and reach the flag. Spiders
-never stop coming for you: whatever is in their way keeps them boxed in, until you pick
-it up. Later levels are bigger than the screen, so you play from memory. Pick up a
+A real-time, grid-based pixel-art puzzle game inspired by *Chip's Challenge*, played in landscape.
+Collect the chips, use colored keys on colored doors, and reach the flag, in real time. Spiders
+wait behind the things you need: pick one up and they spot you, react half a second later and chase at nearly your speed, until
+a gate stops them. Later levels are bigger than the screen, so you play from memory. Pick up a
 jetpack, flamethrower, mega blaster or freeze bomb along the way.
 
 See [GAME_DESIGN.md](GAME_DESIGN.md) for the full concept.
@@ -17,9 +17,9 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-On a phone, hold it sideways: slide your thumb around the direction circle on the
-left, and tap power-ups on the right (then pick a direction to fire). Keyboard:
-arrows or WASD to move, Space to wait, 1–4 to ready a power-up, Z undo, R restart,
+On a phone, hold it sideways: press a direction on the circle on the left to step, hold to run, slide your thumb to turn; tap power-ups on the right
+(then pick a direction to fire). Keyboard:
+arrows or WASD to move (hold to run), 1–4 to ready a power-up, Z undo, R restart,
 P pause.
 
 ## Play on Android

@@ -129,17 +129,19 @@ function guided(def, { weight = 3, limit = 4000000 } = {}) {
 }
 
 // Waypoint search for levels too large to search exhaustively: the shortest path to
-// each listed item in turn, then to the exit. It proves the level is winnable and gives
+// each listed item (or '@x,y' position) in turn, then to the exit. It proves the level is winnable and gives
 // a par that is the best known route, not necessarily the true minimum.
-function waypoints(def, route, limit = 1500000) {
+function waypoints(def, route, limit = 1500000, finish = true) {
   let s = L.parseLevel({ ...def, battery: 0 });
   const path = [];
   let explored = 0;
+  // 'x,y' means the item there has been collected; '@x,y' means standing on that tile.
   const goals = route.map((p) => {
-    const [x, y] = p.split(',').map(Number);
-    return (t) => !t.items[y * t.w + x];
+    const at = p.startsWith('@');
+    const [x, y] = p.replace('@', '').split(',').map(Number);
+    return at ? (t) => t.player.x === x && t.player.y === y : (t) => !t.items[y * t.w + x];
   });
-  goals.push((t) => t.status === 'won');
+  if (finish) goals.push((t) => t.status === 'won');
   for (const goal of goals) {
     const best = new Map([[L.stateKey(s), { prev: null, a: null, cost: s.steps }]]);
     const buckets = [];

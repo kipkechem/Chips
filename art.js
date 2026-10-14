@@ -580,7 +580,7 @@
   }
 
   // Draw the whole level into ctx (sized w*16 x h*16).
-  // view: { theme, t (seconds), phase (beat phase 0|1) }
+  // view: { theme, t (seconds), phase (beat phase 0|1), prev (last turn's state), k (0..1 through the turn) }
   function drawBoard(ctx, s, view) {
     const th = THEMES[view.theme];
     const sp = sprites(view.theme);
@@ -633,34 +633,47 @@
     }
 
     const frame = Math.floor(t * 6) % 2;
+    // Entities glide from where they were last turn (view.prev) to where they are, by view.k.
+    const k = view.k === undefined ? 1 : view.k;
+    const at = (from, to) => {
+      if (!from || Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return [to.x * TILE, to.y * TILE];
+      return [Math.round((from.x + (to.x - from.x) * k) * TILE), Math.round((from.y + (to.y - from.y) * k) * TILE)];
+    };
+    const before = new Map(((view.prev && view.prev.enemies) || []).map((e) => [e.id, e]));
     for (const e of s.enemies) {
-      let x0 = e.x * TILE;
-      let y0 = e.y * TILE;
+      let [x0, y0] = at(before.get(e.id), e);
       if (e.type === 'spider') {
         if (e.frozen) ctx.drawImage(sp.spider, x0, y0);
-        else if (e.stuck) {
-          // Straining against whatever blocks it, leaning toward you.
+        else if (e.mode === 'alert') {
+          // Spotted you: a moment of surprise before it gives chase.
+          ctx.drawImage(sp.spider, x0 + (frame ? 1 : -1), y0);
+          px(ctx, x0 + 7, y0 - 4, 2, 4, '#ffd23f');
+          px(ctx, x0 + 7, y0 + 1, 2, 1, '#ffd23f');
+        } else if (e.mode === 'chase') {
+          ctx.drawImage(frame ? sp.spiderB : sp.spider, x0, y0);
+        } else {
+          // Waiting: straining against whatever blocks it, leaning toward you.
           if (frame) {
             x0 += Math.sign(s.player.x - e.x);
             y0 += Math.sign(s.player.y - e.y);
           }
-          ctx.drawImage(frame ? sp.spiderB : sp.spider, x0, y0);
-        } else ctx.drawImage(frame ? sp.spiderB : sp.spider, x0, y0);
+          ctx.drawImage(sp.spider, x0, y0);
+        }
       } else if (e.type === 'patrol') {
         ctx.drawImage(sp.ufo, x0, y0 + (frame && !e.frozen ? 1 : 0));
         px(ctx, x0 + 7 + e.dx * 6, y0 + 7 + e.dy * 6, 2, 2, '#ffd23f');
       } else {
         ctx.drawImage(sp.mimic, x0, y0);
       }
-      if (e.frozen) drawFrozen(ctx, e.x * TILE, e.y * TILE, e.frozen);
+      if (e.frozen) drawFrozen(ctx, x0, y0, Math.ceil(e.frozen / 3));
     }
 
-    const p = s.player;
-    ctx.drawImage(sp.robot, p.x * TILE, p.y * TILE);
+    const [rx, ry] = at(view.prev && view.prev.player, s.player);
+    ctx.drawImage(sp.robot, rx, ry);
     if (s.status === 'dead' && s.cause !== 'battery') {
-      for (let k = 2; k < 14; k++) {
-        px(ctx, p.x * TILE + k, p.y * TILE + k, 2, 1, '#ff3b30');
-        px(ctx, p.x * TILE + 15 - k, p.y * TILE + k, 2, 1, '#ff3b30');
+      for (let n = 2; n < 14; n++) {
+        px(ctx, rx + n, ry + n, 2, 1, '#ff3b30');
+        px(ctx, rx + 15 - n, ry + n, 2, 1, '#ff3b30');
       }
     }
   }

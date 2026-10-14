@@ -13,21 +13,29 @@
   const POWER_CHARGES = { j: 1, f: 3, m: 3, z: 1 };
   const AIMED = { j: true, f: true, m: true, z: false };
   const FLAME_RANGE = 3;
-  const FREEZE_TURNS = 6;
-  const BEAT = 4; // Neon beat blocks swap every BEAT moves
+
+  // Real-time pacing. The world advances one turn every TURN_MS whether or not you move;
+  // holding a direction moves you one tile per turn (your top speed).
+  const TURNS_PER_SECOND = 6;
+  const TURN_MS = 1000 / TURNS_PER_SECOND;
+  const ALERT_TURNS = 3; // 0.5 s: how long a spider takes to react once it sees you
+  const SPIDER_SKIP = 20; // a chasing spider sits out every 20th turn: 95% of your top speed
+  const PATROL_EVERY = 2; // drones move every other turn
+  const FREEZE_TURNS = 18; // 3 s
+  const BEAT = 8; // beat blocks swap every 8 turns (1.33 s)
   const PATROL_DIRS = { '<': [-1, 0], '>': [1, 0], '^': [0, -1], v: [0, 1] };
 
   // Level map legend:
   //   #  wall           %  steel wall (nothing breaks it)    W  cracked wall (blaster or jetpack breaks it)
   //   .  floor          ~  ice (you slide until something stops you)
   //   :  crumbling floor (turns into a hole once you step off it)     H  hole (a pit nothing can cross)
-  //   1 2  beat blocks (only one set is solid at a time; they swap every BEAT moves)
+  //   1 2  beat blocks (only one set is solid at a time; they swap every BEAT turns)
   //   =  fence (you walk through it; enemies can't, but flames and shots pass)
 //   x  lava           E  exit (opens when every chip is collected)        @  start
   //   *  chip           r g b y  keys      R G B Y  doors (each key opens one door, then it's gone)
   //   j  jetpack        f  flamethrower    m  mega blaster      z  freeze bomb
   //   O  crate (pushable; sinks into lava and leaves floor)
-  //   S  spider (always steps toward you; anything not bare floor blocks it)
+  //   S  spider (once it sees you along a row or column, it reacts after 0.5 s and chases)
   //   < > ^ v  patrol drone (flies straight, turns around when blocked)
   //   M  mimic (copies every move you make)
   //
@@ -57,17 +65,24 @@
           items[i] = c;
           if (c === '*') chipsTotal++;
         } else if (c === 'O') crates.push(i);
-        else if (c === 'S') enemies.push({ type: 'spider', x, y, stuck: false, frozen: 0 });
+        else if (c === 'S') enemies.push({ id: enemies.length, type: 'spider', x, y, mode: 'wait', alert: 0, frozen: 0 });
         else if (PATROL_DIRS[c]) {
           const [dx, dy] = PATROL_DIRS[c];
-          enemies.push({ type: 'patrol', x, y, dx, dy, frozen: 0 });
-        } else if (c === 'M') enemies.push({ type: 'mimic', x, y, frozen: 0 });
+          enemies.push({ id: enemies.length, type: 'patrol', x, y, dx, dy, frozen: 0 });
+        } else if (c === 'M') enemies.push({ id: enemies.length, type: 'mimic', x, y, frozen: 0 });
         else if (c !== '.' && c !== ' ') throw new Error(`Level "${def.name}" has unknown tile "${c}"`);
         grid.push(tile);
       }
     }
     if (!player) throw new Error(`Level "${def.name}" has no start (@)`);
+    // Turn-number rhythms in play (spider pace, drone pace, beat). The solver keys on steps % cycle.
+    const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+    let cycle = 1;
+    for (const [on, n] of [[enemies.some((e) => e.type === 'spider'), SPIDER_SKIP], [enemies.some((e) => e.type === 'patrol'), PATROL_EVERY], [beat, 2 * BEAT]]) {
+      if (on) cycle = (cycle * n) / gcd(cycle, n);
+    }
     return {
+      cycle,
       w,
       h,
       grid,
@@ -134,25 +149,67 @@
     );
   }
 
-  function moveEnemies(s, dir) {
-    for (const e of s.enemies) {
+  // A spider sees along its row and column, through other spiders, until anything that
+  // isn't bare floor (a wall, a door or gate, a chip, a key, a crate...) blocks the view.
+  function spiderSees(s, e) {
+    const { x: px, y: py } = s.player;
+    if (px !== e.x && py !== e.y) return false;
+    const dx = Math.sign(px - e.x);
+    const dy = Math.sign(py - e.y);
+    for (let x = e.x + dx, y = e.y + dy; x !== px || y !== py; x += dx, y += dy) {
+      if (!bare(s, x, y)) return false;
+    }
+    return true;
+  }
+
+  // Spiders: wait (blocked, straining toward you) -> sees you -> alert for 0.5 s -> chase.
+  // A chaser that runs into anything but another spider loses you and waits again.
+  function moveSpiders(s) {
+    const turn = s.steps;
+    const dist = (e) => Math.abs(e.x - s.player.x) + Math.abs(e.y - s.player.y);
+    const spiders = s.enemies.filter((e) => e.type === 'spider').sort((a, b) => dist(a) - dist(b));
+    for (const e of spiders) {
       if (e.frozen > 0) {
-        e.frozen--;
-        if (!e.frozen && e.type === 'spider') e.stuck = true; // thawing costs it a turn
+        if (!--e.frozen) e.mode = 'wait';
         continue;
       }
-      if (e.type === 'spider') {
-        const step = chaseOptions(s, e).find(([dx, dy]) => enemyCanEnter(s, e.x + dx, e.y + dy));
-        if (e.stuck) {
-          // A blocked spider needs one turn to get going once its way opens.
-          if (step) e.stuck = false;
-        } else if (step) {
-          e.x += step[0];
-          e.y += step[1];
-        } else {
-          e.stuck = true;
+      if (e.mode === 'wait') {
+        if (spiderSees(s, e)) {
+          e.mode = 'alert';
+          e.alert = ALERT_TURNS;
         }
-      } else if (e.type === 'patrol') {
+        continue;
+      }
+      if (e.mode === 'alert') {
+        if (--e.alert > 0) continue;
+        e.mode = 'chase';
+      }
+      if (turn % SPIDER_SKIP === SPIDER_SKIP - 1) continue; // 95% of your speed
+      let queued = false;
+      let moved = false;
+      for (const [dx, dy] of chaseOptions(s, e)) {
+        if (enemyCanEnter(s, e.x + dx, e.y + dy)) {
+          e.x += dx;
+          e.y += dy;
+          moved = true;
+          break;
+        }
+        if (bare(s, e.x + dx, e.y + dy)) queued = true; // only another enemy in the way
+      }
+      if (!moved && !queued) e.mode = 'wait';
+    }
+  }
+
+  function moveEnemies(s, dir) {
+    moveSpiders(s);
+    for (const e of s.enemies) {
+      if (e.type === 'spider') continue;
+      if (e.frozen > 0) {
+        e.frozen--;
+        continue;
+      }
+      if (e.type === 'patrol') {
+        if (s.steps % PATROL_EVERY) continue;
         if (enemyCanEnter(s, e.x + e.dx, e.y + e.dy)) {
           e.x += e.dx;
           e.y += e.dy;
@@ -411,14 +468,15 @@
       gridDiff,
       Object.keys(s.items).join('.'),
       s.crates.join('.'),
-      s.enemies.map((e) => `${e.x},${e.y},${e.dx || 0},${e.dy || 0},${e.stuck ? 1 : 0},${e.frozen}`).join('|'),
+      s.enemies.map((e) => `${e.id},${e.x},${e.y},${e.dx || 0},${e.dy || 0},${e.mode || ''}${e.alert || ''},${e.frozen}`).join('|'),
       KEY_COLORS.map((k) => s.keys[k]).join('') + POWERS.map((k) => s.powers[k]).join(''),
-      s.beat ? s.steps % (2 * BEAT) : '',
+      s.steps % s.cycle,
     ].join(';');
   }
 
   const api = {
     DIRS, KEY_COLORS, POWERS, POWER_CHARGES, AIMED, FLAME_RANGE, FREEZE_TURNS, BEAT,
+    TURN_MS, TURNS_PER_SECOND, ALERT_TURNS, SPIDER_SKIP, spiderSees,
     parseLevel, step, act, clone, stateKey, enemyAt, beatSolid, phase,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

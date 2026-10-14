@@ -317,7 +317,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   <section class="hero">
     <div>
       <h2>Grab the chips. <em>Outrun the spiders.</em> Reach the flag.</h2>
-      <p>Every key opens one door of its color. Spiders never stop coming for you, so anything in their way keeps them boxed in, until you pick it up. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen. Nothing moves unless you do.</p>
+      <p>Every key opens one door of its color. Spiders sit boxed in behind chips and keys. Pick one up and they spot you, react half a second later, and chase at nearly your speed. No spider can cross a gate. The levels grow bigger than your screen, so remember what you've seen.</p>
     </div>
     <canvas id="hero-art" width="96" height="64" aria-hidden="true"></canvas>
   </section>
@@ -328,11 +328,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       <div class="modes" role="radiogroup" aria-labelledby="mode-label">
         <div>
           <input type="radio" name="mode" id="mode-explorer" value="explorer">
-          <label for="mode-explorer"><strong>Explorer</strong><span>Unlimited moves and undo.</span></label>
+          <label for="mode-explorer"><strong>Explorer</strong><span>No time limit.</span></label>
         </div>
         <div>
           <input type="radio" name="mode" id="mode-classic" value="classic">
-          <label for="mode-classic"><strong>Classic</strong><span>Moves capped at 1.5 × par. Undo costs the clean-run star.</span></label>
+          <label for="mode-classic"><strong>Classic</strong><span>A time limit of 2 × par. Undo costs the clean-run star.</span></label>
         </div>
       </div>
     </div>
@@ -360,9 +360,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   </section>
 
   <p class="help">
-    Play in landscape. Slide your thumb around the circle to move; tap its center to wait a turn.
-    On a keyboard: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> or <kbd>WASD</kbd> move,
-    <kbd>Space</kbd> wait, <kbd>1</kbd>–<kbd>4</kbd> ready a power-up then pick a direction,
+    Play in landscape. Press a direction on the circle to step; hold to run; slide your thumb to turn.
+    On a keyboard: <kbd>←</kbd> <kbd>↑</kbd> <kbd>→</kbd> <kbd>↓</kbd> or <kbd>WASD</kbd> move (hold to run),
+    <kbd>1</kbd>–<kbd>4</kbd> ready a power-up then pick a direction,
     <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
   </p>
 </div>
@@ -370,7 +370,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 <main id="game" class="game" hidden>
   <header class="bar">
     <span id="crumb" class="crumb">01 / Pixel Arcade</span>
-    <span class="stat">MOVES <b id="hud-moves">0</b></span>
+    <span class="stat">TIME <b id="hud-moves">0.0s</b></span>
     <span class="keys" aria-label="Keys">
       <span class="keychip" id="kc-r"><canvas data-key="r" width="16" height="16"></canvas><span>0</span></span>
       <span class="keychip" id="kc-b"><canvas data-key="b" width="16" height="16"></canvas><span>0</span></span>
@@ -400,8 +400,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <polygon class="arrow" points="0,82 -14,62 14,62"/>
           <path class="q" data-dir="left" d="M0 0 L-70.7 70.7 A100 100 0 0 1 -70.7 -70.7 Z"/>
           <polygon class="arrow" points="-82,0 -62,-14 -62,14"/>
-          <circle class="hub" cx="0" cy="0" r="27"/>
-          <text x="0" y="5" text-anchor="middle">WAIT</text>
+          <circle class="hub" cx="0" cy="0" r="22"/>
         </svg>
       </div>
     </div>
@@ -491,14 +490,14 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   const VIEW_H = 9; // tiles visible down
   const MODES = {
     explorer: { limit: 0 },
-    classic: { limit: 1.5 },
+    classic: { limit: 2 },
   };
   const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar'];
   const WORLD_RULE = {
     arcade: 'The basics: keys, doors, chips and spiders.',
     circuits: 'Modifier: crumbling floor gives way once you step off it.',
     ice: 'Modifier: ice. You slide until something stops you.',
-    neon: 'Modifier: beat blocks. Pink and cyan blocks swap every 4 moves.',
+    neon: 'Modifier: beat blocks. Pink and cyan blocks swap on the beat.',
     solar: 'Modifier: lava. Everything comes together.',
   };
   const POWER_NAME = { j: 'jetpack', f: 'flamethrower', m: 'mega blaster', z: 'freeze bomb' };
@@ -506,7 +505,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     j: 'It smashes through one wall, then it is gone.',
     f: `${Core.POWER_CHARGES.f} bursts. Each burns every enemy up to ${Core.FLAME_RANGE} tiles away.`,
     m: `${Core.POWER_CHARGES.m} shots. Each breaks a cracked wall or hits the first enemy in line.`,
-    z: `Freezes every enemy for ${Core.FREEZE_TURNS} moves.`,
+    z: `Freezes every enemy for ${Core.FREEZE_TURNS / Core.TURNS_PER_SECOND} seconds.`,
   };
   const KEY_NAME = { r: 'red', g: 'green', b: 'blue', y: 'yellow' };
   const ENEMY_NAME = { patrol: 'a patrol drone', spider: 'a spider', mimic: 'the mimic' };
@@ -515,14 +514,18 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* storage blocked */ } },
   };
-  let mode = MODES[store.get('lockstep:mode')] ? store.get('lockstep:mode') : 'classic';
+  let mode = MODES[store.get('lockstep:mode')] ? store.get('lockstep:mode') : 'explorer';
   let skin = store.get('lockstep:skin') || 'auto';
   if (skin !== 'auto' && !THEMES[skin]) skin = 'auto';
 
   const G = {
-    idx: 0, state: null, history: [], phase: 'menu', undos: 0,
-    armed: null, busy: false, effects: [], cam: null, lastFrame: 0,
+    idx: 0, state: null, prev: null, history: [], phase: 'menu', undos: 0,
+    armed: null, effects: [], lastTick: 0, held: null, queue: null,
   };
+  // The world turns every Core.TURN_MS. A fresh press acts at once, but never sooner than
+  // MIN_GAP after the previous turn, so tapping can't outrun the clock by much.
+  const MIN_GAP = 100;
+  const secs = (turns) => (turns / Core.TURNS_PER_SECOND).toFixed(1) + 's';
   const themeFor = (i) => (skin === 'auto' ? LEVELS[i].world : skin);
   const pad2 = (n) => String(n).padStart(2, '0');
 
@@ -546,13 +549,21 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   const viewSize = (s) => ({ w: Math.min(VIEW_W, s.w), h: Math.min(VIEW_H, s.h) });
 
-  function camTarget(s) {
+  function camTarget(s, pos = s.player) {
     const v = viewSize(s);
     const clamp = (val, max) => Math.max(0, Math.min(max, val));
     return {
-      x: clamp((s.player.x + 0.5 - v.w / 2) * TILE, (s.w - v.w) * TILE),
-      y: clamp((s.player.y + 0.5 - v.h / 2) * TILE, (s.h - v.h) * TILE),
+      x: clamp((pos.x + 0.5 - v.w / 2) * TILE, (s.w - v.w) * TILE),
+      y: clamp((pos.y + 0.5 - v.h / 2) * TILE, (s.h - v.h) * TILE),
     };
+  }
+
+  // How far through the current turn we are, 0..1, for gliding between tiles.
+  const turnProgress = (now) => (G.prev && G.prev !== G.state ? Math.min(1, (now - G.lastTick) / Core.TURN_MS) : 1);
+
+  function glide(from, to, k) {
+    if (!from || Math.abs(from.x - to.x) + Math.abs(from.y - to.y) !== 1) return to;
+    return { x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k };
   }
 
   function resize() {
@@ -578,24 +589,21 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function render(now) {
     const s = G.state;
     const t = now / 1000;
-    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s) });
+    const k = turnProgress(now);
+    Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k });
     G.effects = G.effects.filter((fx) => t - fx.t0 < (fx.dur || 0.45));
     Art.drawEffects(bctx, G.effects, t);
-    const target = camTarget(s);
-    if (!G.cam) G.cam = { ...target };
-    const dt = Math.min(0.1, (now - (G.lastFrame || now)) / 1000);
-    G.lastFrame = now;
-    const k = Math.min(1, dt * 10);
-    G.cam.x += (target.x - G.cam.x) * k;
-    G.cam.y += (target.y - G.cam.y) * k;
-    if (Math.abs(target.x - G.cam.x) < 0.3) G.cam.x = target.x;
-    if (Math.abs(target.y - G.cam.y) < 0.3) G.cam.y = target.y;
+    const cam = camTarget(s, glide(G.prev && G.prev.player, s.player, k));
     const v = viewSize(s);
     ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(buf, Math.round(G.cam.x), Math.round(G.cam.y), v.w * TILE, v.h * TILE, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(buf, Math.round(cam.x), Math.round(cam.y), v.w * TILE, v.h * TILE, 0, 0, canvas.width, canvas.height);
   }
 
   function frame(now) {
+    if (G.phase === 'play') {
+      const since = now - G.lastTick;
+      if (since >= Core.TURN_MS || (G.queue && since >= MIN_GAP)) tick(now);
+    }
     if (G.phase !== 'menu' && G.state) render(now);
     requestAnimationFrame(frame);
   }
@@ -627,7 +635,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   });
 
   // ---------- Flow ----------
-  const bestKey = (i) => `lockstep:v3:${mode}:${i}`;
+  const bestKey = (i) => `lockstep:v4:${mode}:${i}`;
 
   function overlay(name) {
     for (const id of ['pause', 'result', 'intro']) $('#' + id).hidden = id !== name;
@@ -635,6 +643,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function say(text, tone) {
     const m = $('#msg');
+    if (m.textContent === text) return;
     m.textContent = text;
     m.className = 'msg' + (tone ? ' ' + tone : '');
   }
@@ -655,7 +664,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const def = LEVELS[i];
     const limit = MODES[mode].limit;
     const s = parseLevel({ ...def, battery: limit ? Math.ceil(def.par * limit) : 0 });
-    Object.assign(G, { idx: i, state: s, history: [], phase: 'intro', undos: 0, armed: null, busy: false, effects: [], cam: null });
+    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', undos: 0, armed: null, effects: [], lastTick: 0, queue: null });
     applyTheme(themeFor(i));
     if (fromMenu) goLandscape();
     $('#menu').hidden = true;
@@ -678,6 +687,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function begin() {
     if (G.phase !== 'intro') return;
     G.phase = 'play';
+    G.lastTick = performance.now();
+    G.queue = null;
     overlay(null);
     say(LEVELS[G.idx].hint);
     hud();
@@ -715,7 +726,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     }
   }
 
-  function describe(before, action, events) {
+  // fresh: the action came from a new press (not a held direction or an ice slide).
+  function describe(before, action, events, fresh = true) {
     const s = G.state;
     const has = (p) => events.find((e) => e === p || e.startsWith(p + ':'));
     const dir = typeof action === 'string' ? action : null;
@@ -726,81 +738,93 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       bump();
       return;
     }
+    const spotted = s.enemies.some((e) => e.mode === 'alert' &&
+      before.enemies.some((b) => b.id === e.id && b.mode !== 'alert'));
+    const run = spotted ? ' A spider spotted you. Run!' : '';
+    if (spotted) [880, 660, 880].forEach((f, k) => tone(f, 0.06, 'square', 0.04, k * 0.07));
     const kills = events.filter((e) => e.startsWith('kill:')).length;
     const crushed = events.filter((e) => e.startsWith('crush-enemy')).length;
     if (crushed) { say(crushed > 1 ? `The beat crushed ${crushed} enemies!` : 'The beat crushed it!', 'alarm'); tone(120, 0.2, 'sawtooth', 0.04); return; }
     if (has('fx:jet')) { say('Smashed through! The jetpack is spent.'); tone(110, 0.25, 'sawtooth', 0.05); return; }
-    if (has('fx:freeze')) { say(`Everything is frozen for ${Core.FREEZE_TURNS} moves. Frozen enemies are solid.`); tone(1200, 0.3, 'sine', 0.04); return; }
+    if (has('fx:freeze')) { say(`Everything is frozen for ${secs(Core.FREEZE_TURNS)}. Frozen enemies are solid.`); tone(1200, 0.3, 'sine', 0.04); return; }
     if (has('fx:flame')) { say(kills ? `Burned ${kills} ${kills === 1 ? 'enemy' : 'enemies'}.` : 'The flames hit nothing.'); tone(160, 0.25, 'sawtooth', 0.04); return; }
     if (has('fx:shot')) { say(kills ? 'Direct hit.' : has('break') ? 'The wall shatters.' : 'The shot hit solid wall.'); tone(900, 0.06); tone(200, 0.2, 'sawtooth', 0.04, 0.05); return; }
     for (const ev of events) {
-      if (ev === 'bump') { say('Blocked.'); tone(90, 0.1); bump(); return; }
-      if (ev === 'locked') { say(`Locked. You need a ${KEY_NAME[before.grid[ti].toLowerCase()]} key.`, 'warn'); tone(90, 0.1); bump(); return; }
+      if (ev === 'bump') { if (fresh) { tone(90, 0.1); bump(); } return; }
+      if (ev === 'locked') { say(`Locked. You need a ${KEY_NAME[before.grid[ti].toLowerCase()]} key.`, 'warn'); if (fresh) { tone(90, 0.1); bump(); } return; }
       if (ev === 'sealed') {
         const left = s.chipsTotal - s.chips;
-        say(`The flag is locked. ${left} ${left === 1 ? 'chip' : 'chips'} left.`, 'warn'); tone(90, 0.1); bump(); return;
+        say(`The flag is locked. ${left} ${left === 1 ? 'chip' : 'chips'} left.`, 'warn'); if (fresh) { tone(90, 0.1); bump(); } return;
       }
       if (ev === 'unlock') { say(`The ${KEY_NAME[before.grid[ti].toLowerCase()]} door is now a gate. Nothing can follow you through.`); tone(520, 0.12, 'triangle'); return; }
       if (ev === 'sink') { say('The crate sinks. The lava cools to stone.'); tone(140, 0.2, 'sawtooth', 0.03); return; }
       if (ev.startsWith('pickup:')) {
         const it = ev.slice(7);
-        if (it === '*') say(`Chip ${s.chips} of ${s.chipsTotal}.${s.chips === s.chipsTotal ? ' The flag is open!' : ''}`);
-        else if (POWER_NAME[it]) say(`Picked up the ${POWER_NAME[it]}. ${POWER_HELP[it]}`, 'alarm');
-        else say(`Got the ${KEY_NAME[it]} key.`);
+        if (it === '*') say(`Chip ${s.chips} of ${s.chipsTotal}.${s.chips === s.chipsTotal ? ' The flag is open!' : ''}${run}`, run ? 'alarm' : '');
+        else if (POWER_NAME[it]) say(`Picked up the ${POWER_NAME[it]}. ${POWER_HELP[it]}${run}`, 'alarm');
+        else say(`Got the ${KEY_NAME[it]} key.${run}`, run ? 'alarm' : '');
         tone(880, 0.06); tone(1320, 0.08, 'square', 0.035, 0.06);
         return;
       }
       if (ev.startsWith('crumble')) { say('The floor crumbles away behind you.'); tone(100, 0.12, 'triangle', 0.03); return; }
-      if (ev === 'wait') { say('You wait. Everything else moves.'); tone(300, 0.04, 'sine', 0.02); return; }
     }
-    // A spider whose way just opened up.
-    const freed = s.enemies.some((e) => e.type === 'spider' && !e.stuck && !e.frozen &&
-      before.enemies.some((b) => b.x === e.x && b.y === e.y && b.stuck));
-    if (freed) { say('A spider is free. Run for a gate!', 'alarm'); [880, 660, 880].forEach((f, k) => tone(f, 0.06, 'square', 0.04, k * 0.07)); return; }
-    say('');
-    tone(200, 0.03, 'triangle', 0.02);
+    if (spotted) { say(run.trim(), 'alarm'); return; }
+    if (events.includes('move')) tone(190, 0.025, 'triangle', 0.012);
   }
 
-  // Every input lands here: a direction, null (wait), or a power-up fired in a direction.
-  function input(dir) {
+  // A press queues an action for the next turn; a held direction repeats every turn.
+  function input(action) {
     if (G.phase === 'intro') { begin(); return; }
-    if (G.phase !== 'play' || G.busy) return;
-    let action = dir;
-    if (G.armed && dir) {
-      action = { use: G.armed, dir };
-      setArmed(null);
-    }
-    run(action);
+    if (G.phase !== 'play') return;
+    G.queue = action;
   }
 
-  function run(action) {
+  // One turn of the world: an ice slide carries on first; otherwise a fresh press, else the
+  // held direction, else you stand still. Enemies move either way.
+  function tick(now) {
     const before = G.state;
-    const r = act(before, action);
-    if (r.state === before) {
-      describe(before, action, r.events);
-      return;
+    let cur = before;
+    let action = null;
+    let fresh = false;
+    let r = null;
+    if (before.slide) {
+      r = Core.step(before, before.slide, true);
+      if (r.state === before) {
+        r = null; // the slide ended against something; no turn spent on it
+        cur = { ...before, slide: null };
+      } else action = before.slide;
     }
-    G.history.push(before);
-    spawnEffects(r.events, performance.now() / 1000);
-    const done = () => {
-      G.state = r.state;
-      G.busy = false;
-      describe(before, action, r.events);
-      hud();
-      if (G.state.status !== 'play') setTimeout(finish, 350);
-    };
-    if (r.frames.length > 1) {
-      // Ice slide: show every tile of it.
-      G.busy = true;
-      let k = 0;
-      const tick = () => {
-        G.state = r.frames[k++];
-        hud();
-        if (k < r.frames.length) setTimeout(tick, 70);
-        else done();
-      };
-      tick();
-    } else done();
+    if (!r) {
+      if (G.queue) {
+        action = G.queue;
+        G.queue = null;
+        fresh = true;
+      } else if (G.held && !G.armed) action = G.held;
+      if (typeof action === 'string' && G.armed) {
+        action = { use: G.armed, dir: action };
+        setArmed(null);
+      }
+      r = Core.step(cur, action);
+      if (r.state === cur && action) {
+        describe(cur, action, r.events, true); // a power-up with nothing to hit: say so, and the turn passes
+        action = null;
+        r = Core.step(cur, null);
+      }
+      if (action) {
+        G.history.push(cur);
+        if (G.history.length > 400) G.history.shift();
+      }
+    }
+    G.prev = cur;
+    G.state = r.state;
+    G.lastTick = now;
+    spawnEffects(r.events, now / 1000);
+    describe(cur, action, r.events, fresh);
+    hud();
+    if (G.state.status !== 'play') {
+      G.phase = 'ending';
+      setTimeout(finish, 500);
+    }
   }
 
   function setArmed(k) {
@@ -811,10 +835,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function usePowerButton(k) {
     if (G.phase === 'intro') begin();
-    if (G.phase !== 'play' || G.busy || !G.state.powers[k]) return;
+    if (G.phase !== 'play' || !G.state.powers[k]) return;
     if (!Core.AIMED[k]) {
       setArmed(null);
-      run({ use: k });
+      input({ use: k });
       return;
     }
     if (G.armed === k) { setArmed(null); say('Cancelled.'); return; }
@@ -822,8 +846,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   }
 
   function undo() {
-    if (G.phase !== 'play' || G.busy || !G.history.length) return;
+    if (G.phase !== 'play' || !G.history.length) return;
     G.state = G.history.pop();
+    G.prev = G.state;
+    G.queue = null;
+    G.lastTick = performance.now();
     G.undos++;
     setArmed(null);
     say('Undone.');
@@ -843,6 +870,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function resume() {
     if (G.phase !== 'paused') return;
     G.phase = 'play';
+    G.lastTick = performance.now();
     overlay(null);
   }
 
@@ -859,10 +887,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     list.innerHTML = '';
     const next = $('#res-next');
     if (s.status === 'won') {
-      const target = Math.ceil(def.par * 1.2);
+      const target = Math.ceil(def.par * 1.5);
       const rows = [
         [true, 'Escaped'],
-        [s.steps <= target, `${s.steps} moves (par ${def.par}${def.route ? ', best known' : ''}; star at ${target} or fewer)`],
+        [s.steps <= target, `Time ${secs(s.steps)} (par ${secs(def.par)}${def.route ? ', best known' : ''}; star at ${secs(target)} or less)`],
         [G.undos === 0, G.undos ? `Used undo ${G.undos} ${G.undos === 1 ? 'time' : 'times'}` : 'Clean run: no undo'],
       ];
       const stars = rows.filter((r) => r[0]).length;
@@ -889,10 +917,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       const why = {
         lava: ['You stepped into lava.', 'Push a crate into it first, or find another way around.'],
         caught: [`Caught by ${ENEMY_NAME[caught ? caught.type : 'spider']}.`, caught && caught.type === 'spider'
-          ? 'Spiders always step toward you. Turn corners they cannot follow, or get through a gate.'
+          ? 'Spiders react half a second after they spot you, then chase at nearly your speed. Get through a gate, or turn a corner they cannot follow.'
           : 'Enemies only move when you do. Count their steps against yours.'],
-        crushed: ['Crushed by a beat block.', 'Pink and cyan blocks swap every 4 moves. Watch the BEAT pips.'],
-        battery: ['Out of moves.', `You had ${s.battery}. Par is ${def.par}. Plan the route before you walk it.`],
+        crushed: ['Crushed by a beat block.', `Pink and cyan blocks swap every ${secs(Core.BEAT)}. Watch the BEAT pips.`],
+        battery: ['Out of time.', `You had ${secs(s.battery)}. Par is ${secs(def.par)}. Plan the route before you run it.`],
       }[s.cause];
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} failed`;
       $('#res-score').hidden = true;
@@ -906,7 +934,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
   function hud() {
     const s = G.state;
-    $('#hud-moves').innerHTML = s.battery ? `${s.steps}<small> / ${s.battery}</small>` : String(s.steps);
+    $('#hud-moves').innerHTML = s.battery ? `${secs(s.steps)}<small> / ${secs(s.battery)}</small>` : secs(s.steps);
     const box = $('#chipbox');
     const done = s.chips >= s.chipsTotal;
     $('#chip-count').textContent = `${s.chips}/${s.chipsTotal}`;
@@ -932,7 +960,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     });
     $('#btn-undo').disabled = !G.history.length || G.phase !== 'play';
     if (s.beat) {
-      const into = s.steps % Core.BEAT;
+      const into = Math.floor((s.steps % Core.BEAT) / (Core.BEAT / 4));
       const beatEl = $('#hud-beat');
       beatEl.style.color = Core.phase(s) === 0 ? '#ff4fd8' : '#36dcff';
       beatEl.querySelectorAll('i').forEach((pip, k) => pip.classList.toggle('on', k <= into));
@@ -1011,7 +1039,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         const meta = document.createElement('div');
         meta.className = 'row meta';
         meta.innerHTML = '<span></span><span class="tag"></span>';
-        meta.firstChild.textContent = `Par ${def.par}${best && best.steps != null ? ` · best ${best.steps}` : ''}`;
+        meta.firstChild.textContent = `Par ${secs(def.par)}${best && best.steps != null ? ` · best ${secs(best.steps)}` : ''}`;
         meta.lastChild.textContent = thumb.bigger ? 'Bigger than the screen' : '';
         b.append(row, meta);
         b.addEventListener('click', () => startLevel(i, true));
@@ -1037,7 +1065,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const sp = Art.sprites(themeKey);
     const floor = (c) => Art.drawFloor(c, 0, 0, th, 5);
     const items = [
-      [(c) => { floor(c); c.drawImage(sp.spider, 0, 0); }, 'Spider', 'Always steps toward you. Walls, chips, keys, power-ups and gates block it. Once its way opens, it takes one turn to get going.'],
+      [(c) => { floor(c); c.drawImage(sp.spider, 0, 0); }, 'Spider', 'Waits until it sees you along a row or column (it sees past other spiders). Half a second later it chases at 95% of your speed, until a wall, item or gate stops it.'],
       [(c) => Art.drawDoor(c, 0, 0, 'b'), 'Keys and doors', 'A key opens one door of its color and is used up. Each color has its own symbol.'],
       [(c) => { floor(c); Art.drawGate(c, 0, 0, 'y'); }, 'Gate', 'An opened door. You walk through; no enemy can cross it.'],
       [(c) => { floor(c); Art.drawFence(c, 0, 0); }, 'Fence', 'You can pass, enemies cannot. Flames and shots go straight through.'],
@@ -1051,7 +1079,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => Art.drawSteel(c, 0, 0), 'Steel', 'Nothing breaks it.'],
       [(c) => Art.drawIce(c, 0, 0, 2), 'Ice', 'You slide until something stops you. Spiders grip it fine.'],
       [(c) => { floor(c); Art.drawCracks(c, 0, 0, th.detail); }, 'Crumbling floor', 'Turns into a hole once you step off it.'],
-      [(c) => { floor(c); Art.drawBeat(c, 0, 0, '1', true, th); }, 'Beat blocks', 'Pink and cyan swap every 4 moves. Anything inside one when it closes is crushed.'],
+      [(c) => { floor(c); Art.drawBeat(c, 0, 0, '1', true, th); }, 'Beat blocks', `Pink and cyan swap every ${secs(Core.BEAT)}. Anything inside one when it closes is crushed.`],
       [(c) => Art.drawLava(c, 0, 0, 0, 3), 'Lava', 'Deadly. Push a crate in to fill it.'],
     ];
     for (const [draw, name, text] of items) {
@@ -1069,7 +1097,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function renderHero() {
     const c = $('#hero-art');
     const s = parseLevel({ name: 'hero', map: ['######', '#@.*S#', '#.##.#', '#B.jy#'] });
-    s.enemies[0].stuck = true;
+    s.enemies[0].mode = 'alert';
     c.width = 6 * TILE;
     c.height = 4 * TILE;
     Art.drawBoard(c.getContext('2d'), s, { theme: skin === 'auto' ? 'arcade' : skin, t: 0, phase: 0 });
@@ -1086,57 +1114,46 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   }
 
   // ---------- Input: joystick ----------
+  // Press a quadrant to step at once; keep holding to run. Slide between quadrants to turn.
+  // The center is a dead zone: resting your thumb there stops you.
   const stick = $('#stick');
-  let held = null;
-  let repeat = null;
+  let stickOn = false;
+  let stickDirNow = null;
   function stickDir(e) {
     const r = stick.getBoundingClientRect();
     const dx = e.clientX - (r.left + r.width / 2);
     const dy = e.clientY - (r.top + r.height / 2);
-    if (Math.hypot(dx, dy) < r.width * 0.15) return 'wait';
+    if (Math.hypot(dx, dy) < r.width * 0.14) return null;
     return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
   }
   function light(d) {
     stick.querySelectorAll('.q').forEach((q) => q.classList.toggle('on', q.dataset.dir === d));
-    stick.querySelector('.hub').classList.toggle('on', d === 'wait');
   }
-  function press(d) {
-    held = d;
+  function aim(d) {
+    if (d === stickDirNow) return;
+    stickDirNow = d;
+    G.held = d;
     light(d);
-    clearTimeout(repeat);
-    input(d === 'wait' ? null : d);
-    if (d === 'wait') return;
-    const again = () => {
-      if (held !== d) return;
-      input(d);
-      repeat = setTimeout(again, 180);
-    };
-    repeat = setTimeout(again, 340);
-  }
-  function release() {
-    held = null;
-    clearTimeout(repeat);
-    light(null);
+    if (d) input(d);
   }
   stick.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     stick.setPointerCapture(e.pointerId);
-    press(stickDir(e));
+    stickOn = true;
+    if (G.phase === 'intro') begin();
+    aim(stickDir(e));
   });
   stick.addEventListener('pointermove', (e) => {
-    if (!held) return;
-    const d = stickDir(e);
-    if (d === held) return;
-    if (d === 'wait') {
-      // Sliding back through the center never counts as a wait.
-      held = 'center';
-      clearTimeout(repeat);
-      light(null);
-      return;
-    }
-    press(d);
+    if (stickOn) aim(stickDir(e));
   });
-  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) stick.addEventListener(ev, release);
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+    stick.addEventListener(ev, () => {
+      stickOn = false;
+      stickDirNow = null;
+      G.held = null;
+      light(null);
+    });
+  }
 
   // ---------- Input: keyboard and swipes ----------
   const KEYMAP = {
@@ -1144,21 +1161,33 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
   };
   const POWER_KEYS = { Digit1: 'j', Digit2: 'f', Digit3: 'm', Digit4: 'z' };
+  const keysDown = []; // held arrow keys, most recent last; the newest one steers
+  document.addEventListener('keyup', (e) => {
+    const dir = KEYMAP[e.code];
+    if (!dir) return;
+    const at = keysDown.indexOf(dir);
+    if (at >= 0) keysDown.splice(at, 1);
+    G.held = keysDown[keysDown.length - 1] || stickDirNow || null;
+  });
+  window.addEventListener('blur', () => {
+    keysDown.length = 0;
+    G.held = null;
+  });
   document.addEventListener('keydown', (e) => {
     if (G.phase === 'menu' || e.metaKey || e.ctrlKey || e.altKey) return;
     if (G.phase === 'paused') {
       if (e.code === 'Escape' || e.code === 'KeyP') { e.preventDefault(); resume(); }
       return;
     }
-    const onButton = document.activeElement && document.activeElement.tagName === 'BUTTON';
     const dir = KEYMAP[e.code];
     if (dir) {
       e.preventDefault();
-      if (!e.repeat) input(dir);
-    } else if (e.code === 'Space') {
-      if (onButton && G.phase !== 'play') return;
-      e.preventDefault();
-      if (!e.repeat) input(null);
+      if (e.repeat) return;
+      const at = keysDown.indexOf(dir);
+      if (at >= 0) keysDown.splice(at, 1);
+      keysDown.push(dir);
+      G.held = dir;
+      input(dir);
     } else if (e.code === 'Enter' && G.phase === 'intro') {
       e.preventDefault();
       begin();
