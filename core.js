@@ -154,6 +154,7 @@
       h,
       grid,
       grid0: grid.slice(), // never mutated; lets stateKey store only what changed
+      mutableGrid: grid.flatMap((g, i) => '#W:INLlRGBY!;Kwx$'.includes(g) ? [i] : []),
       items,
       crates,
       crateDir: {}, // crates sliding on ice: tile index -> direction
@@ -810,7 +811,7 @@
   // Compact identity of everything that can change during play (for the solver).
   function stateKey(s) {
     let gridDiff = '';
-    for (let i = 0; i < s.grid.length; i++) if (s.grid[i] !== s.grid0[i]) gridDiff += i + s.grid[i];
+    for (const i of s.mutableGrid) if (s.grid[i] !== s.grid0[i]) gridDiff += i + s.grid[i];
     return [
       s.player.x + ',' + s.player.y,
       gridDiff,

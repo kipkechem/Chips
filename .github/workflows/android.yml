@@ -4,7 +4,7 @@ name: Android app
 
 on:
   push:
-    branches: [main, 'claude/**']
+    branches: [main, 'claude/**', 'codex/**']
     paths-ignore: ['**.md']
   workflow_dispatch:
 
@@ -16,7 +16,41 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  verify:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        levels: ['1-10', '11-20', '21-30', '31-40']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Check rules, progress migration, and map structure
+        run: npm test
+      - name: Prove pars within the solver budget
+        run: node tools/solve.js ${{ matrix.levels }}
+      - run: npx playwright install --with-deps chromium
+      - name: Replay the pack in the browser with sequential unlocking
+        run: node tools/test-browser.js ${{ matrix.levels }}
+      - name: Check campaign UI on mobile and desktop
+        if: matrix.levels == '31-40'
+        run: |
+          node tools/test-ui.js
+          node tools/test-pack1.js --pack-only
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-${{ matrix.levels }}
+          path: .cache/
+          include-hidden-files: true
+          retention-days: 14
+
   apk:
+    needs: verify
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,12 +63,6 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-
-      - name: Check the game rules
-        run: node tools/test-rules.js
-
-      - name: Check every level is winnable at its par
-        run: node tools/solve.js
 
       - name: Install Capacitor
         run: npm ci --no-audit --no-fund
@@ -96,12 +124,14 @@ jobs:
           test "$got" = "$want"
 
       - name: Name the APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk "Lockstep-${{ github.run_number }}.apk"
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk "Lockstep-${{ github.run_number }}.apk"
+          sha256sum "Lockstep-${{ github.run_number }}.apk" > "Lockstep-${{ github.run_number }}.apk.sha256"
 
       - uses: actions/upload-artifact@v4
         with:
           name: Lockstep-apk
-          path: Lockstep-*.apk
+          path: Lockstep-*.apk*
 
       - name: Publish as a release
         uses: softprops/action-gh-release@v2
@@ -110,7 +140,9 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: Lockstep for Android (build ${{ github.run_number }})
           make_latest: true
-          files: Lockstep-${{ github.run_number }}.apk
+          files: |
+            Lockstep-${{ github.run_number }}.apk
+            Lockstep-${{ github.run_number }}.apk.sha256
           body: |
             Open this page on your Android phone and tap **Lockstep-${{ github.run_number }}.apk** to download it.
             When Android asks, allow your browser to install unknown apps, then tap Install.

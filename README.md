@@ -71,9 +71,13 @@ cd android && ./gradlew assembleDebug
 
 ## Adding a level
 
+The current campaign has 40 levels. Levels unlock in order, including the original levels.
+Existing clears and valid best times migrate automatically. Pack 1 covers Levels 31 to 40;
+see [PACK_1.md](PACK_1.md) for its design, validation, and review boundary.
+
 1. Add an entry to `levels.js` with `par: 0`.
 2. Run `node tools/solve.js` (or `node tools/solve.js 7` for one level). It prints the
-   real par, or `par=null` if the level cannot be won. Set `VERBOSE=1` to see the
+   real par, or `par=null` if no solution was found within the search budget. Set `VERBOSE=1` to see the
    winning moves. For a level too big to search, add a `route` (item positions to
    visit in order) and the solver uses the best route through them.
 3. Put the printed par into the level and run the solver again; every line should say `ok`.
@@ -82,3 +86,8 @@ cd android && ./gradlew assembleDebug
 Levels can also set `facing` (`{'x,y': 'left'}`, which way a monster starts out),
 `clones` (`{'x,y': ['U', 'right']}`, what each clone machine copies) and `hints`
 (`{'x,y': 'text'}`, the message for each `?` tile).
+
+Solver commands accept level ranges and comma-separated selections. The release checks
+ten levels per job. Increment `revision` when a map or scoring target changes, preserving
+the level name so a previous clear survives. The `pack` field groups mastery levels while
+`world` continues to select their visual theme.

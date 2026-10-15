@@ -141,6 +141,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
   background: var(--panel); border: 2px solid var(--frame); border-radius: 4px;
 }
 .level:hover { border-color: var(--frame-hi); }
+.level:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.level:disabled { cursor: not-allowed; border-color: var(--muted); }
+.level .preview { width: 100%; aspect-ratio: 15 / 9; background: var(--bg); display: grid; place-items: center; color: var(--muted); }
+.level .preview svg { width: 36px; height: 36px; }
+.level .meta { flex-wrap: wrap; }
+.level .name { min-width: 0; overflow-wrap: anywhere; }
 .level canvas { width: 100%; height: auto; display: block; border-radius: 2px; background: #000; }
 .level .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding-inline: 4px; }
 .level .name { font: 400 22px/1.15 var(--font-pixel); }
@@ -557,6 +563,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 <script src="core.js"></script>
 <script src="levels.js"></script>
 <script src="art.js"></script>
+<script src="campaign.js"></script>
 <script>
 (() => {
   'use strict';
@@ -738,7 +745,12 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   // Stars are saved by level name, so adding or reordering levels never moves them.
   // Your best time per level, saved by level name so adding levels never moves it.
   const bestKey = (i) => `lockstep:best:${LEVELS[i].name}`;
-  const bestTime = (i) => { const b = store.get(bestKey(i)); return b && b.steps != null ? b.steps : null; };
+  let campaign = null;
+  const bestTime = (i) => {
+    if (campaign) return campaign.bestTime(i);
+    const b = store.get(bestKey(i));
+    return b && Number.isFinite(b.steps) && b.steps > 0 ? b.steps : null;
+  };
   // The turns you may take for three and for two stars.
   const starTimes = (def) => STAR_TIMES.map((f) => Math.ceil((def.par * f) / Core.TURNS_PER_SECOND) * Core.TURNS_PER_SECOND);
   const starsFor = (def, steps) => (steps == null ? 0 : 1 + starTimes(def).filter((t) => steps <= t).length);
@@ -761,6 +773,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     });
     store.set('lockstep:migrated', true);
   }
+
+  campaign = window.LockstepCampaign.create(LEVELS, store);
 
   function overlay(name) {
     for (const id of ['pause', 'result', 'intro']) $('#' + id).hidden = id !== name;
@@ -786,6 +800,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   }
 
   function startLevel(i, fromMenu) {
+    if (!campaign.unlocked(i)) return;
     const def = LEVELS[i];
     const s = parseLevel({ ...def, battery: 0 });
     Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', lost: 0, effects: [], lastTick: 0, queue: null });
@@ -1053,8 +1068,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         li.lastChild.textContent = text;
         list.append(li);
       }
-      const best = bestTime(G.idx);
-      if (best == null || time < best) store.set(bestKey(G.idx), { steps: time });
+      campaign.record(G.idx, time);
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} cleared`;
       const score = $('#res-score');
       score.hidden = false;
@@ -1181,19 +1195,34 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     return { canvas: c, bigger: s.w > VIEW_W || s.h > VIEW_H };
   }
 
+  let previewObserver;
   function renderLevels() {
+    if (previewObserver) previewObserver.disconnect();
+    previewObserver = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const box = entry.target;
+        const i = Number(box.dataset.preview);
+        box.replaceChildren(thumbnail(LEVELS[i], themeFor(i)).canvas);
+        previewObserver.unobserve(box);
+      }
+    }, { rootMargin: '180px' }) : null;
     const wrap = $('#worlds');
     wrap.innerHTML = '';
-    for (const w of WORLD_ORDER) {
-      const idxs = LEVELS.map((d, i) => (d.world === w ? i : -1)).filter((i) => i >= 0);
+    const groups = WORLD_ORDER.map((w) => ({ w, idxs: LEVELS.map((d, i) => d.world === w && !d.pack ? i : -1).filter((i) => i >= 0) }));
+    window.LockstepCampaign.PACKS.forEach((name, p) => {
+      const idxs = LEVELS.map((d, i) => d.pack === p + 1 ? i : -1).filter((i) => i >= 0);
+      if (idxs.length) groups.push({ w: LEVELS[idxs[0]].world, pack: p + 1, idxs });
+    });
+    for (const { w, pack, idxs } of groups) {
       if (!idxs.length) continue;
       const sec = document.createElement('section');
       sec.className = 'world';
       const th = THEMES[w];
       sec.innerHTML = `<h3><span class="swatch" style="background:${th.wall}"></span><span></span><small></small></h3><p class="mod"></p><div class="levels"></div>`;
-      sec.querySelector('h3 span:nth-child(2)').textContent = th.name;
-      sec.querySelector('h3 small').textContent = `World ${WORLD_ORDER.indexOf(w) + 1}`;
-      sec.querySelector('.mod').textContent = WORLD_RULE[w];
+      sec.querySelector('h3 span:nth-child(2)').textContent = pack ? window.LockstepCampaign.PACKS[pack - 1] : th.name;
+      sec.querySelector('h3 small').textContent = pack ? `Pack ${pack} · Levels ${idxs[0] + 1} to ${idxs[idxs.length - 1] + 1}` : `World ${WORLD_ORDER.indexOf(w) + 1}`;
+      sec.querySelector('.mod').textContent = pack ? window.LockstepCampaign.PACK_RULES[pack - 1] : WORLD_RULE[w];
       const grid = sec.querySelector('.levels');
       for (const i of idxs) {
         const def = LEVELS[i];
@@ -1202,8 +1231,19 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'level';
-        const thumb = thumbnail(def, skin === 'auto' ? def.world : skin);
-        b.append(thumb.canvas);
+        b.dataset.level = String(i + 1);
+        const locked = !campaign.unlocked(i);
+        b.disabled = locked;
+        const preview = document.createElement('div');
+        preview.className = 'preview';
+        preview.setAttribute('aria-hidden', 'true');
+        if (locked) {
+          preview.innerHTML = '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14V9a6 6 0 0 1 12 0v5"/><rect x="6" y="14" width="20" height="15" rx="2"/><path d="M16 20v4"/></svg>';
+        } else if (previewObserver) {
+          preview.dataset.preview = String(i);
+          previewObserver.observe(preview);
+        } else preview.append(thumbnail(def, themeFor(i)).canvas);
+        b.append(preview);
         const row = document.createElement('div');
         row.className = 'row';
         row.innerHTML = `<span class="name"><b>${pad2(i + 1)}</b><span></span></span><span class="stars" aria-label="${stars} of 3 stars"><b>${'★'.repeat(stars)}</b>${'★'.repeat(3 - stars)}</span>`;
@@ -1212,8 +1252,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         meta.className = 'row meta';
         meta.innerHTML = '<span></span><span class="tag"></span>';
         const [t3, t2] = starTimes(def);
-        meta.firstChild.textContent = `★★★ ${wholeSecs(t3)} · ★★ ${wholeSecs(t2)}${best != null ? ` · best ${secs(best)}` : ''}`;
-        meta.lastChild.textContent = thumb.bigger ? 'Bigger than the screen' : '';
+        const blocker = campaign.blocker();
+        meta.firstChild.textContent = locked ? `Locked: clear Level ${pad2(blocker + 1)} first` : `★★★ ${wholeSecs(t3)} · ★★ ${wholeSecs(t2)}${best != null ? ` · best ${secs(best)}` : ''}`;
+        meta.lastChild.textContent = campaign.cleared(i) ? (best == null ? 'Cleared: new challenge' : 'Cleared') : (def.map.length > VIEW_H || def.map[0].length > VIEW_W ? 'Bigger than the screen' : '');
         b.append(row, meta);
         b.addEventListener('click', () => startLevel(i, true));
         grid.append(b);
@@ -1339,17 +1380,14 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     renderHero();
   }
 
-  // The first level you have not finished yet (or the last one you played, once all are done).
+  // Continue at the first unfinished level, or the last installed level after completion.
   function nextUp() {
-    const open = LEVELS.findIndex((d, i) => bestTime(i) == null);
-    if (open >= 0) return open;
-    const last = LEVELS.findIndex((d) => d.name === store.get('lockstep:last'));
-    return last >= 0 ? last : 0;
+    return campaign.next();
   }
 
   function renderHome() {
     const i = nextUp();
-    const started = LEVELS.some((d, k) => bestTime(k) != null);
+    const started = LEVELS.some((d, k) => campaign.cleared(k));
     $('#continue-label').textContent = started ? 'Continue' : 'Play';
     $('#continue-sub').textContent = `${pad2(i + 1)} ${LEVELS[i].name}`;
     const stars = LEVELS.reduce((n, d, k) => n + starsFor(d, bestTime(k)), 0);

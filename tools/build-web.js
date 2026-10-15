@@ -12,7 +12,7 @@ const UA = 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Geck
 async function main() {
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, 'fonts'), { recursive: true });
-  for (const f of ['core.js', 'levels.js', 'art.js']) fs.copyFileSync(path.join(root, f), path.join(out, f));
+  for (const f of ['core.js', 'levels.js', 'art.js', 'campaign.js']) fs.copyFileSync(path.join(root, f), path.join(out, f));
 
   let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const link = html.match(/<link rel="stylesheet" href="(https:\/\/fonts\.googleapis\.com\/css2[^"]+)">/);
