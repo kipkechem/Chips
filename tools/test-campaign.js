@@ -44,6 +44,17 @@ const tests = [
     revised[0].revision = 3; c = Campaign.create(revised, store);
     assert(c.cleared(0)); assert.strictEqual(c.bestTime(0), null);
   }],
+  ['Build 21 Pack 1 upgrade preserves every clear and resets only revised times', () => {
+    const actual = require('../levels.js');
+    const store = storage(Object.fromEntries(actual.map((l) => [`lockstep:progress:${l.name}`, {revision:1,cleared:true,steps:42}])));
+    let c = Campaign.create(actual,store);
+    for (let i=0;i<actual.length;i++) {
+      assert(c.cleared(i)); assert(c.unlocked(i));
+      assert.strictEqual(c.bestTime(i),i<30?42:null);
+    }
+    c.record(30,62); c=Campaign.create(actual,store);
+    assert.strictEqual(c.bestTime(30),62); assert.strictEqual(c.bestTime(31),null);
+  }],
   ['malformed saves do not grant completion or poison scores', () => {
     const store = storage({ 'lockstep:best:Level 1': { steps: -1 }, 'lockstep:progress:Level 2': { steps: '5', cleared: 'yes' } });
     const c = Campaign.create(levels, store);

@@ -56,7 +56,7 @@ const out = path.join(root, '.cache', 'qa');
     }
     const page = await browser.newPage();
     await page.goto(url);
-    for (let n = 38; n <= 40; n++) {
+    for (let n = 31; n <= 40; n++) {
       await page.evaluate((n) => {
         const def = window.LOCKSTEP_LEVELS[n - 1], s = window.Lockstep.parseLevel(def);
         const canvas = document.createElement('canvas'); canvas.id = 'qa-map';
@@ -68,6 +68,18 @@ const out = path.join(root, '.cache', 'qa');
       await page.locator('#qa-map').screenshot({ path: path.join(out, `level-${n}-map.png`) });
     }
     await page.close();
+    const upgrade = await browser.newContext({ viewport: { width: 844, height: 390 } });
+    await upgrade.addInitScript((names) => {
+      for (const name of names) localStorage.setItem(`lockstep:progress:${name}`,JSON.stringify({revision:1,cleared:true,steps:42}));
+    },levels.map((l) => l.name));
+    const saved = await upgrade.newPage(); await saved.goto(url);
+    assert((await saved.textContent('#continue-sub')).includes('40 Prism Break'));
+    const records = await saved.evaluate((names) => names.map((name) => JSON.parse(localStorage.getItem(`lockstep:progress:${name}`))),levels.map((l) => l.name));
+    for(let i=0;i<40;i++) { assert.strictEqual(records[i].cleared,true); assert.strictEqual(records[i].steps,i<30?42:null); }
+    await saved.click('#btn-levels');
+    for(let n=31;n<=40;n++) assert(await saved.isEnabled(`[data-level="${n}"]`));
+    assert((await saved.textContent('#levels-view')).includes('Contested keys, reusable crates'));
+    await upgrade.close();
     const context = await browser.newContext({ viewport: { width: 844, height: 390 } });
     await context.route('**/levels.js', async (route) => {
       const source = fs.readFileSync(path.join(root, 'levels.js'), 'utf8');
@@ -86,6 +98,6 @@ const out = path.join(root, '.cache', 'qa');
     await large.locator('[data-level="100"] .preview canvas').waitFor({ state: 'visible' });
     assert(await large.isEnabled('[data-level="100"]'));
     await context.close();
-    console.log('ok UI: mobile, desktop, locks, history, Build 20 migration, and 100-card lazy previews');
+    console.log('ok UI: mobile, desktop, locks, history, Build 20 and 21 migration, and 100-card lazy previews');
   } finally { await browser.close(); await new Promise((resolve) => server.close(resolve)); }
 })().catch((err) => { console.error(err); process.exitCode = 1; });

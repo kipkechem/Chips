@@ -6,7 +6,7 @@
     'Scarcity Protocol', 'Systems Collision', 'Final Lockstep',
   ];
   const PACK_RULES = [
-    'Thin walls, ice corners, one-use passages, unseen barriers, and clued routes home.',
+    'Contested keys, reusable crates, competing tool choices, and mechanisms powered by enemies.',
     'Master ice, conveyors, teleports, crates, elements, boots, and thieves.',
     'Plan escapes around spiders, gates, beat blocks, and predictable patrols.',
     'Connect buttons, toggle walls, traps, clone machines, tanks, and mimics.',

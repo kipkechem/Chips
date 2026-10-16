@@ -42,9 +42,8 @@ const parse = (a) => {
   return dir === '-' ? { use } : { use, dir };
 };
 
-async function play(page, idx) {
+async function play(page, idx, r = solution(idx)) {
   const def = LEVELS[idx];
-  const r = solution(idx);
   if (await page.isHidden('#levels-view')) await page.click('#btn-levels');
   await page.click(`[data-level="${idx + 1}"]`);
   await page.clock.runFor(300);
@@ -84,7 +83,8 @@ async function play(page, idx) {
   const page = await browser.newPage({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  const which = selectLevels(process.argv.slice(2), LEVELS.length);
+  const strategies = process.argv.includes('--strategies');
+  const which = selectLevels(process.argv.slice(2).filter((a) => a !== '--strategies'), LEVELS.length);
   if (which[0] > 0) {
     await page.addInitScript((names) => {
       for (const name of names) localStorage.setItem(`lockstep:best:${name}`, JSON.stringify({ steps: 9999 }));
@@ -99,11 +99,20 @@ async function play(page, idx) {
 
   let failed = 0;
   for (const idx of which) {
-    const result = await play(page, idx);
-    const ok = /cleared/.test(result);
-    if (!ok) failed++;
-    console.log(`${ok ? 'ok  ' : 'FAIL'} ${String(idx + 1).padStart(2)}. ${LEVELS[idx].name.padEnd(18)} ${result}`);
-    if (!ok) { await page.screenshot({ path: path.join(ROOT, '.cache', `failure-${idx + 1}.png`) }); break; }
+    const variants = strategies && idx >= 30 ? require('./build-pack1-proofs.js').builders[idx+1]().map((p) => p.result()) : [solution(idx)];
+    if (strategies && [36,37,39].includes(idx)) {
+      const original = variants[0], marker = idx === 36 ? 'chase' : 'freeze';
+      const at = original.checkpoints[marker] + (marker === 'freeze' ? 1 : 0);
+      variants.push({ ...original, name:original.name+' with four spare turns', par:original.par+4, path:[...original.path.slice(0,at),...Array(4).fill('wait'),...original.path.slice(at)] });
+    }
+    for (const variant of variants) {
+      const result = await play(page, idx, variant);
+      const ok = /cleared/.test(result);
+      if (!ok) failed++;
+      console.log(`${ok ? 'ok  ' : 'FAIL'} ${String(idx + 1).padStart(2)}. ${LEVELS[idx].name.padEnd(18)} ${variant.name || 'solver'}: ${result}`);
+      if (!ok) { await page.screenshot({ path: path.join(ROOT, '.cache', `failure-${idx + 1}.png`) }); break; }
+    }
+    if (failed) break;
   }
   if (errors.length) console.log('page errors:', errors);
   process.exitCode = failed || errors.length ? 1 : 0;

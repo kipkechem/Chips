@@ -12,7 +12,7 @@ const UA = 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Geck
 async function main() {
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, 'fonts'), { recursive: true });
-  for (const f of ['core.js', 'levels.js', 'art.js', 'campaign.js']) fs.copyFileSync(path.join(root, f), path.join(out, f));
+  for (const f of ['core.js', 'levels.js', 'pack1.js', 'art.js', 'campaign.js']) fs.copyFileSync(path.join(root, f), path.join(out, f));
 
   let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
   const link = html.match(/<link rel="stylesheet" href="(https:\/\/fonts\.googleapis\.com\/css2[^"]+)">/);
@@ -30,7 +30,7 @@ async function main() {
       fs.writeFileSync(path.join(out, 'fonts.css'), css);
       html = html
         .replace(link[0], '<link rel="stylesheet" href="fonts.css">')
-        .replace(/<link rel="preconnect"[^>]*>\n/g, '');
+        .replace(/<link rel="preconnect"[^>]*>\r?\n?/g, '');
       console.log(`Bundled ${urls.length} font files.`);
     } catch (err) {
       console.warn(`Could not bundle fonts (${err.message}); keeping the Google Fonts link.`);

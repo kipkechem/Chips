@@ -36,7 +36,8 @@ Every push builds the Android app and publishes it as a release:
 3. Open the download. If Android asks, allow your browser to install unknown apps, then tap **Install**.
 
 The app runs offline, opens in landscape and full screen, and the back button pauses
-the game. To update, install a newer build over the old one; your stars are kept.
+the game. To update, install a newer build over the old one. Completion credit is kept;
+materially revised levels reset obsolete times and stars while retaining their clears.
 
 Every build is signed with the same key (`android-signing/debug.keystore`), which is what lets
 Android install a new build over the old one. It is a test key, so it is fine to keep in the
@@ -60,6 +61,7 @@ cd android && ./gradlew assembleDebug
 |---|---|
 | `core.js` | Game rules as pure functions (no DOM). Shared by the game and the solver. |
 | `levels.js` | Level maps, hints and par values. The map legend is in `core.js`. |
+| `pack1.js` | Revision 2 maps and non-solution hints for Levels 31 to 40. |
 | `art.js` | Pixel-art themes, sprites and the board renderer. |
 | `index.html` | The game page: HUD (chip counter, keys, moves), menus, input, sound. |
 | `tools/solve.js` | Solver. Proves each level is winnable and checks its par. |
@@ -74,6 +76,11 @@ cd android && ./gradlew assembleDebug
 The current campaign has 40 levels. Levels unlock in order, including the original levels.
 Existing clears and valid best times migrate automatically. Pack 1 covers Levels 31 to 40;
 see [PACK_1.md](PACK_1.md) for its design, validation, and review boundary.
+
+Pack 1 revision 2 replaces Build 21's long-path maps with contested keys, reusable
+crates, inventory-order puzzles, and alternative resource plans. Its pars are best
+known complete routes. The design contracts, strategy proofs, and losing-branch
+fixtures are development-only and are not shipped in the Android app.
 
 1. Add an entry to `levels.js` with `par: 0`.
 2. Run `node tools/solve.js` (or `node tools/solve.js 7` for one level). It prints the

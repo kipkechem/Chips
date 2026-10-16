@@ -31,16 +31,17 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - name: Check rules, progress migration, and map structure
         run: npm test
-      - name: Prove pars within the solver budget
+      - name: Validate exact pars or best known authored routes
         run: node tools/solve.js ${{ matrix.levels }}
       - run: npx playwright install --with-deps chromium
       - name: Replay the pack in the browser with sequential unlocking
-        run: node tools/test-browser.js ${{ matrix.levels }}
+        run: node tools/test-browser.js ${{ matrix.levels }} --strategies
       - name: Check campaign UI on mobile and desktop
         if: matrix.levels == '31-40'
         run: |
           node tools/test-ui.js
           node tools/test-pack1.js --pack-only
+          node tools/build-pack1-proofs.js
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -54,6 +55,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: validation-31-40
+          path: .validation
+
+      - name: Prepare the decision validation report
+        run: cp .validation/qa/pack1-decisions.json Pack1-validation.json
 
       - uses: actions/setup-node@v4
         with:
@@ -71,6 +80,9 @@ jobs:
         run: node tools/build-web.js
         env:
           BUILD_NUMBER: ${{ github.run_number }}
+
+      - name: Check production sources and exclude development fixtures
+        run: node tools/test-web-bundle.js
 
       - name: Create the Android project
         run: npx cap add android
@@ -143,8 +155,17 @@ jobs:
           files: |
             Lockstep-${{ github.run_number }}.apk
             Lockstep-${{ github.run_number }}.apk.sha256
+            Pack1-validation.json
           body: |
             Open this page on your Android phone and tap **Lockstep-${{ github.run_number }}.apk** to download it.
             When Android asks, allow your browser to install unknown apps, then tap Install.
 
             Built from `${{ github.ref_name }}` at ${{ github.sha }}.
+
+            Replacement Pack 1, revision 2: all Levels 31 to 40 redesigned around resource decisions. Install over Build 21 without uninstalling. Existing clears survive; obsolete Pack 1 times and stars reset.
+
+            Validation passed: 40 maps and solver routes, 33 rule tests, seven save/campaign tests, 14 complete Pack 1 strategies, 18 branch consequences, and four spare turns at all three timed commitments. Chromium replayed 40 canonical routes, four alternatives, and three delayed routes. Mobile/desktop layout, 100-level unlocking, offline assets, development-file exclusion, and the existing Android signing identity were checked.
+
+            SHA-256 and the decision report are attached. Screenshots and full replay evidence are in the validation artifacts at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}.
+
+            Phone playtest approval is required before Levels 41 to 50 begin.

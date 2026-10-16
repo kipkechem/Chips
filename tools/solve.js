@@ -27,7 +27,7 @@ const label = (a) => (a === null ? 'wait' : typeof a === 'string' ? a : `${a.use
 // Distances ignore movable obstacles and hazards. Their spanning tree is a lower
 // bound on any winning route, so A* still proves the exact par. Teleports use zero.
 function relaxedDistances(start, targets) {
-  const tools = Object.values(start.items).some((it) => it === 'j' || it === 'm');
+  const tools = start.powers.j || start.powers.m || Object.values(start.items).some((it) => it === 'j' || it === 'm');
   const blocked = (i) => '%H&'.includes(start.grid[i]) || (!tools && '#I'.includes(start.grid[i]));
   return targets.map((target) => {
     const d = new Int32Array(start.grid.length).fill(-1), queue = [target];
@@ -283,7 +283,10 @@ function solution(i, cached = true) {
       if (r.fingerprint === hash) { replay(def, r); return r; }
     } catch { /* Missing or stale cache is solved again. */ }
   }
-  const r = def.route ? waypoints(def, def.route) : solve(def);
+  // Pack 1 has executable design witnesses, including genuinely different plans.
+  // Their pars are best known complete routes, not claims of global optimality.
+  const proofs = i >= 30 && i < 40 ? require('./build-pack1-proofs.js').builders[i + 1]().map((p) => p.result()) : null;
+  const r = proofs ? { ...proofs.sort((a,b) => a.par-b.par)[0], exact:false } : def.route ? waypoints(def, def.route) : solve(def);
   if (r.par !== null) {
     replay(def, r);
     r.fingerprint = hash;
@@ -292,6 +295,7 @@ function solution(i, cached = true) {
   }
   return r;
 }
+module.exports = { solve, guided, waypoints, actions, label, solution, replay, parseAction, lowerBound };
 if (require.main === module) {
   if (process.argv[2] === '--worker') {
     try { console.log(JSON.stringify(solution(Number(process.argv[3]) - 1, false))); }
@@ -311,4 +315,3 @@ if (require.main === module) {
     process.exitCode = failed ? 1 : 0;
   }
 }
-module.exports = { solve, guided, waypoints, actions, label, solution, replay, parseAction, lowerBound };
