@@ -25,7 +25,8 @@ python3 -m http.server 8000
 On a phone, hold it sideways: press a direction on the control on the left (a circle, a D-pad or an analog stick: pick one on the home screen) to step, hold to run, slide your thumb to turn; tap power-ups on the right
 (they fire the way the robot faces). Keyboard:
 arrows or WASD to move (hold to run), 1–4 to fire a power-up, H hint, Z undo, R restart,
-P pause.
+P pause. Drag the board to look around and pinch to zoom out over the whole level (mouse:
+drag and wheel; - and = zoom); double-tap the board or press C to recenter.
 
 ## Play on Android
 

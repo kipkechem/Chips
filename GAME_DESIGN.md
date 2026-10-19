@@ -39,13 +39,16 @@ every chase can be planned, and the solver can prove every level is winnable.
 
   In each, press and you step at once; keep holding to run; move your thumb to turn.
   Resting your thumb in the middle stops you.
-- **Center: the board.** Swipes on the board also move you.
+- **Center: the board.** Drag it to look around the level and pinch to zoom out, as far as
+  the whole level. The camera stays where you leave it (it only moves to keep you in view)
+  until you tap Recenter or double-tap the board.
 - **Right: the power-up rack.** Tap a power-up and it fires at once, the way the robot
   faces (a small yellow arrow shows which way). Walking or bumping into something turns
   you to face it.
 - On a phone held upright, the game asks you to turn it sideways. It also requests full screen
   and a landscape lock, where the browser allows that.
-- Keyboard: arrows or WASD (hold to run), 1–4 to fire a power-up, Z undo, R restart, P pause.
+- Keyboard: arrows or WASD (hold to run), 1–4 to fire a power-up, Z undo, R restart, P pause;
+  mouse drag and wheel move and zoom the camera, - and = zoom, C recenters.
 
 ## Spiders
 
@@ -209,7 +212,7 @@ and gates stop them all. "Speed" is relative to you.
 | 27 | The Zoo | Feeding Time | Teeth and a blob | fits |
 | 28 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
 | 29 | The Zoo | Grand Zoo | Everything at once | bigger |
-| 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it through a minefield while you dodge lava | fits |
+| 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it round the bombs while you dodge lava | bigger |
 | 31 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
 | 32 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
 | 33 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
@@ -223,9 +226,9 @@ and gates stop them all. "Speed" is relative to you.
 - **Start in the middle.** From the Glass Maze on, levels are bigger than the screen in every
   direction and you start near the center, so every chip is off-screen and you carry the map
   in your head.
-- **What you steer stays on screen.** Big maps test memory of places you have walked
-  through, never guesses about things you can't see. When you control something from afar,
-  like the mimic in Shadow Play, the whole puzzle fits on one screen.
+- **Look around.** Big maps test memory, not guesswork: drag the board to look anywhere in
+  the level, or pinch to zoom out as far as the whole thing (the clock keeps running). That
+  matters most when you steer something from afar, like the mimic in Shadow Play.
 - **Secret ways out.** A level can hide a shortcut: a cracked wall in a corner of the boundary
   opens onto a corridor running round the outside of the level, back in through a fake wall
   somewhere else. In Hall of Glass it skips three yellow doors, the long zigzag and the chip

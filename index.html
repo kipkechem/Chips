@@ -260,7 +260,13 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   border-radius: 6px;
   box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 5px var(--frame-hi);
 }
-#board { display: block; touch-action: none; }
+#board { display: block; touch-action: none; cursor: grab; }
+#board:active { cursor: grabbing; }
+.recenter {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  padding: 4px 10px; background: var(--panel); border: 3px solid var(--frame-hi); border-radius: 6px;
+  font: 400 18px/1 var(--font-pixel); letter-spacing: 0.04em; color: var(--ink);
+}
 #board.shake { animation: shake 0.18s steps(2); }
 @keyframes shake { 33% { transform: translateX(-4px); } 66% { transform: translateX(4px); } }
 .rack { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -433,6 +439,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       Play in landscape. Press a direction on the circle to step; hold to run; slide your thumb to turn.
       Tap a power-up to fire it the way you face. On a keyboard: <kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd> or <kbd>WASD</kbd> move (hold to run),
       <kbd>1</kbd>&ndash;<kbd>4</kbd> fire a power-up, <kbd>H</kbd> hint, <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
+      Drag the board to look around and pinch to zoom out (mouse: drag and wheel; keys <kbd>-</kbd> <kbd>=</kbd>); double-tap or <kbd>C</kbd> recenters.
     </p>
   </div>
 </div>
@@ -484,6 +491,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 
     <div class="board-wrap" id="stage">
       <canvas id="board" aria-label="Game board"></canvas>
+      <button id="btn-recenter" class="recenter" type="button" hidden>Recenter</button>
 
       <div id="pause" class="overlay" hidden>
         <div class="card">
@@ -686,6 +694,33 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     canvas.height = Math.floor(v.h * TILE * scale * dpr);
   }
 
+  // Free camera. Drag the board to look around; pinch (or use the mouse wheel) to zoom out as
+  // far as the whole level. It follows you until you move it, and always keeps you in view.
+  const cam = { z: 1, x: 0, y: 0, free: false };
+  const zMin = (s) => { const v = viewSize(s); return Math.min(1, v.w / s.w, v.h / s.h); };
+  const camSpan = (s) => { const v = viewSize(s); return { w: (v.w * TILE) / cam.z, h: (v.h * TILE) / cam.z }; };
+  function setZoom(s, z) { cam.z = Math.max(zMin(s), Math.min(1, z)); }
+  function placeCam(s, pos) {
+    const { w: sw, h: sh } = camSpan(s);
+    const W = s.w * TILE;
+    const H = s.h * TILE;
+    const px = (pos.x + 0.5) * TILE;
+    const py = (pos.y + 0.5) * TILE;
+    let x = px - sw / 2;
+    let y = py - sh / 2;
+    if (cam.free) {
+      const m = TILE * 1.5; // you never leave the picture
+      x = Math.min(Math.max(cam.x, px + m - sw), px - m);
+      y = Math.min(Math.max(cam.y, py + m - sh), py - m);
+    }
+    cam.x = sw >= W ? (W - sw) / 2 : Math.max(0, Math.min(W - sw, x));
+    cam.y = sh >= H ? (H - sh) / 2 : Math.max(0, Math.min(H - sh, y));
+  }
+  function recenter() {
+    cam.free = false;
+    cam.z = 1;
+  }
+
   function render(now) {
     const s = G.state;
     const t = now / 1000;
@@ -693,10 +728,20 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k, trapsOpen: Core.trapsOpen(s), avatar: avatarNow() });
     G.effects = G.effects.filter((fx) => t - fx.t0 < (fx.dur || 0.45));
     Art.drawEffects(bctx, G.effects, t);
-    const cam = camTarget(s, glide(G.prev && G.prev.player, s.player, k));
-    const v = viewSize(s);
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(buf, Math.round(cam.x), Math.round(cam.y), v.w * TILE, v.h * TILE, 0, 0, canvas.width, canvas.height);
+    placeCam(s, glide(G.prev && G.prev.player, s.player, k));
+    const { w: sw, h: sh } = camSpan(s);
+    const x = cam.z === 1 ? Math.round(cam.x) : cam.x;
+    const y = cam.z === 1 ? Math.round(cam.y) : cam.y;
+    const f = canvas.width / sw; // canvas pixels per level pixel
+    const x0 = Math.max(0, x);
+    const y0 = Math.max(0, y);
+    const x1 = Math.min(buf.width, x + sw);
+    const y1 = Math.min(buf.height, y + sh);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = cam.z < 1; // zoomed out, thin lines would vanish without it
+    ctx.drawImage(buf, x0, y0, x1 - x0, y1 - y0, (x0 - x) * f, (y0 - y) * f, (x1 - x0) * f, (y1 - y0) * f);
+    const moved = cam.free || cam.z !== 1;
+    if ($('#btn-recenter').hidden === moved) $('#btn-recenter').hidden = !moved;
   }
 
   function frame(now) {
@@ -789,6 +834,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const def = LEVELS[i];
     const s = parseLevel({ ...def, battery: 0 });
     Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', lost: 0, effects: [], lastTick: 0, queue: null });
+    recenter();
     store.set('lockstep:last', def.name);
     applyTheme(themeFor(i));
     if (fromMenu) goLandscape();
@@ -1492,7 +1538,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     });
   }
 
-  // ---------- Input: keyboard and swipes ----------
+  // ---------- Input: keyboard and camera ----------
   const KEYMAP = {
     ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down',
     ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right',
@@ -1530,6 +1576,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       begin();
     } else if (POWER_KEYS[e.code]) usePowerButton(POWER_KEYS[e.code]);
     else if (e.code === 'KeyR') startLevel(G.idx);
+    else if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(G.state, cam.z * 0.8);
+    else if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(G.state, cam.z / 0.8);
+    else if (e.code === 'KeyC') recenter();
     else if (e.code === 'KeyZ' || e.code === 'KeyU') undo();
     else if (e.code === 'Escape') {
       if (G.phase === 'over') toMenu('home');
@@ -1537,21 +1586,69 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     } else if (e.code === 'KeyP') pause();
     else if (e.code === 'KeyH') pause(true);
   });
-  let touch = null;
-  canvas.addEventListener('touchstart', (e) => {
-    const p = e.changedTouches[0];
-    touch = { x: p.clientX, y: p.clientY };
-  }, { passive: true });
-  canvas.addEventListener('touchend', (e) => {
-    if (!touch) return;
-    const p = e.changedTouches[0];
-    const dx = p.clientX - touch.x;
-    const dy = p.clientY - touch.y;
-    touch = null;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
-    e.preventDefault();
-    input(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+  // Board gestures: one finger (or the mouse) drags the camera, two fingers pinch to zoom,
+  // a double tap recenters.
+  const ptrs = new Map();
+  let gest = null;
+  let lastTap = 0;
+  function startGesture() {
+    const pts = [...ptrs.values()];
+    const c = { x: pts.reduce((a, p) => a + p.x, 0) / pts.length, y: pts.reduce((a, p) => a + p.y, 0) / pts.length };
+    const d = pts.length > 1 ? Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) : 0;
+    return { c, d, n: pts.length, x: cam.x, y: cam.y, z: cam.z, moved: gest ? gest.moved : false, t0: gest ? gest.t0 : performance.now() };
+  }
+  function anchorZoom(s, g, c, z) {
+    // Keep the level point that was under the fingers' starting center under their center now.
+    const r = canvas.getBoundingClientRect();
+    const before = camSpan(s);
+    const wx = g.x + ((g.c.x - r.left) / r.width) * ((before.w * cam.z) / g.z);
+    const wy = g.y + ((g.c.y - r.top) / r.height) * ((before.h * cam.z) / g.z);
+    setZoom(s, z);
+    const after = camSpan(s);
+    cam.x = wx - ((c.x - r.left) / r.width) * after.w;
+    cam.y = wy - ((c.y - r.top) / r.height) * after.h;
+  }
+  canvas.addEventListener('pointerdown', (e) => {
+    if (!G.state) return;
+    try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* synthetic pointers can't be captured */ }
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    gest = startGesture();
   });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!ptrs.has(e.pointerId) || !gest) return;
+    ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const now = startGesture();
+    if (!gest.moved && Math.hypot(now.c.x - gest.c.x, now.c.y - gest.c.y) < 6 && Math.abs(now.d - gest.d) < 6) return;
+    gest.moved = true;
+    cam.free = true;
+    const z = gest.n > 1 && gest.d > 0 ? gest.z * (now.d / gest.d) : gest.z;
+    anchorZoom(G.state, gest, now.c, z);
+  });
+  function endPointer(e) {
+    if (!ptrs.has(e.pointerId)) return;
+    ptrs.delete(e.pointerId);
+    const g = gest;
+    if (ptrs.size) {
+      gest = startGesture();
+      return;
+    }
+    gest = null;
+    if (!g || g.moved || performance.now() - g.t0 > 300) return;
+    if (performance.now() - lastTap < 350) {
+      recenter();
+      lastTap = 0;
+    } else lastTap = performance.now();
+  }
+  canvas.addEventListener('pointerup', endPointer);
+  canvas.addEventListener('pointercancel', endPointer);
+  canvas.addEventListener('wheel', (e) => {
+    if (!G.state) return;
+    e.preventDefault();
+    const c = { x: e.clientX, y: e.clientY };
+    cam.free = true;
+    anchorZoom(G.state, { c, x: cam.x, y: cam.y, z: cam.z }, c, cam.z * Math.exp(-e.deltaY * 0.0015));
+  }, { passive: false });
+  $('#btn-recenter').addEventListener('click', recenter);
 
   document.querySelectorAll('.power').forEach((b) => b.addEventListener('click', () => usePowerButton(b.dataset.power)));
   $('#intro-go').addEventListener('click', begin);
