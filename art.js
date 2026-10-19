@@ -918,10 +918,11 @@
   }
 
   // Random force floor: arrows spinning through all four ways.
-  function drawRandomForce(ctx, x0, y0, t) {
+  // Random force floor: its arrow shows which way the next push goes (they turn clockwise).
+  function drawRandomForce(ctx, x0, y0, next) {
     px(ctx, x0, y0, 16, 16, '#2a2440');
     px(ctx, x0, y0, 16, 1, '#3a3260');
-    const dir = ['up', 'right', 'down', 'left'][Math.floor(t * 4) % 4];
+    const dir = ['up', 'right', 'down', 'left'][next || 0];
     for (let k = 0; k < 4; k++) {
       rotPx(ctx, x0, y0, dir, 6 + k, 4 + k, 1, 1, '#d6a8ff');
       rotPx(ctx, x0, y0, dir, 6 + k, 11 - k, 1, 1, '#d6a8ff');
@@ -1233,7 +1234,7 @@
         }
         if (g === '~') drawIce(ctx, x0, y0, hv);
         else if ('7930'.includes(g)) drawIceCorner(ctx, x0, y0, EDGE_SIDES[g], th, hv);
-        else if (g === '+') drawRandomForce(ctx, x0, y0, t);
+        else if (g === '+') drawRandomForce(ctx, x0, y0, s.rff);
         else if (g === 'w') drawWater(ctx, x0, y0, t, hv);
         else if (g === 'F') drawFire(ctx, x0, y0, t, hv);
         else if (g === ';') drawDirt(ctx, x0, y0, hv);

@@ -209,14 +209,14 @@ and gates stop them all. "Speed" is relative to you.
 | 27 | The Zoo | Feeding Time | Teeth and a blob | fits |
 | 28 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
 | 29 | The Zoo | Grand Zoo | Everything at once | bigger |
-| 30 | The Zoo | Shadow Play | The mimic: bump walls to steer it onto a button and off a bomb | bigger |
-| 31 | Glass Maze | Panes | Thin walls: find the open side of each pen | bigger |
-| 32 | Glass Maze | Bobsled | Ice corners: four chutes that turn | bigger |
+| 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it round the bombs while you dodge lava | bigger |
+| 31 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
+| 32 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
 | 33 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
-| 34 | Glass Maze | Ghost Walls | Invisible walls: three rings, one gap each | bigger |
-| 35 | Glass Maze | Roulette | Random force floors, suction boots, a chip socket | bigger |
+| 34 | Glass Maze | Ghost Walls | Invisible walls in a pillared maze, lava panes, and pop-ups that seal behind you | bigger |
+| 35 | Glass Maze | Roulette | Random force pads between fire islands: read the arrow, plan the turns | bigger |
 | 36 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
-| 37 | Glass Maze | Hall of Glass | Everything at once, and a secret way out round the outside | bigger |
+| 37 | Glass Maze | Hall of Glass | Everything at once; three stars need the secret way out, past a guard | bigger |
 
 ### Level design notes
 
@@ -225,8 +225,14 @@ and gates stop them all. "Speed" is relative to you.
   in your head.
 - **Secret ways out.** A level can hide a shortcut: a cracked wall in a corner of the boundary
   opens onto a corridor running round the outside of the level, back in through a fake wall
-  somewhere else. In Hall of Glass it skips the long zigzag and the chip socket, and the par
-  (and so the three-star time) uses it.
+  somewhere else. In Hall of Glass it skips three yellow doors, the long zigzag and the chip
+  socket, and the par (and so the three-star time) uses it: the long way can't make three stars.
+- **Danger and planning.** The late levels are checked with the level lab
+  (`tools/levlab.js`). It walks the par route and counts the moments where one wrong move
+  kills you (danger) and where one wrong move makes the level unwinnable (planning), and it
+  checks that simply heading for the nearest chip doesn't win. Each of the reworked levels
+  (Shadow Play, Panes, Bobsled, Ghost Walls, Roulette, Hall of Glass) has deadly moments, and
+  in all but Hall of Glass the nearest-chip plan fails.
 - **Power-up combos.** Some levels need two or three power-ups, each with its own job (Toolbox,
   Hall of Glass, Disco Inferno), so the puzzle is which tool goes where.
 
