@@ -569,7 +569,7 @@
     {
       name: 'Ghost Walls',
       world: 'glass',
-      hint: 'Ghost panes stay invisible, but bumping them is safe; lava is not. Each glass pop-up seals behind you, so plan the order.',
+      hint: 'Ghost panes glimmer every few seconds: watch before you commit. Bumping them is safe, lava is not. Pop-ups seal behind you.',
       par: 140,
       map: [
         '#########################',
@@ -638,7 +638,7 @@
     {
       name: 'Hall of Glass',
       world: 'glass',
-      hint: 'The long way: three yellow doors. The short way: a corner wall that does not hold, and a guard. Save a blaster shot.',
+      hint: 'The long way: three yellow doors. The short way: a cracked corner, a guarded ring, a back door by the exit. Save a shot.',
       par: 99,
       facing: { '3,11': 'left', '27,8': 'down' },
       route: ['12,5', '5,11', '8,4', '16,5', '25,3'],

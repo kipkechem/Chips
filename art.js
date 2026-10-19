@@ -917,7 +917,23 @@
     px(ctx, x0 + 6, y0 + 6, 4, 1, th.wallEdge);
   }
 
-  // Random force floor: arrows spinning through all four ways.
+  // Invisible wall: it glimmers into view for a moment every few seconds, so you can learn
+  // where it is by watching (and remembering), never by guessing.
+  const GLIMMER_EVERY = 4; // seconds
+  const GLIMMER_FOR = 0.8;
+  function drawGhostPane(ctx, x0, y0, th, t) {
+    const into = t % GLIMMER_EVERY;
+    if (into > GLIMMER_FOR) return;
+    ctx.save();
+    ctx.globalAlpha = 0.7 * Math.sin((Math.PI * into) / GLIMMER_FOR);
+    ctx.fillStyle = th.wallLo;
+    ctx.fillRect(x0 + 1, y0 + 1, TILE - 2, TILE - 2);
+    ctx.fillStyle = th.wallHi;
+    ctx.fillRect(x0 + 1, y0 + 1, TILE - 2, 1);
+    ctx.fillRect(x0 + 1, y0 + 1, 1, TILE - 2);
+    ctx.restore();
+  }
+
   // Random force floor: its arrow shows which way the next push goes (they turn clockwise).
   function drawRandomForce(ctx, x0, y0, next) {
     px(ctx, x0, y0, 16, 16, '#2a2440');
@@ -1251,6 +1267,7 @@
         else if ('-_{}'.includes(g)) drawEdgeWalls(ctx, x0, y0, EDGE_SIDES[g], th);
         else if (g === '!') drawPopup(ctx, x0, y0, th);
         else if (g === '$') drawSocket(ctx, x0, y0, t);
+        if (g === '&') drawGhostPane(ctx, x0, y0, th, t);
         if (g === ':') drawCracks(ctx, x0, y0, th.detail);
         else if (g === 'x') drawLava(ctx, x0, y0, t, hv);
         else if (g === '1' || g === '2') drawBeat(ctx, x0, y0, g, (g === '1') === (phase === 0), th);

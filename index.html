@@ -1324,7 +1324,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       [(c) => { floor(c); Art.drawEdgeWalls(c, 0, 0, ['right'], th); }, 'Thin wall', 'A wall along just one edge of a tile. Nothing crosses that edge, from either side.'],
       [(c) => Art.drawIceCorner(c, 0, 0, ['up', 'right'], th, 1), 'Ice corner', 'Ice with two walled sides. Slide in and it turns you out of the other open side.'],
       [(c) => { floor(c); Art.drawPopup(c, 0, 0, th); }, 'Pop-up wall', 'Floor that rises into a wall once you step off it. You only get to cross it once.'],
-      [(c) => floor(c), 'Invisible wall', 'Looks exactly like floor and never shows itself. Bump into it and remember where it was.'],
+      [(c) => floor(c), 'Invisible wall', 'Looks like floor, but glimmers into view for a moment every few seconds. Watch, and remember where it was.'],
       [(c) => Art.drawRandomForce(c, 0, 0, 0), 'Random force floor', 'Its arrow shows which way it will push you next. Every push turns all of them a quarter turn clockwise. Suction boots hold you steady.'],
       [(c) => Art.drawSocket(c, 0, 0, 0), 'Chip socket', 'Stays shut until you are carrying every chip in the level.'],
       [(c) => { floor(c); c.drawImage(sp.mimic, 0, 0); }, 'Mimic', 'Copies every move you try, even into a wall. Bump a wall to move it while you stay put.'],
