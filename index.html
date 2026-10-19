@@ -400,6 +400,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <option value="machine">Machine Room</option>
           <option value="zoo">The Zoo</option>
           <option value="glass">Glass Maze</option>
+          <option value="foundry">The Foundry</option>
+          <option value="clockwork">Clockwork</option>
+          <option value="vault">The Vault</option>
         </select>
         <label class="label" for="pad">Controls</label>
         <select id="pad">
@@ -581,7 +584,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   // within STAR_TIMES[1] x par (each rounded up to whole seconds), one for any finish.
   // There is no time limit: you can take as long as you like.
   const STAR_TIMES = [1.5, 3];
-  const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar', 'tide', 'yard', 'machine', 'zoo', 'glass'];
+  const WORLD_ORDER = ['arcade', 'circuits', 'ice', 'neon', 'solar', 'tide', 'yard', 'machine', 'zoo', 'glass', 'foundry', 'clockwork', 'vault'];
   const WORLD_RULE = {
     arcade: 'The basics: keys, doors, chips and spiders.',
     circuits: 'Modifier: crumbling floor gives way once you step off it.',
@@ -593,6 +596,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     machine: 'Machines: buttons that flip walls, spring traps, fire clone machines and turn tanks around.',
     zoo: 'The monster zoo: bugs, paramecia, fireballs, gliders, teeth, blobs, walkers and the mimic.',
     glass: 'Walls you can barely see: thin walls, ice corners, pop-up walls, invisible walls, random force floors and chip sockets.',
+    foundry: 'Heat and heavy things: lava, fire, bombs and crates, and every tool counts.',
+    clockwork: 'Timing and machines: beats, buttons, traps, clones and tanks, all on the clock.',
+    vault: 'The heist: keys to spend, a thief, secret ways round, spiders on guard. Everything at once.',
   };
   const BOOT_NAME = { p: 'flippers', h: 'fire boots', k: 'ice skates', u: 'suction boots' };
   const BOOT_HELP = {

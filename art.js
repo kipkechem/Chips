@@ -84,6 +84,28 @@
       speck: '#5a44b8',
       enemy: '#ff5a8a', enemyDark: '#a3204a', style: 'plain',
     },
+    foundry: {
+      name: 'The Foundry',
+      bg: '#100806', panel: '#1e110c', frame: '#ff6a1f', frameHi: '#ffb36b', ink: '#fff0e6', muted: '#d4a58a',
+      floor: '#1f1714', floorGrid: '#261c18', detail: '#43312a',
+      wall: '#6e5a52', wallHi: '#a8918a', wallLo: '#40332e', wallEdge: '#120c0a',
+      speck: '#8a3a1a',
+      enemy: '#ffd23f', enemyDark: '#a37a0f', style: 'plain',
+    },
+    clockwork: {
+      name: 'Clockwork',
+      bg: '#0a0f0e', panel: '#13201d', frame: '#d4a24a', frameHi: '#f2d38f', ink: '#f7f1e3', muted: '#bfb08a',
+      floor: '#15201e', floorGrid: '#1a2826', detail: '#2c403c',
+      wall: '#b8873a', wallHi: '#e8c47a', wallLo: '#7a5520', wallEdge: '#241805',
+      enemy: '#3fd6e8', enemyDark: '#12808f', style: 'plain',
+    },
+    vault: {
+      name: 'The Vault',
+      bg: '#06090c', panel: '#0d1419', frame: '#e6c35c', frameHi: '#fff0a8', ink: '#f6f3e8', muted: '#b9b28f',
+      floor: '#10171c', floorGrid: '#141d23', detail: '#26333c',
+      wall: '#3d5566', wallHi: '#7c97aa', wallLo: '#22323d', wallEdge: '#070c10',
+      enemy: '#ff4d4d', enemyDark: '#a31a1a', style: 'plain',
+    },
   };
 
   const KEY_COLORS = {
