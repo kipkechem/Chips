@@ -209,7 +209,7 @@ and gates stop them all. "Speed" is relative to you.
 | 27 | The Zoo | Feeding Time | Teeth and a blob | fits |
 | 28 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
 | 29 | The Zoo | Grand Zoo | Everything at once | bigger |
-| 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it round the bombs while you dodge lava | bigger |
+| 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it through a minefield while you dodge lava | fits |
 | 31 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
 | 32 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
 | 33 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
@@ -223,6 +223,9 @@ and gates stop them all. "Speed" is relative to you.
 - **Start in the middle.** From the Glass Maze on, levels are bigger than the screen in every
   direction and you start near the center, so every chip is off-screen and you carry the map
   in your head.
+- **What you steer stays on screen.** Big maps test memory of places you have walked
+  through, never guesses about things you can't see. When you control something from afar,
+  like the mimic in Shadow Play, the whole puzzle fits on one screen.
 - **Secret ways out.** A level can hide a shortcut: a cracked wall in a corner of the boundary
   opens onto a corridor running round the outside of the level, back in through a fake wall
   somewhere else. In Hall of Glass it skips three yellow doors, the long zigzag and the chip
