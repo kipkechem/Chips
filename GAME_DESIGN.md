@@ -197,8 +197,8 @@ and gates stop them all. "Speed" is relative to you.
 | 12 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
 | 13 | Tide Works | Deep End | Water and flippers | bigger |
 | 14 | Tide Works | Firewalk | Fire and fire boots; a crate fills water with dirt | fits |
-| 15 | Tide Works | Cold Feet | Ice skates | fits |
-| 16 | Tide Works | Pickpocket | The thief and the green key | bigger |
+| 15 | Tide Works | Cold Feet | Ice skates: slide your way to them first; some chips on the ice are traps | bigger |
+| 16 | Tide Works | Pickpocket | The thief and the green key: swim the west pools before you pass him | bigger |
 | 17 | Conveyor Yard | Conveyor | Force floors and suction boots | bigger |
 | 18 | Conveyor Yard | Beam Me Up | Teleports | bigger |
 | 19 | Conveyor Yard | Minefield | Bombs, gravel, dirt and teeth | fits |
@@ -208,10 +208,10 @@ and gates stop them all. "Speed" is relative to you.
 | 23 | Machine Room | Copy Machine | A clone machine and the red button | fits |
 | 24 | Machine Room | Tank Trap | A tank and the blue button | fits |
 | 25 | The Zoo | Bug Hunt | Bugs and paramecia | bigger |
-| 26 | The Zoo | Hot and Cold | Fireballs and gliders | bigger |
+| 26 | The Zoo | Hot and Cold | Fireballs and gliders patrol corridors; time each dash into an alcove | bigger |
 | 27 | The Zoo | Feeding Time | Teeth and a blob | fits |
 | 28 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
-| 29 | The Zoo | Grand Zoo | Everything at once | bigger |
+| 29 | The Zoo | Grand Zoo | Four monster wings off a hub; one red key, two red doors | bigger |
 | 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it round the bombs while you dodge lava | bigger |
 | 31 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
 | 32 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
@@ -220,6 +220,19 @@ and gates stop them all. "Speed" is relative to you.
 | 35 | Glass Maze | Roulette | Random force pads between fire islands: read the arrow, plan the turns | bigger |
 | 36 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
 | 37 | Glass Maze | Hall of Glass | Everything at once; three stars need the secret way out, past a guard | bigger |
+| 38 | The Foundry | Crumble Works | Lava islands joined by crumbling bridges, each crossed once | bigger |
+| 39 | The Foundry | Assembly Line | One-way conveyor bridges; the nearest chip lures you the wrong way | bigger |
+| 40 | The Foundry | Slag Bridge | Two crates, three lava gaps, a jetpack for one vault | bigger |
+| 41 | The Foundry | Demolition | Conveyors carry crates into bombs | bigger |
+| 42 | The Foundry | Fire Sale | Thieves and boots; the order you rob them in | bigger |
+| 43 | The Foundry | Quench | Three crates in a lava-cornered hub, four lava-lined arms to bridge | bigger |
+| 44 | The Foundry | Foreman | Jetpack, blaster and flamethrower: only one way to share them out | bigger |
+| 45 | The Foundry | The Crucible | Everything the Foundry taught | bigger |
+| 46 | Clockwork | Tick Tock | Rooms with doors that seal after one use, and doors a drone flips | bigger |
+| 47 | Clockwork | Escapement | One-way doors and doors that open on the beat | bigger |
+| 48 | Clockwork | Gear Train | Twenty rooms of one-way doors and drone-flipped doors | bigger |
+| 49 | Clockwork | Mainspring | Two clocks at once: beat doors and drone doors | bigger |
+| 50 | Clockwork | Grand Clock | Everything Clockwork taught, in 22 rooms | bigger |
 
 ### Level design notes
 
@@ -280,11 +293,11 @@ apps get far fewer installs.
 
 | | Free | Full game (one purchase, about $2.99) |
 |---|---|---|
-| Levels | 1 to 5 (Pixel Arcade and Lost Circuits, about 15 minutes) | All 27, and every future world |
+| Levels | 1 to 5 (Pixel Arcade and Lost Circuits, about 15 minutes) | All of them, and every future world |
 | Ads | Short ads between levels, plus optional "watch for a hint" ads | None (the optional hint becomes free) |
 
 The free levels end on a high: by level 5 the player has escaped spiders, used the jetpack and
-crossed a crumbling bridge. Level 6 (ice) is where the paywall sits. It shows the four worlds
+crossed a crumbling bridge. Level 6 (ice) is where the paywall sits. It shows the worlds
 still to come, with a screenshot of each.
 
 ### Where the ads go
