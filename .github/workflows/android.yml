@@ -34,7 +34,7 @@ jobs:
         run: node tools/test-rules.js
 
       - name: Check every level is winnable at its par
-        run: node --max-old-space-size=6000 tools/solve.js
+        run: node --max-old-space-size=6000 tools/solve.js --write-routes
 
       - name: Install Capacitor
         run: npm ci --no-audit --no-fund
@@ -102,6 +102,21 @@ jobs:
         with:
           name: Lockstep-apk
           path: Lockstep-*.apk
+
+      # Google Play takes an app bundle (AAB), not an APK. This one is unsigned: before the
+      # first upload, sign it with a private upload key kept in GitHub Secrets (not in the
+      # repository) and turn on Play App Signing. A failure here never blocks the APK.
+      - name: Build the Play Store bundle (unsigned)
+        continue-on-error: true
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: Lockstep-aab-unsigned
+          path: android/app/build/outputs/bundle/release/*.aab
+          if-no-files-found: ignore
 
       - name: Publish as a release
         uses: softprops/action-gh-release@v2

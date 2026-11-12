@@ -503,6 +503,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <p id="pause-hint"></p>
           <div class="row">
             <button id="pause-resume" class="btn primary" type="button">Resume</button>
+            <button id="pause-way" class="btn" type="button">Show me the way</button>
             <button id="pause-restart" class="btn" type="button">Restart</button>
             <button id="pause-menu" class="btn" type="button">Main menu</button>
           </div>
@@ -568,6 +569,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 <script src="core.js"></script>
 <script src="levels.js"></script>
 <script src="art.js"></script>
+<script src="routes.js"></script>
 <script>
 (() => {
   'use strict';
@@ -734,6 +736,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     Art.drawBoard(bctx, s, { theme: themeFor(G.idx), t, phase: Core.phase(s), prev: G.prev, k, trapsOpen: Core.trapsOpen(s), avatar: avatarNow() });
     G.effects = G.effects.filter((fx) => t - fx.t0 < (fx.dur || 0.45));
     Art.drawEffects(bctx, G.effects, t);
+    drawTrail(bctx, now);
     placeCam(s, glide(G.prev && G.prev.player, s.player, k));
     const { w: sw, h: sh } = camSpan(s);
     const x = cam.z === 1 ? Math.round(cam.x) : cam.x;
@@ -839,8 +842,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function startLevel(i, fromMenu) {
     const def = LEVELS[i];
     const s = parseLevel({ ...def, battery: 0 });
-    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', lost: 0, effects: [], lastTick: 0, queue: null });
+    quitIfPlaying();
+    Object.assign(G, { idx: i, state: s, prev: s, history: [], phase: 'intro', lost: 0, effects: [], lastTick: 0, queue: null, ways: WAYS_PER_LEVEL, trail: null });
     recenter();
+    track('level_start', { level: def.name });
     store.set('lockstep:last', def.name);
     applyTheme(themeFor(i));
     if (fromMenu) goLandscape();
@@ -1059,11 +1064,121 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     hud();
   }
 
+  // ---------- Show me the way ----------
+  // Every level's targets in winning order come from routes.js (written by the solver). From
+  // wherever you are, search to the next target still ahead and draw your next moves.
+  const ROUTES = window.LOCKSTEP_ROUTES || {};
+  const WAYS_PER_LEVEL = 3;
+  const TRAIL_MOVES = 10;
+  const TRAIL_MS = 9000;
+  function nextGoal(s, route) {
+    const at = (p) => p.replace('@', '').split(',').map(Number);
+    const taken = (p) => { const [x, y] = at(p); return !s.items[y * s.w + x]; };
+    for (let k = 0; k < route.length; k++) {
+      const p = route[k];
+      const [x, y] = at(p);
+      if (p[0] === '@') {
+        if (route.slice(k + 1).some((q) => q[0] !== '@' && taken(q))) continue; // already passed
+        if (s.player.x === x && s.player.y === y) continue;
+        return (t) => t.player.x === x && t.player.y === y;
+      }
+      if (!taken(p)) return (t) => !t.items[y * t.w + x];
+    }
+    return (t) => t.status === 'won';
+  }
+  function findWay(s, route, limit = 150000) {
+    const goal = nextGoal(s, route);
+    const back = new Map([[Core.stateKey(s), null]]);
+    let frontier = [s];
+    while (frontier.length && back.size < limit) {
+      const next = [];
+      for (const t of frontier) {
+        const opts = ['up', 'down', 'left', 'right', null];
+        for (const k of Core.POWERS) if (t.powers[k]) opts.push({ use: k });
+        for (const a of opts) {
+          const r = Core.act(t, a);
+          const st = r.state;
+          if (st === t || st.status === 'dead') continue;
+          if (a && (a.use === 'f' || a.use === 'm') && !r.events.some((e) => /^(kill|break|crack)/.test(e))) continue;
+          const key = Core.stateKey(st) + (st.status === 'won' ? ';won' : '');
+          if (back.has(key)) continue;
+          back.set(key, { from: t, a, st });
+          if (st.status === 'won' || goal(st)) {
+            const steps = [];
+            for (let n = back.get(key); n; n = back.get(Core.stateKey(n.from))) steps.unshift(n);
+            return steps;
+          }
+          if (st.status === 'play') next.push(st);
+        }
+      }
+      frontier = next;
+    }
+    return null;
+  }
+  function showWay() {
+    const def = LEVELS[G.idx];
+    if (!G.ways) return;
+    const steps = findWay(G.state, ROUTES[def.name] || []);
+    if (!steps) {
+      $('#pause-hint').textContent = 'There is no way through from here. Undo a few moves, or restart.';
+      return;
+    }
+    G.ways--;
+    track('way_shown', { level: def.name, left: G.ways });
+    const cells = [{ x: G.state.player.x, y: G.state.player.y }];
+    for (const n of steps.slice(0, TRAIL_MOVES)) cells.push({ x: n.st.player.x, y: n.st.player.y, use: n.a && n.a.use });
+    G.trail = { cells, until: performance.now() + TRAIL_MS };
+    resume();
+    say(`Follow the dots: your next ${cells.length - 1} moves.`);
+  }
+  function drawTrail(c, now) {
+    const tr = G.trail;
+    if (!tr || now > tr.until) return;
+    const fade = Math.min(1, (tr.until - now) / 1500);
+    c.save();
+    c.globalAlpha = 0.85 * fade;
+    c.strokeStyle = '#fff';
+    c.lineWidth = 2;
+    c.setLineDash([3, 3]);
+    c.beginPath();
+    tr.cells.forEach((p, k) => (k ? c.lineTo : c.moveTo).call(c, (p.x + 0.5) * TILE, (p.y + 0.5) * TILE));
+    c.stroke();
+    c.setLineDash([]);
+    tr.cells.forEach((p, k) => {
+      if (!k) return;
+      c.fillStyle = k === tr.cells.length - 1 ? '#ffd23f' : '#fff';
+      c.beginPath();
+      c.arc((p.x + 0.5) * TILE, (p.y + 0.5) * TILE, p.use ? 4 : 2.5, 0, Math.PI * 2);
+      c.fill();
+    });
+    c.restore();
+  }
+
+  // ---------- Play statistics ----------
+  // Kept on the device (the last 500 events), so you can see where players stop or get
+  // stuck. If the app provides window.LockstepAnalytics.log, each event is passed on too.
+  function track(event, data = {}) {
+    const e = { event, t: Date.now(), ...data };
+    try {
+      const log = store.get('lockstep:events') || [];
+      log.push(e);
+      store.set('lockstep:events', log.slice(-500));
+    } catch (err) { /* storage full or blocked */ }
+    try { if (window.LockstepAnalytics && window.LockstepAnalytics.log) window.LockstepAnalytics.log(event, data); } catch (err) { /* ignore */ }
+  }
+  function quitIfPlaying() {
+    if (G.state && (G.phase === 'play' || G.phase === 'paused')) track('level_quit', { level: LEVELS[G.idx].name, steps: G.state.steps + G.lost });
+  }
+
   function pause(asHint) {
     if (G.phase === 'intro') begin();
     if (G.phase !== 'play') return;
     G.phase = 'paused';
     const def = LEVELS[G.idx];
+    if (asHint === true) track('hint_read', { level: def.name });
+    const way = $('#pause-way');
+    way.textContent = `Show me the way (${G.ways})`;
+    way.disabled = !G.ways || !ROUTES[def.name];
     $('#pause-eyebrow').textContent = asHint === true ? 'Hint' : 'Paused';
     $('#pause-title').textContent = `${pad2(G.idx + 1)} ${def.name}`;
     $('#pause-hint').textContent = def.hint;
@@ -1107,6 +1222,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       }
       const best = bestTime(G.idx);
       if (best == null || time < best) store.set(bestKey(G.idx), { steps: time });
+      track('level_clear', { level: def.name, steps: time, stars: starsFor(def, time), ways: WAYS_PER_LEVEL - G.ways });
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} cleared`;
       const score = $('#res-score');
       score.hidden = false;
@@ -1131,6 +1247,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         bomb: ['You stepped on a bomb.', 'Push a crate onto a bomb, or let a monster set it off.'],
       }[s.cause];
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} failed`;
+      track('level_fail', { level: def.name, cause: s.cause, steps: s.steps + G.lost });
       $('#res-score').hidden = true;
       $('#res-title').textContent = why[0];
       $('#res-text').textContent = why[1];
@@ -1416,6 +1533,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   }
 
   function toMenu(view = 'levels-view') {
+    quitIfPlaying();
     G.phase = 'menu';
     applyTheme(skin === 'auto' ? 'arcade' : skin);
     showView(view);
@@ -1667,6 +1785,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   $('#btn-guide').addEventListener('click', () => showView('guide-view'));
   document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => showView('home')));
   $('#pause-resume').addEventListener('click', resume);
+  $('#pause-way').addEventListener('click', showWay);
   $('#pause-restart').addEventListener('click', () => startLevel(G.idx));
   $('#pause-menu').addEventListener('click', () => toMenu('home'));
   $('#res-retry').addEventListener('click', () => startLevel(G.idx));

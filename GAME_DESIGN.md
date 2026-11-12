@@ -285,20 +285,27 @@ shows the build number in the Android app, so you can tell which build is instal
 
 ## Revenue
 
-*Planned, not built: this comes after the full game is finished.*
+*Planned, mostly not built: the store and ads come after the full game is finished. What is
+already built is marked **Built**.*
 
 **One free app with a one-time unlock**, not a separate paid app. A single store listing
 keeps all the ratings in one place, and people can try the game before paying. Paid-up-front
 apps get far fewer installs.
 
-| | Free | Full game (one purchase, about $2.99) |
+| | Free | Full game (one purchase, $3.99) |
 |---|---|---|
-| Levels | 1 to 5 (Pixel Arcade and Lost Circuits, about 15 minutes) | All of them, and every future world |
-| Ads | Short ads between levels, plus optional "watch for a hint" ads | None (the optional hint becomes free) |
+| Levels | 1 to 10: the first four worlds (Pixel Arcade, Lost Circuits, Ice Station, Neon Mixtape), about 30 minutes | All of them, and every future world |
+| Ads | Short ads between levels, plus optional "watch for a hint" ads | None (the hint becomes free) |
 
-The free levels end on a high: by level 5 the player has escaped spiders, used the jetpack and
-crossed a crumbling bridge. Level 6 (ice) is where the paywall sits. It shows the worlds
-still to come, with a screenshot of each.
+The free levels end on a high: by level 10 the player has escaped spiders, used the jetpack,
+flamethrower and blaster, slid on ice and danced through beat blocks, which is where the game
+shows what it is. Level 11 is where the paywall sits; it shows the worlds still to come, with
+a screenshot of each. The price is $3.99: a 100-level puzzle game sits at the low end of the
+genre at that price (adjust after launch from the numbers below).
+
+**Audience:** a general audience, not made for children. That keeps Google's Families ad rules
+out of scope; the store listing must not market it to children. Until the player answers the
+consent form, ads are non-personalized.
 
 ### Where the ads go
 
@@ -310,27 +317,43 @@ The game is real time and you die a lot while learning, so the ad rules protect 
 | Fail or retry | **None** | Ads on retry are the fastest way to lose a puzzle player. |
 | During play or pause | **None** | An ad in the middle of a chase kills the run. |
 | Menu or game screen | **No banners** | The landscape screen has no room: the joystick and power-up rack would be covered. |
-| Pause menu: **Show me the way** | Rewarded (opt-in) | Watch an ad and a ghost robot walks the next 10 moves of the solver's route. The solver already proves every level, so the hints are always right. |
+| Pause menu: **Show me the way** | Rewarded (opt-in) | Watch an ad and the next 10 moves are drawn on the board. |
 | Results screen, after a fail | Rewarded (opt-in) | Same hint offer, shown only after 3 fails on a level. |
 
-Paying removes every interstitial and makes **Show me the way** free (limited to 3 per level,
-so it stays a hint, not autoplay).
+Paying removes every interstitial and makes **Show me the way** free (3 per level, so it stays
+a hint, not autoplay).
 
-### What it needs
+### Built so far
 
+- **Show me the way** (free for now, 3 per level, in the pause card): from wherever you are, it
+  finds the way to the next target on the level's winning route and draws your next 10 moves
+  as dots. If the level can no longer be won from where you are, it says so. The routes come
+  from `routes.js`, which the solver writes on every build (`tools/solve.js --write-routes`),
+  so the hint never has to solve a whole level on the phone.
+- **Play statistics**: level starts, clears (time, stars, hints used), fails (cause) and quits
+  are kept on the device (the last 500 events, in `lockstep:events`). If the app defines
+  `window.LockstepAnalytics.log`, every event is passed on too: that is the hook for Firebase
+  Analytics, to see which level players stop at and where the paywall belongs.
+- **A Play Store bundle (AAB)** is built on every push, unsigned, as a download on the build's
+  Actions page.
+
+### What it still needs
+
+- **Signing:** a private upload key in GitHub Secrets (never in the repository) and Play App
+  Signing, before the first upload. The key in `android-signing/` is public and is only for
+  the GitHub test builds.
 - **Google Play.** The unlock needs Play Billing, which only works for apps installed from the Play
-  Store. The GitHub APK stays as a test build. Play needs a developer account ($25, one-time) and a
-  signed release build (AAB) instead of the current debug APK.
+  Store. The GitHub APK stays as a test build. Play needs a developer account ($25, one-time).
 - **Ads:** an AdMob account and the `@capacitor-community/admob` plugin.
   **Purchase:** a billing plugin (RevenueCat's Capacitor plugin is the simplest). It also handles
   "restore purchase" on a new phone.
-- **Rules:** a privacy policy page, the consent form AdMob provides (required in the EU and UK), the
-  "Contains ads" label, and the Play data-safety form. If the game is marketed to children
-  (it trains memory and problem solving), Google's Families rules apply: only certified ad
-  networks, and no personalized ads. Decide the target age before turning ads on.
+- **Analytics:** a Firebase project and its Capacitor plugin, wired to `window.LockstepAnalytics`.
+- **Rules:** a privacy policy page (it must mention the statistics and ads), the consent form
+  AdMob provides (required in the EU and UK), the "Contains ads" label and the Play data-safety
+  form.
 - **In the code:**
   - A `full` flag, saved locally and confirmed with Play on launch.
-  - Levels after 5 locked until the game is unlocked.
+  - Levels after 10 locked until the game is unlocked.
   - A paywall screen.
   - One `showAd()` hook called from **Next level**, which does nothing on the web version.
 
