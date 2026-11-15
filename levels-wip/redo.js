@@ -205,5 +205,32 @@ module.exports = [
   ],
   "hint": "Bugs keep a wall on their left, paramecia on their right. Crumbling tiles hold once: find the one tour through all four.",
   "par": 55
+ },
+ {
+  "name": "Smoke and Mirrors",
+  "world": "yard",
+  "map": [
+   "#####################",
+   "#.......###.......*.#",
+   "#.###...#*#...###...#",
+   "#.#y#...#N#...#*#...#",
+   "#.#N#.........#N#...#",
+   "#.......I.....I.....#",
+   "###Y#.....@.....#Y###",
+   "#...#...K...K...#...#",
+   "#.*.#..I.....I..#.E.#",
+   "#..y#...........#...#",
+   "#####################"
+  ],
+  "route": [
+   "9,2",
+   "3,3",
+   "3,9",
+   "2,8",
+   "15,3",
+   "18,1"
+  ],
+  "hint": "Some walls aren't there; some floor is wall. A sealed vault has a way in. One yellow key: open the right door first.",
+  "par": 62
  }
 ];
