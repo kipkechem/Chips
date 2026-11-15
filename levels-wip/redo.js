@@ -232,5 +232,30 @@ module.exports = [
   ],
   "hint": "Some walls aren't there; some floor is wall. A sealed vault has a way in. One yellow key: open the right door first.",
   "par": 62
+ },
+ {
+  "name": "Feeding Time",
+  "world": "zoo",
+  "map": [
+   "#####################",
+   "#*.#.......#.....#.*#",
+   "#..#..,,...#..Z..#..#",
+   "#..#..,,...X...,.#..#",
+   "#.....#####.####....#",
+   "#.........@.........#",
+   "#....####.#####.....#",
+   "#..#.,...X......,#..#",
+   "#..#.......#..,,.#..#",
+   "#*.#......E#.....#.*#",
+   "#####################"
+  ],
+  "route": [
+   "19,1",
+   "19,9",
+   "1,1",
+   "1,9"
+  ],
+  "hint": "Teeth chase you slowly; the blob wanders. Every chip sits in a dead end: go in only when they can't follow.",
+  "par": 73
  }
 ];
