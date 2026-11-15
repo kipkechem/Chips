@@ -257,5 +257,27 @@ module.exports = [
   ],
   "hint": "Teeth chase you slowly; the blob wanders. Every chip sits in a dead end: go in only when they can't follow.",
   "par": 73
+ },
+ {
+  "name": "Beam Me Up",
+  "world": "yard",
+  "map": [
+   "#####################",
+   "#wwwwwwwwwwwwwwwwwww#",
+   "#w:..wwwwwwwwwww:..w#",
+   "#w*o.wwwwwwwwwww:o:w#",
+   "#w:.:wwwwwwwwwww...w#",
+   "#wwwwwwww...wwwwwwww#",
+   "#wwwwwwww.o.wwwwwwww#",
+   "#wwwwwwww.@.wwwwwwww#",
+   "#wwwwwwwwwwwwwwwwwww#",
+   "#w...wwwwwwwwwww*::w#",
+   "#w.o.wwwwwwwwwww:oEw#",
+   "#w..:wwwwwwwwwww*::w#",
+   "#wwwwwwwwwwwwwwwwwww#",
+   "#####################"
+  ],
+  "hint": "A pad sends you to the next pad in reading order, still moving the same way. Crumbling floor holds once: plan each jump.",
+  "par": 24
  }
 ];
