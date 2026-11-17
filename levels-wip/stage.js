@@ -225,5 +225,38 @@ module.exports = [
    "#####...........################K##",
    "###################################"
   ]
+ },
+ {
+  "name": "Beam Me Up",
+  "world": "yard",
+  "hint": "Pads send you to the next pad in reading order, still moving. One jetpack opens the vault; its belt only lets you out.",
+  "par": 43,
+  "map": [
+   "#################################",
+   "#wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww#",
+   "#w:..wwwwwwwwwww:..www*..ww...ww#",
+   "#w*o.wwwwwwwwwww:o:www.o.ww.o.ww#",
+   "#w:.:wwwwwwwwwww...www...ww..jww#",
+   "#wwwwwwww...wwwwwwwwwwwwwwww.www#",
+   "#wwwwwwww.o.wwwwwwwwwwwwwwww.www#",
+   "#wwwwwwww.@.wwwwwwwwwwwwww#####w#",
+   "#wwwwwwwwwwwwwwwwwwwwwwwww#*.*#w#",
+   "#w...wwwwwwwwwww*::www...<<...#w#",
+   "#w.o.wwwwwwwwwww:o.www.o.w#..*#w#",
+   "#w..:wwwwwwwwwww*::wwwE.*w#####w#",
+   "#wwwwwwwwwwwwwwwwwwwwwwwwwwwwwww#",
+   "#################################"
+  ],
+  "route": [
+   "16,11",
+   "16,9",
+   "2,3",
+   "22,2",
+   "29,4",
+   "27,8",
+   "29,8",
+   "29,10",
+   "24,11"
+  ]
  }
 ];
