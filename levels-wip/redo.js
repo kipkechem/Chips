@@ -234,31 +234,6 @@ module.exports = [
   "par": 62
  },
  {
-  "name": "Feeding Time",
-  "world": "zoo",
-  "map": [
-   "#####################",
-   "#*.#.......#.....#.*#",
-   "#..#..,,...#..Z..#..#",
-   "#..#..,,...X...,.#..#",
-   "#.....#####.####....#",
-   "#.........@.........#",
-   "#....####.#####.....#",
-   "#..#.,...X......,#..#",
-   "#..#.......#..,,.#..#",
-   "#*.#......E#.....#.*#",
-   "#####################"
-  ],
-  "route": [
-   "19,1",
-   "19,9",
-   "1,1",
-   "1,9"
-  ],
-  "hint": "Teeth chase you slowly; the blob wanders. Every chip sits in a dead end: go in only when they can't follow.",
-  "par": 73
- },
- {
   "name": "Beam Me Up",
   "world": "yard",
   "map": [
@@ -279,5 +254,63 @@ module.exports = [
   ],
   "hint": "A pad sends you to the next pad in reading order, still moving the same way. Crumbling floor holds once: plan each jump.",
   "par": 24
+ },
+ {
+  "name": "Wanderers",
+  "world": "zoo",
+  "facing": {
+   "4,2": "right",
+   "16,2": "left",
+   "4,8": "right",
+   "16,8": "left"
+  },
+  "map": [
+   "#####################",
+   "#*#################*#",
+   "#...e...#...#...e...#",
+   "#######.#...#.#######",
+   "#.......x...x.......#",
+   "#..,,....f@......,,.#",
+   "#.......x...x.......#",
+   "#######.#...#.###.###",
+   "#...e...#...#...e...#",
+   "#*########E########*#",
+   "#####################"
+  ],
+  "route": [
+   "9,5",
+   "1,1",
+   "1,9",
+   "19,9",
+   "19,1"
+  ],
+  "hint": "Walkers go straight and turn at random when blocked. Three flames, four walkers: one corridor has a bay to wait in.",
+  "par": 105
+ },
+ {
+  "name": "Feeding Time",
+  "world": "zoo",
+  "map": [
+   "#####################",
+   "#*.#.......#.....#.*#",
+   "#..#..,,...#..Z..#..#",
+   "#..#X.,,...X...,X#..#",
+   "#.....#####z####....#",
+   "#.........@.........#",
+   "#....####.#####.....#",
+   "#..#X,...X......,#..#",
+   "#..#.......#..,,.#..#",
+   "#*.#......E#.....#.*#",
+   "#####################"
+  ],
+  "route": [
+   "11,4",
+   "19,1",
+   "19,9",
+   "1,9",
+   "1,1"
+  ],
+  "hint": "Teeth chase you slowly, and every chip sits in a dead end. Lure them away first. One freeze bomb stops them all.",
+  "par": 77
  }
 ];
