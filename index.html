@@ -279,6 +279,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .power canvas { width: 40px; height: 40px; }
 .power .n { position: absolute; top: 2px; right: 6px; color: var(--accent); font-size: 20px; }
 .power:disabled { opacity: 0.35; cursor: default; }
+.power.armed { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.power { touch-action: none; }
 .sys { width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .sys .btn { min-width: 0; }
 @media (max-width: 1000px) { .sys .t { display: none; } .sys .btn svg { width: 22px; height: 22px; } }
@@ -440,7 +442,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     <ul id="legend" class="legend"></ul>
     <p class="help">
       Play in landscape. Press a direction on the circle to step; hold to run; slide your thumb to turn.
-      Tap a power-up to fire it the way you face. On a keyboard: <kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd> or <kbd>WASD</kbd> move (hold to run),
+      Tap a power-up to fire it the way you face; hold it and press a direction to fire that way without stepping. On a keyboard: <kbd>&larr;</kbd> <kbd>&uarr;</kbd> <kbd>&rarr;</kbd> <kbd>&darr;</kbd> or <kbd>WASD</kbd> move (hold to run),
       <kbd>1</kbd>&ndash;<kbd>4</kbd> fire a power-up, <kbd>H</kbd> hint, <kbd>Z</kbd> undo, <kbd>R</kbd> restart, <kbd>P</kbd> pause.
       Drag the board to look around and pinch to zoom out (mouse: drag and wheel; keys <kbd>-</kbd> <kbd>=</kbd>); double-tap or <kbd>C</kbd> recenters.
     </p>
@@ -531,6 +533,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <ul id="res-stars"></ul>
           <div class="row">
             <button id="res-next" class="btn primary" type="button">Next</button>
+            <button id="res-back" class="btn" type="button" hidden>Step back</button>
             <button id="res-retry" class="btn" type="button">Retry</button>
             <button id="res-menu" class="btn" type="button">Main menu</button>
           </div>
@@ -992,9 +995,19 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   }
 
   // A press queues an action for the next turn; a held direction repeats every turn.
+  // Aiming: while a power-up button (or its number key) is held, a direction fires it that
+  // way without taking a step. A plain tap fires the way you face, when you let go.
+  let armed = null;
+  let aimedShot = false;
   function input(action) {
     if (G.phase === 'intro') { begin(); return; }
     if (G.phase !== 'play') return;
+    if (armed && typeof action === 'string' && G.state.powers[armed]) {
+      action = Core.AIMED[armed] ? { use: armed, dir: action } : { use: armed };
+      aimedShot = true;
+      armed = null;
+      G.held = null; // the direction was an aim, not a walk
+    }
     G.queue = action;
   }
 
@@ -1050,6 +1063,23 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     if (G.phase === 'intro') begin();
     if (G.phase !== 'play' || !G.state.powers[k]) return;
     input({ use: k }); // fires the way the robot faces
+  }
+
+  // After a death: take back the fatal move and carry on. The clock keeps the time you spent.
+  function stepBack() {
+    if (G.phase !== 'over' || G.state.status !== 'dead' || !G.history.length) return;
+    const from = G.state;
+    G.state = G.history.pop();
+    G.lost += from.steps - G.state.steps;
+    G.prev = G.state;
+    G.queue = null;
+    G.held = null;
+    G.phase = 'play';
+    G.lastTick = performance.now();
+    overlay(null);
+    track('step_back', { level: LEVELS[G.idx].name });
+    say('Back one move. Undo takes you further.');
+    hud();
   }
 
   function undo() {
@@ -1231,6 +1261,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       $('#res-title').textContent = stars === 3 ? 'Perfect escape.' : 'You made it out.';
       $('#res-text').textContent = G.idx < LEVELS.length - 1 ? `Next: ${LEVELS[G.idx + 1].name}.` : 'That was the final level.';
       next.hidden = G.idx >= LEVELS.length - 1;
+      $('#res-back').hidden = true;
       [523, 659, 784, 1046].forEach((f, k) => tone(f, 0.12, 'square', 0.035, k * 0.09));
     } else {
       const caught = enemyAt(s, s.player.x, s.player.y);
@@ -1252,6 +1283,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       $('#res-title').textContent = why[0];
       $('#res-text').textContent = why[1];
       next.hidden = true;
+      $('#res-back').hidden = !G.history.length;
       tone(196, 0.18, 'sawtooth', 0.04); tone(130, 0.35, 'sawtooth', 0.04, 0.15);
     }
     (next.hidden ? $('#res-retry') : next).focus({ preventScroll: true });
@@ -1633,7 +1665,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   function aim(d) {
     if (d === stickDirNow) return;
     stickDirNow = d;
-    G.held = d;
+    G.held = armed ? null : d;
     light(d);
     if (d) input(d);
   }
@@ -1693,12 +1725,15 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       const at = keysDown.indexOf(dir);
       if (at >= 0) keysDown.splice(at, 1);
       keysDown.push(dir);
-      G.held = dir;
+      G.held = armed ? null : dir;
       input(dir);
     } else if (e.code === 'Enter' && G.phase === 'intro') {
       e.preventDefault();
       begin();
-    } else if (POWER_KEYS[e.code]) usePowerButton(POWER_KEYS[e.code]);
+    } else if (POWER_KEYS[e.code]) {
+      if (!e.repeat && G.phase === 'play' && G.state.powers[POWER_KEYS[e.code]]) { armed = POWER_KEYS[e.code]; aimedShot = false; }
+      else if (G.phase === 'intro') begin();
+    }
     else if (e.code === 'KeyR') startLevel(G.idx);
     else if (e.code === 'Minus' || e.code === 'NumpadSubtract') setZoom(G.state, cam.z * 0.8);
     else if (e.code === 'Equal' || e.code === 'NumpadAdd') setZoom(G.state, cam.z / 0.8);
@@ -1774,7 +1809,24 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   }, { passive: false });
   $('#btn-recenter').addEventListener('click', recenter);
 
-  document.querySelectorAll('.power').forEach((b) => b.addEventListener('click', () => usePowerButton(b.dataset.power)));
+  document.querySelectorAll('.power').forEach((b) => {
+    const k = b.dataset.power;
+    b.addEventListener('pointerdown', () => { if (G.phase === 'play' && G.state.powers[k]) { armed = k; aimedShot = false; b.classList.add('armed'); } });
+    for (const ev of ['pointercancel', 'pointerleave']) b.addEventListener(ev, () => { if (armed === k) armed = null; b.classList.remove('armed'); });
+    b.addEventListener('click', () => {
+      b.classList.remove('armed');
+      if (!aimedShot) usePowerButton(k);
+      armed = null;
+      aimedShot = false;
+    });
+  });
+  document.addEventListener('keyup', (e) => {
+    const k = POWER_KEYS[e.code];
+    if (!k) return;
+    if (armed === k) { armed = null; usePowerButton(k); }
+    aimedShot = false;
+  });
+  $('#res-back').addEventListener('click', stepBack);
   $('#intro-go').addEventListener('click', begin);
   $('#btn-undo').addEventListener('click', undo);
   $('#btn-restart').addEventListener('click', () => startLevel(G.idx));
