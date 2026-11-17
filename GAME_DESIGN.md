@@ -199,10 +199,10 @@ and gates stop them all. "Speed" is relative to you.
 | 10 | Neon Mixtape | Beat Drop | Leading a spider into a closing beat block | bigger |
 | 11 | Solar Disco | Freeze Frame | Freeze bomb; lava and a crate | bigger |
 | 12 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
-| 13 | Tide Works | Firewalk | Fire boots past a water channel; one crate, two channels | bigger |
-| 14 | Tide Works | Cold Feet | Ice skates: slide your way to them first; some chips on the ice are traps | bigger |
-| 15 | Tide Works | Deep End | Water and flippers; one blue key, two blue doors | bigger |
-| 16 | Tide Works | Pickpocket | The thief and the green key: swim the west pools before you pass him | bigger |
+| 13 | Tide Works | Firewalk | Five wings off a hub: two crates for three water gaps, the fire boots, then fire halls with fireballs | bigger |
+| 14 | Tide Works | Cold Feet | Slide to the skates, cross a hall of ice and fire, then slide a crate over ice to bridge the water | bigger |
+| 15 | Tide Works | Deep End | A drone causeway to the flippers (three flames, three drones), then two lakes and a key | bigger |
+| 16 | Tide Works | Pickpocket | Two thieves: swim the west pools first, then find the way round the second one | bigger |
 | 17 | Conveyor Yard | Minefield | Two crates, three bombs; one chip has a long way round past a drone | bigger |
 | 18 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls; sealed vaults; one yellow key, two doors | bigger |
 | 19 | Conveyor Yard | Conveyor | Belts you can only ride one way, and the suction boots that undo them | bigger |
@@ -250,6 +250,10 @@ and gates stop them all. "Speed" is relative to you.
   opens onto a corridor running round the outside of the level, back in through a fake wall
   somewhere else. In Hall of Glass it skips three yellow doors, the long zigzag and the chip
   socket, and the par (and so the three-star time) uses it: the long way can't make three stars.
+- **Multi-stage levels.** From Tide Works on, a level is several linked rooms, each its own
+  small puzzle, with boots, keys and tools carried between them (in the spirit of the
+  original Chip's Challenge). Targets: 8-12 chips and a best route of 20-45 seconds in the
+  mid-game, more later. Tide Works (13-16) is rebuilt this way; the later worlds follow.
 - **Steady progression.** Each world introduces one or two things, and from level 13 every
   level has at least one decision that can lose it (a key spent on the wrong door, a crate
   pushed the wrong way, a one-way ride taken too early). A world's first level is easier than
@@ -345,6 +349,8 @@ a hint, not autoplay).
   are kept on the device (the last 500 events, in `lockstep:events`). If the app defines
   `window.LockstepAnalytics.log`, every event is passed on too: that is the hook for Firebase
   Analytics, to see which level players stop at and where the paywall belongs.
+- **Copy play stats** (home screen): a per-level summary of starts, clears, deaths (by
+  cause), quits, hints and step-backs on this device, copied as text.
 - **A Play Store bundle (AAB)** is built on every push, unsigned, as a download on the build's
   Actions page.
 

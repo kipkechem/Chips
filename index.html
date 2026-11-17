@@ -420,6 +420,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <option value="low">Low</option>
         </select>
         <span id="build"></span>
+        <button id="btn-stats" class="chipbtn" type="button">Copy play stats</button>
       </div>
     </footer>
   </div>
@@ -1196,6 +1197,29 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     } catch (err) { /* storage full or blocked */ }
     try { if (window.LockstepAnalytics && window.LockstepAnalytics.log) window.LockstepAnalytics.log(event, data); } catch (err) { /* ignore */ }
   }
+  // A plain-text summary per level of what happened on this device, to paste into a message.
+  function statsText() {
+    const log = store.get('lockstep:events') || [];
+    const by = {};
+    for (const e of log) {
+      if (!e.level) continue;
+      const r = (by[e.level] = by[e.level] || { start: 0, clear: 0, fail: 0, quit: 0, way: 0, back: 0, causes: {} });
+      if (e.event === 'level_start') r.start++;
+      else if (e.event === 'level_clear') { r.clear++; r.best = Math.min(r.best || Infinity, e.steps); r.stars = Math.max(r.stars || 0, e.stars); }
+      else if (e.event === 'level_fail') { r.fail++; r.causes[e.cause] = (r.causes[e.cause] || 0) + 1; }
+      else if (e.event === 'level_quit') r.quit++;
+      else if (e.event === 'way_shown') r.way++;
+      else if (e.event === 'step_back') r.back++;
+    }
+    const lines = [`Lockstep play stats (${$('#build').textContent || 'web'}, last ${log.length} events)`];
+    LEVELS.forEach((def, i) => {
+      const r = by[def.name];
+      if (!r) return;
+      const causes = Object.entries(r.causes).map(([c, n]) => `${c} ${n}`).join(', ');
+      lines.push(`${i + 1} ${def.name}: started ${r.start}, cleared ${r.clear}${r.clear ? ` (best ${secs(r.best)}, ${r.stars} stars, par ${secs(def.par)})` : ''}, died ${r.fail}${causes ? ` (${causes})` : ''}, quit ${r.quit}, hints ${r.way}, step-backs ${r.back}`);
+    });
+    return lines.join('\n');
+  }
   function quitIfPlaying() {
     if (G.state && (G.phase === 'play' || G.phase === 'paused')) track('level_quit', { level: LEVELS[G.idx].name, steps: G.state.steps + G.lost });
   }
@@ -1838,6 +1862,15 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
   document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => showView('home')));
   $('#pause-resume').addEventListener('click', resume);
   $('#pause-way').addEventListener('click', showWay);
+  $('#btn-stats').addEventListener('click', async (e) => {
+    const b = e.currentTarget;
+    const text = statsText();
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (err) { /* no clipboard here */ }
+    if (!ok) window.prompt('Copy your play stats:', text);
+    b.textContent = ok ? 'Copied' : 'Copy play stats';
+    setTimeout(() => { b.textContent = 'Copy play stats'; }, 1500);
+  });
   $('#pause-restart').addEventListener('click', () => startLevel(G.idx));
   $('#pause-menu').addEventListener('click', () => toMenu('home'));
   $('#res-retry').addEventListener('click', () => startLevel(G.idx));
