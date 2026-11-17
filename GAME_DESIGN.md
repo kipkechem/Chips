@@ -203,10 +203,10 @@ and gates stop them all. "Speed" is relative to you.
 | 14 | Tide Works | Cold Feet | Slide to the skates, cross a hall of ice and fire, then slide a crate over ice to bridge the water | bigger |
 | 15 | Tide Works | Deep End | A drone causeway to the flippers (three flames, three drones), then two lakes and a key | bigger |
 | 16 | Tide Works | Pickpocket | Two thieves: swim the west pools first, then find the way round the second one | bigger |
-| 17 | Conveyor Yard | Minefield | Two crates, three bombs; one chip has a long way round past a drone | bigger |
-| 18 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls; sealed vaults; one yellow key, two doors | bigger |
-| 19 | Conveyor Yard | Conveyor | Belts you can only ride one way, and the suction boots that undo them | bigger |
-| 20 | Conveyor Yard | Beam Me Up | Teleport islands; crumbling floor holds once, so plan each jump | bigger |
+| 17 | Conveyor Yard | Minefield | Crates for three bombs, then a wing with two teeth pens: lure one teeth into its own bomb; gravel stops the other | bigger |
+| 18 | Conveyor Yard | Smoke and Mirrors | Sealed vaults behind fake walls, then a pillared hall of hidden walls with two teeth | bigger |
+| 19 | Conveyor Yard | Conveyor | Belts and suction boots, then a thief and a wing of one-way belt islands: ride the exit run last | bigger |
+| 20 | Conveyor Yard | Beam Me Up | Teleport islands; one jetpack opens a vault whose belt only lets you out | bigger |
 | 21 | Machine Room | Tank Trap | Tanks park across chips and the exit; the blue button swaps them | bigger |
 | 22 | Machine Room | Copy Machine | One-shot red buttons send cloned drones into bombs | bigger |
 | 23 | Machine Room | Switchback | Toggle walls flipped by green buttons, some past crumbling floor | bigger |
@@ -253,7 +253,7 @@ and gates stop them all. "Speed" is relative to you.
 - **Multi-stage levels.** From Tide Works on, a level is several linked rooms, each its own
   small puzzle, with boots, keys and tools carried between them (in the spirit of the
   original Chip's Challenge). Targets: 8-12 chips and a best route of 20-45 seconds in the
-  mid-game, more later. Tide Works (13-16) is rebuilt this way; the later worlds follow.
+  mid-game, more later. Tide Works (13-16) and Conveyor Yard (17-20) are rebuilt this way; the later worlds follow.
 - **Steady progression.** Each world introduces one or two things, and from level 13 every
   level has at least one decision that can lose it (a key spent on the wrong door, a crate
   pushed the wrong way, a one-way ride taken too early). A world's first level is easier than
