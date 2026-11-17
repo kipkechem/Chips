@@ -39,6 +39,10 @@ every chase can be planned, and the solver can prove every level is winnable.
 
   In each, press and you step at once; keep holding to run; move your thumb to turn.
   Resting your thumb in the middle stops you.
+- **Aimed fire.** Tap a power-up and it fires the way you face. Hold it and press a direction,
+  and it fires that way without you taking a step (on a keyboard, hold 1-4 and press an arrow).
+- **Step back.** When you die, the results card offers Step back: it undoes the fatal move and
+  you carry on (the clock keeps the time). Undo then takes you further back if you need it.
 - **Center: the board.** Drag it to look around the level and pinch to zoom out, as far as
   the whole level. The camera stays where you leave it (it only moves to keep you in view)
   until you tap Recenter or double-tap the board.
@@ -195,43 +199,43 @@ and gates stop them all. "Speed" is relative to you.
 | 10 | Neon Mixtape | Beat Drop | Leading a spider into a closing beat block | bigger |
 | 11 | Solar Disco | Freeze Frame | Freeze bomb; lava and a crate | bigger |
 | 12 | Solar Disco | Disco Inferno | All four power-ups in one level | bigger |
-| 13 | Tide Works | Deep End | Water and flippers; one blue key, two blue doors | bigger |
-| 14 | Tide Works | Firewalk | Fire boots past a water channel; one crate, two channels | bigger |
-| 15 | Tide Works | Cold Feet | Ice skates: slide your way to them first; some chips on the ice are traps | bigger |
+| 13 | Tide Works | Firewalk | Fire boots past a water channel; one crate, two channels | bigger |
+| 14 | Tide Works | Cold Feet | Ice skates: slide your way to them first; some chips on the ice are traps | bigger |
+| 15 | Tide Works | Deep End | Water and flippers; one blue key, two blue doors | bigger |
 | 16 | Tide Works | Pickpocket | The thief and the green key: swim the west pools before you pass him | bigger |
-| 17 | Conveyor Yard | Conveyor | Belts you can only ride one way, and the suction boots that undo them | bigger |
-| 18 | Conveyor Yard | Beam Me Up | Teleport islands; crumbling floor holds once, so plan each jump | bigger |
-| 19 | Conveyor Yard | Minefield | Two crates, three bombs; one chip has a long way round past a drone | bigger |
-| 20 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls; sealed vaults; one yellow key, two doors | bigger |
-| 21 | Machine Room | Switchback | Toggle walls flipped by green buttons, some past crumbling floor | bigger |
-| 22 | Machine Room | Snare | Traps and a brown button; one crate for the button or the water | bigger |
-| 23 | Machine Room | Copy Machine | One-shot red buttons send cloned drones into bombs | bigger |
-| 24 | Machine Room | Tank Trap | Tanks park across chips and the exit; the blue button swaps them | bigger |
-| 25 | The Zoo | Bug Hunt | Bugs and paramecia; crumbling tiles allow one tour through four rooms | bigger |
-| 26 | The Zoo | Hot and Cold | Fireballs and gliders patrol corridors; time each dash into an alcove | bigger |
-| 27 | The Zoo | Feeding Time | Teeth and a blob; every chip is in a dead end | bigger |
-| 28 | The Zoo | Wanderers | Walkers; gravel islands to wait on | fits |
+| 17 | Conveyor Yard | Minefield | Two crates, three bombs; one chip has a long way round past a drone | bigger |
+| 18 | Conveyor Yard | Smoke and Mirrors | Hidden and fake walls; sealed vaults; one yellow key, two doors | bigger |
+| 19 | Conveyor Yard | Conveyor | Belts you can only ride one way, and the suction boots that undo them | bigger |
+| 20 | Conveyor Yard | Beam Me Up | Teleport islands; crumbling floor holds once, so plan each jump | bigger |
+| 21 | Machine Room | Tank Trap | Tanks park across chips and the exit; the blue button swaps them | bigger |
+| 22 | Machine Room | Copy Machine | One-shot red buttons send cloned drones into bombs | bigger |
+| 23 | Machine Room | Switchback | Toggle walls flipped by green buttons, some past crumbling floor | bigger |
+| 24 | Machine Room | Snare | Traps and a brown button; one crate for the button or the water | bigger |
+| 25 | The Zoo | Wanderers | Walkers bounce in four corridors; three flames, and one corridor has a bay to wait in | bigger |
+| 26 | The Zoo | Feeding Time | Four teeth and a blob; every chip is in a dead end; one freeze bomb | bigger |
+| 27 | The Zoo | Bug Hunt | Bugs and paramecia; crumbling tiles allow one tour through four rooms | bigger |
+| 28 | The Zoo | Hot and Cold | Fireballs and gliders patrol corridors; time each dash into an alcove | bigger |
 | 29 | The Zoo | Grand Zoo | Four monster wings off a hub; one red key, two red doors | bigger |
 | 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it round the bombs while you dodge lava | bigger |
-| 31 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
-| 32 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
-| 33 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
+| 31 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
+| 32 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
+| 33 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
 | 34 | Glass Maze | Ghost Walls | Invisible walls in a pillared maze, lava panes, and pop-ups that seal behind you | bigger |
 | 35 | Glass Maze | Roulette | Random force pads between fire islands: read the arrow, plan the turns | bigger |
-| 36 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
+| 36 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
 | 37 | Glass Maze | Hall of Glass | Everything at once; three stars need the secret way out, past a guard | bigger |
-| 38 | The Foundry | Crumble Works | Lava islands joined by crumbling bridges, each crossed once | bigger |
-| 39 | The Foundry | Assembly Line | One-way conveyor bridges; the nearest chip lures you the wrong way | bigger |
+| 38 | The Foundry | Demolition | Conveyors carry crates into bombs | bigger |
+| 39 | The Foundry | Quench | Three crates in a lava-cornered hub, four lava-lined arms to bridge | bigger |
 | 40 | The Foundry | Slag Bridge | Two crates, three lava gaps, a jetpack for one vault | bigger |
-| 41 | The Foundry | Demolition | Conveyors carry crates into bombs | bigger |
-| 42 | The Foundry | Fire Sale | Thieves and boots; the order you rob them in | bigger |
-| 43 | The Foundry | Quench | Three crates in a lava-cornered hub, four lava-lined arms to bridge | bigger |
-| 44 | The Foundry | Foreman | Jetpack, blaster and flamethrower: only one way to share them out | bigger |
+| 41 | The Foundry | Foreman | Jetpack, blaster and flamethrower: only one way to share them out | bigger |
+| 42 | The Foundry | Crumble Works | Lava islands joined by crumbling bridges, each crossed once | bigger |
+| 43 | The Foundry | Assembly Line | One-way conveyor bridges; the nearest chip lures you the wrong way | bigger |
+| 44 | The Foundry | Fire Sale | Thieves and boots; the order you rob them in | bigger |
 | 45 | The Foundry | The Crucible | Everything the Foundry taught | bigger |
 | 46 | Clockwork | Tick Tock | Rooms with doors that seal after one use, and doors a drone flips | bigger |
 | 47 | Clockwork | Escapement | One-way doors and doors that open on the beat | bigger |
-| 48 | Clockwork | Gear Train | Twenty rooms of one-way doors and drone-flipped doors | bigger |
-| 49 | Clockwork | Mainspring | Two clocks at once: beat doors and drone doors | bigger |
+| 48 | Clockwork | Mainspring | Two clocks at once: beat doors and drone doors | bigger |
+| 49 | Clockwork | Gear Train | Twenty rooms of one-way doors and drone-flipped doors | bigger |
 | 50 | Clockwork | Grand Clock | Everything Clockwork taught, in 22 rooms | bigger |
 
 ### Level design notes
@@ -250,6 +254,9 @@ and gates stop them all. "Speed" is relative to you.
   level has at least one decision that can lose it (a key spent on the wrong door, a crate
   pushed the wrong way, a one-way ride taken too early). A world's first level is easier than
   the finale before it, but harder than the previous world's first level.
+- **Checking the curve.** `tools/curve.js` prints one row per level (par, number of mechanics,
+  danger, traps, choices, whether nearest-chip play wins) and a rough score. Levels are ordered
+  inside each world so the score climbs, and each mechanic is introduced before it is combined.
 - **Danger and planning.** The late levels are checked with the level lab
   (`tools/levlab.js`). It walks the par route and counts the moments where one wrong move
   kills you (danger) and where one wrong move makes the level unwinnable (planning), and it
