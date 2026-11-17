@@ -73,5 +73,40 @@ module.exports = [
    "27,5",
    "31,7"
   ]
+ },
+ {
+  "name": "Deep End",
+  "world": "tide",
+  "hint": "Three drones walk the causeway to the flippers, and the flamethrower has three flames. Then swim for the chips and key.",
+  "par": 106,
+  "map": [
+   "###################################",
+   "#ww*wwww#.....#..*..#wwwwwwwwwwwww#",
+   "#wwwwbww#.....#.....#wwww...D...ww#",
+   "#ww.wwwwB.....B..E..#w*ww.wwwww.ww#",
+   "#wwwwwww#.....#.....#www..wwwwwDww#",
+   "#ww*wwww#..@..#.....#wwwwDww*ww.ww#",
+   "#########..b..#######wwww..wwwwpww#",
+   "#.........www.......#wwww.wwwwwwww#",
+   "#..ww....ww*ww........f...wwwwwwww#",
+   "#.......wwwwww......#wwwwwwwwwwwww#",
+   "###################################"
+  ],
+  "facing": {
+   "25,5": "up",
+   "31,4": "down"
+  },
+  "route": [
+   "22,8",
+   "31,6",
+   "28,5",
+   "22,3",
+   "11,8",
+   "11,6",
+   "3,1",
+   "3,5",
+   "5,2",
+   "17,1"
+  ]
  }
 ];
