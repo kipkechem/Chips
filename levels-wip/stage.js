@@ -258,5 +258,43 @@ module.exports = [
    "29,10",
    "24,11"
   ]
+ },
+ {
+  "name": "Copy Machine",
+  "world": "machine",
+  "hint": "Every red button fires every clone machine, and each works once. The way east is one way: finish the west first.",
+  "par": 131,
+  "map": [
+   "###################################",
+   "#####*#####*#####*###wwwwwwwwwwwww#",
+   "#####.#####.#####.###wwwwwwwwwwwww#",
+   "#C.....K.........K..#wwwwww*wwwwww#",
+   "#########.#.#########wwwwww.wwwww*#",
+   "#####...........#####C...K...K..K.#",
+   "#####...@.......####...wwwwwwww.w.#",
+   "#####.:.......:.####.wwwwwwwwww*w.#",
+   "######[#.....#[#####.wwwwwwwwwwww.#",
+   "######v#.....#v#####.wwwwwwwwwwwwE#",
+   "######............:[.wwwwwwwwwwwww#",
+   "###################################"
+  ],
+  "clones": {
+   "1,3": [
+    "D",
+    "right"
+   ],
+   "21,5": [
+    "P",
+    "right"
+   ]
+  },
+  "route": [
+   "5,1",
+   "11,1",
+   "17,1",
+   "27,3",
+   "31,7",
+   "33,4"
+  ]
  }
 ];
