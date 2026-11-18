@@ -182,6 +182,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
 .bar .stat b small { color: var(--muted); font-size: 15px; }
 .targets { display: flex; gap: 10px; color: var(--accent); font-variant-numeric: tabular-nums; }
 .targets span.gone { color: var(--muted); opacity: 0.45; text-decoration: line-through; }
+.targets span.warn { color: var(--danger); }
 .card .targets { margin: 0; font: 400 20px/1 var(--font-pixel); letter-spacing: 0.04em; }
 .keys { display: flex; gap: 8px; }
 .keychip { display: flex; align-items: center; gap: 2px; color: var(--muted); }
@@ -418,6 +419,11 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
           <option value="high">High</option>
           <option value="medium">Medium</option>
           <option value="low">Low</option>
+        </select>
+        <label class="label" for="mode">Time limit</label>
+        <select id="mode">
+          <option value="relaxed">Off</option>
+          <option value="classic">Classic (3 × par)</option>
         </select>
         <span id="build"></span>
         <button id="btn-stats" class="chipbtn" type="button">Copy play stats</button>
@@ -1046,6 +1052,8 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     }
     G.prev = cur;
     G.state = r.state;
+    const limit = timeLimit(LEVELS[G.idx]);
+    if (limit && G.state.status === 'play' && G.state.steps + G.lost >= limit) G.state = { ...G.state, status: 'dead', cause: 'time' };
     // Keep the clock on its exact 1/6 s schedule rather than rounding up to whole frames
     // (which would run a 60 Hz screen at 5.5 turns a second). A press that arrives early
     // starts a new schedule from now.
@@ -1299,6 +1307,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
         crushed: ['Crushed by a beat block.', `Pink and cyan blocks swap every ${secs(Core.BEAT)}. Watch the BEAT pips.`],
         water: ['You sank.', 'Water needs flippers. Or push a crate in: it turns into dirt you can walk on.'],
         fire: ['You got burned.', 'Fire needs fire boots.'],
+        time: ['Out of time.', 'Classic mode allows three times par. Switch the time limit off on the home screen to take as long as you like.'],
         bomb: ['You stepped on a bomb.', 'Push a crate onto a bomb, or let a monster set it off.'],
       }[s.cause];
       $('#res-eyebrow').textContent = `Level ${pad2(G.idx + 1)} failed`;
@@ -1307,7 +1316,7 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
       $('#res-title').textContent = why[0];
       $('#res-text').textContent = why[1];
       next.hidden = true;
-      $('#res-back').hidden = !G.history.length;
+      $('#res-back').hidden = !G.history.length || s.cause === 'time';
       tone(196, 0.18, 'sawtooth', 0.04); tone(130, 0.35, 'sawtooth', 0.04, 0.15);
     }
     (next.hidden ? $('#res-retry') : next).focus({ preventScroll: true });
@@ -1323,7 +1332,9 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     const [e3, e2, e1] = tg.children;
     e3.textContent = `★★★ ${wholeSecs(t3)}`;
     e2.textContent = `★★ ${wholeSecs(t2)}`;
-    e1.textContent = '★ ∞';
+    const limit = timeLimit(LEVELS[G.idx]);
+    e1.textContent = limit ? `⏱ ${Math.max(0, Math.ceil((limit - time) / Core.TURNS_PER_SECOND))}s left` : '★ ∞';
+    e1.classList.toggle('warn', !!limit && limit - time < 10 * Core.TURNS_PER_SECOND);
     e3.classList.toggle('gone', time > t3);
     e2.classList.toggle('gone', time > t2);
     const box = $('#chipbox');
@@ -1642,6 +1653,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     low: { dead: 0.08, reach: 0.2 },
   };
   let sens = SENSITIVITY[store.get('lockstep:sens')] ? store.get('lockstep:sens') : 'high';
+  // Classic mode: like the original game, a level is lost when the clock passes 3 x par.
+  let mode = store.get('lockstep:mode') === 'classic' ? 'classic' : 'relaxed';
+  $('#mode').value = mode;
+  const timeLimit = (def) => (mode === 'classic' ? Math.ceil((def.par * 3) / Core.TURNS_PER_SECOND) * Core.TURNS_PER_SECOND : 0);
   function renderPad() {
     PADS.analog.dead = SENSITIVITY[sens].dead;
     stick.querySelector('svg').innerHTML = PADS[pad].svg;
@@ -1880,6 +1895,10 @@ kbd { font: 400 16px/1 var(--font-pixel); padding: 2px 5px; border: 2px solid va
     sens = e.target.value;
     store.set('lockstep:sens', sens);
     renderPad();
+  });
+  $('#mode').addEventListener('change', (e) => {
+    mode = e.target.value === 'classic' ? 'classic' : 'relaxed';
+    store.set('lockstep:mode', mode);
   });
   $('#pad').addEventListener('change', (e) => {
     pad = e.target.value;
