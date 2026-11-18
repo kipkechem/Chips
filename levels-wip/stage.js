@@ -296,5 +296,24 @@ module.exports = [
    "31,7",
    "33,4"
   ]
+ },
+ {
+  "name": "Switchback",
+  "world": "machine",
+  "hint": "Each green button flips every toggle wall, here and in the rooms behind you. Climb the rungs; the lava between is final.",
+  "par": 147,
+  "map": [
+   "##################################",
+   "#*....#.......#...(*#....*......E#",
+   "#.....l...(.........#Lxxxxxxxxxxx#",
+   "#.....#.......#.....#......(..*..#",
+   "###L######.######l###xxxxxxxxxxxl#",
+   "#.....#..L....#....L#..*..(......#",
+   "#.....:...@.........#Lxxxxxxxxxxx#",
+   "#:....#.......#.....#......(.*...#",
+   "###l######L######.###xxxxxxxxxxxl#",
+   "#*....L...(..(..........*........#",
+   "##################################"
+  ]
  }
 ];
