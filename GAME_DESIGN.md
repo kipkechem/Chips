@@ -41,6 +41,9 @@ every chase can be planned, and the solver can prove every level is winnable.
   Resting your thumb in the middle stops you.
 - **Aimed fire.** Tap a power-up and it fires the way you face. Hold it and press a direction,
   and it fires that way without you taking a step (on a keyboard, hold 1-4 and press an arrow).
+- **Time limit.** Off by default: the clock only decides stars. The home screen's Time limit
+  setting switches on Classic, where (as in the original) a level is lost when the clock passes
+  three times par; the HUD then counts down.
 - **Step back.** When you die, the results card offers Step back: it undoes the fatal move and
   you carry on (the clock keeps the time). Undo then takes you further back if you need it.
 - **Center: the board.** Drag it to look around the level and pinch to zoom out, as far as
@@ -207,35 +210,35 @@ and gates stop them all. "Speed" is relative to you.
 | 18 | Conveyor Yard | Smoke and Mirrors | Sealed vaults behind fake walls, then a pillared hall of hidden walls with two teeth | bigger |
 | 19 | Conveyor Yard | Conveyor | Belts and suction boots, then a thief and a wing of one-way belt islands: ride the exit run last | bigger |
 | 20 | Conveyor Yard | Beam Me Up | Teleport islands; one jetpack opens a vault whose belt only lets you out | bigger |
-| 21 | Machine Room | Tank Trap | Tanks park across chips and the exit; the blue button swaps them | bigger |
-| 22 | Machine Room | Copy Machine | One-shot red buttons send cloned drones into bombs | bigger |
-| 23 | Machine Room | Switchback | Toggle walls flipped by green buttons, some past crumbling floor | bigger |
-| 24 | Machine Room | Snare | Traps and a brown button; one crate for the button or the water | bigger |
+| 21 | Machine Room | Tank Trap | Tanks park across chips and the exit, then a wing of three tank lanes; every blue press moves them all | bigger |
+| 22 | Machine Room | Copy Machine | Every red button fires every clone machine: drones down a corridor, gliders down a causeway; a one-way passage | bigger |
+| 23 | Machine Room | Switchback | Toggle rooms with crumbling floor, then a ladder of rungs over lava, switched up one rung at a time | bigger |
+| 24 | Machine Room | Snare | Traps and brown buttons: one crate, two jobs, until a tank parks on a button and takes over | bigger |
 | 25 | The Zoo | Wanderers | Walkers bounce in four corridors; three flames, and one corridor has a bay to wait in | bigger |
 | 26 | The Zoo | Feeding Time | Four teeth and a blob; every chip is in a dead end; one freeze bomb | bigger |
-| 27 | The Zoo | Bug Hunt | Bugs and paramecia; crumbling tiles allow one tour through four rooms | bigger |
+| 27 | The Zoo | Bug Hunt | Crumbling tour through four bug rooms, then a gallery of bug laps round pillars | bigger |
 | 28 | The Zoo | Hot and Cold | Fireballs and gliders patrol corridors; time each dash into an alcove | bigger |
 | 29 | The Zoo | Grand Zoo | Four monster wings off a hub; one red key, two red doors | bigger |
 | 30 | The Zoo | Shadow Play | The mimic: it holds the button that frees you from each trap, so steer it round the bombs while you dodge lava | bigger |
-| 31 | Glass Maze | One Way Out | Pop-up walls: nine rooms, each door crossed once | bigger |
-| 32 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster, each with one job | bigger |
+| 31 | Glass Maze | One Way Out | Twelve rooms, sixteen pop-up doors, lava bars; only three tours finish | bigger |
+| 32 | Glass Maze | Toolbox | Jetpack, flamethrower and blaster each with a job, then a teeth hall with a freeze bomb | bigger |
 | 33 | Glass Maze | Panes | Thin walls and blue doors: too few keys, so pick the rooms in order; bugs circle every chip | bigger |
 | 34 | Glass Maze | Ghost Walls | Invisible walls in a pillared maze, lava panes, and pop-ups that seal behind you | bigger |
 | 35 | Glass Maze | Roulette | Random force pads between fire islands: read the arrow, plan the turns | bigger |
 | 36 | Glass Maze | Bobsled | Ice corners on a fire-rimmed rink: each chip on the ice stops you once | bigger |
 | 37 | Glass Maze | Hall of Glass | Everything at once; three stars need the secret way out, past a guard | bigger |
-| 38 | The Foundry | Demolition | Conveyors carry crates into bombs | bigger |
-| 39 | The Foundry | Quench | Three crates in a lava-cornered hub, four lava-lined arms to bridge | bigger |
+| 38 | The Foundry | Demolition | Conveyors carry crates into bombs; lava pools in the hall | bigger |
+| 39 | The Foundry | Quench | Two crate hubs: bridge lava and water arms; a crate in a corner is lost | bigger |
 | 40 | The Foundry | Slag Bridge | Two crates, three lava gaps, a jetpack for one vault | bigger |
 | 41 | The Foundry | Foreman | Jetpack, blaster and flamethrower: only one way to share them out | bigger |
-| 42 | The Foundry | Crumble Works | Lava islands joined by crumbling bridges, each crossed once | bigger |
-| 43 | The Foundry | Assembly Line | One-way conveyor bridges; the nearest chip lures you the wrong way | bigger |
+| 42 | The Foundry | Crumble Works | 27 lava islands joined by bridges that hold once; two tours finish | bigger |
+| 43 | The Foundry | Assembly Line | Islands joined by one-way belts and plain bridges; most wrong rides strand you | bigger |
 | 44 | The Foundry | Fire Sale | Thieves and boots; the order you rob them in | bigger |
 | 45 | The Foundry | The Crucible | Everything the Foundry taught | bigger |
 | 46 | Clockwork | Tick Tock | Rooms with doors that seal after one use, and doors a drone flips | bigger |
-| 47 | Clockwork | Escapement | One-way doors and doors that open on the beat | bigger |
+| 47 | Clockwork | Escapement | A grid of rooms whose gates swap on the beat, and a teeth that the gates can crush | bigger |
 | 48 | Clockwork | Mainspring | Two clocks at once: beat doors and drone doors | bigger |
-| 49 | Clockwork | Gear Train | Twenty rooms of one-way doors and drone-flipped doors | bigger |
+| 49 | Clockwork | Gear Train | A belt railway over lava: toggle walls are the points, green buttons throw them all | bigger |
 | 50 | Clockwork | Grand Clock | Everything Clockwork taught, in 22 rooms | bigger |
 
 ### Level design notes
@@ -253,7 +256,7 @@ and gates stop them all. "Speed" is relative to you.
 - **Multi-stage levels.** From Tide Works on, a level is several linked rooms, each its own
   small puzzle, with boots, keys and tools carried between them (in the spirit of the
   original Chip's Challenge). Targets: 8-12 chips and a best route of 20-45 seconds in the
-  mid-game, more later. Tide Works (13-16) and Conveyor Yard (17-20) are rebuilt this way; the later worlds follow.
+  mid-game, more later. Levels 13-50 are built this way (the Zoo and Glass Maze levels that were already long keep their shape).
 - **Steady progression.** Each world introduces one or two things, and from level 13 every
   level has at least one decision that can lose it (a key spent on the wrong door, a crate
   pushed the wrong way, a one-way ride taken too early). A world's first level is easier than
