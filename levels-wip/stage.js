@@ -636,5 +636,28 @@ module.exports = [
    "#...x...x...x...x...x...x...x...#",
    "#################################"
   ]
+ },
+ {
+  "name": "Gear Train",
+  "world": "clockwork",
+  "hint": "Toggle walls are this railway's points: a closed one stops your ride at a junction. Each green button throws them all.",
+  "par": 119,
+  "map": [
+   "###############################",
+   "#xxxxxxx.*.xxxxxxxxx.*.xxxxxxx#",
+   "#xxv<<<<...<<<<<<<<<...<<<<<xx#",
+   "#xxvxxxx.*.xxxxxxxxx.*.xxxx^xx#",
+   "#xxvxxxxx^xxxxxxxxxxx^xxxxx^xx#",
+   "#xxvxxxxx^xxxxxxxxxxx^xxxxx^xx#",
+   "#.*.xxxxx^xxxxxxxxxxx^xxxx.(.x#",
+   "#.@.>>>>>>L>>>>>l>>>>>L>>>..*x#",
+   "#.(.xxxxxxxxxxxvxxxxxxxxxx..Ex#",
+   "#xxxxxxxxxxxxxxvxxxxxxxxxxx^xx#",
+   "#xxxxxxxxxxxxxxvxxxxxxxxxxx^xx#",
+   "#xxxxxxxxxxxxx..(xxxxxxxxxx^xx#",
+   "#xxxxxxxxxxxxx.*.>>>>>>>>>>^xx#",
+   "#xxxxxxxxxxxxx.*.xxxxxxxxxxxxx#",
+   "###############################"
+  ]
  }
 ];
