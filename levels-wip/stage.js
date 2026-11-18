@@ -615,5 +615,26 @@ module.exports = [
    "@22,6",
    "@18,6"
   ]
+ },
+ {
+  "name": "Assembly Line",
+  "world": "foundry",
+  "hint": "Belts carry you one way across the lava; plain bridges go both ways. Ride the wrong belt and you may never come back.",
+  "par": 100,
+  "map": [
+   "#################################",
+   "#...x...x...x...x...x...x...x...#",
+   "#.*.....<.*.....>...<...<.....*.#",
+   "#...x...x...x...x...x...x...x...#",
+   "#xvxxx.xxxvxxx.xxx.xxx^xxx.xxxvx#",
+   "#...x...x...x...x...x...x...x...#",
+   "#.....*.....<.@.x.E.....>.*.....#",
+   "#...x...x...x...x...x...x...x...#",
+   "#x^xxx.xxx.xxxxxxxxxxx.xxx.xxx^x#",
+   "#...x...x...x...x...x...x...x...#",
+   "#.*.<...<...>.........*.......*.#",
+   "#...x...x...x...x...x...x...x...#",
+   "#################################"
+  ]
  }
 ];
